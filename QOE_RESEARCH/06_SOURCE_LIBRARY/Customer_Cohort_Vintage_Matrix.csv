@@ -1,0 +1,21 @@
+Cohort_Vintage,Metric_Type,FY2020,FY2021,FY2022,FY2023,LTM_2023,Analytical_Observation
+2020 Cohort,Active Customer Count,145,138,129,121,118,Steady enterprise retention; 81.4% logo retention over 4 years
+2020 Cohort,Revenue (USD),8500000.00,8925000.00,9192750.00,9468532.50,9500000.00,Net expansion (+11.4% cumulative); price realization offset modest volume churn
+2020 Cohort,Gross Revenue Retention (GRR),100.0%,95.2%,94.8%,95.5%,95.0%,Strong baseline contract stickiness; annual churn <5%
+2020 Cohort,Net Revenue Retention (NRR),100.0%,105.0%,103.0%,103.0%,102.5%,Expansion through product cross-selling and annual price indexation
+2021 Cohort,Active Customer Count,,52,47,42,40,New logos added during FY21 expansion wave; 76.9% logo retention
+2021 Cohort,Revenue (USD),,3200000.00,3136000.00,3073280.00,3050000.00,Mild contraction (-4.7% cumulative); smaller regional distributor churn
+2021 Cohort,Gross Revenue Retention (GRR),,100.0%,92.5%,93.0%,92.8%,Slightly higher churn in middle-tier accounts lacking long-term MSAs
+2021 Cohort,Net Revenue Retention (NRR),,100.0%,98.0%,98.0%,97.5%,Price increases partially compensated for lost accounts
+2022 Cohort,Active Customer Count,,,68,59,56,Significant customer addition; 82.4% logo retention
+2022 Cohort,Revenue (USD),,,4100000.00,4305000.00,4350000.00,Net expansion (+5.0%); strong uptake in Precision Components division
+2022 Cohort,Gross Revenue Retention (GRR),,,100.0%,94.0%,94.2%,Standard enterprise customer churn profile
+2022 Cohort,Net Revenue Retention (NRR),,,100.0%,105.0%,104.5%,Upselling of advanced aerospace sub-assemblies drove net dollar retention
+2023 Cohort,Active Customer Count,,,,48,48,Latest customer vintage onboarded in FY23
+2023 Cohort,Revenue (USD),,,,3150000.00,3200000.00,First-year revenue baseline; high onboarding concentration
+2023 Cohort,Gross Revenue Retention (GRR),,,,100.0%,100.0%,Base period for cohort; zero historical churn yet recognized
+2023 Cohort,Net Revenue Retention (NRR),,,,100.0%,100.0%,Base period for cohort
+TOTAL PORTFOLIO,Active Customer Count,145,190,244,270,262,Net customer count expanded from 145 to 270 (stabilizing in LTM)
+TOTAL PORTFOLIO,Total Revenue (USD),8500000.00,12125000.00,16428750.00,19996812.50,20100000.00,Core business revenue progression across all cohorts (excl intercompany)
+TOTAL PORTFOLIO,Weighted Average GRR,100.0%,96.5%,94.5%,94.6%,94.4%,Portfolio GRR consistently averages ~94.5% across mature accounts
+TOTAL PORTFOLIO,Weighted Average NRR,100.0%,103.7%,102.4%,102.1%,101.8%,Portfolio NRR remains positive (>100%) due to pricing power and expansion

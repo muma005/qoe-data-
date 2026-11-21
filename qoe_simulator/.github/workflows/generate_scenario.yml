@@ -1,0 +1,75 @@
+name: Generate and Release 10-Year Scenario Dataset
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario_id:
+        description: 'Target Scenario ID'
+        required: true
+        default: 'target_apex_supply'
+        type: choice
+        options:
+          - target_apex_supply
+          - titan_precision_machining
+          - cloudpulse_saas
+      years_of_history:
+        description: 'Years of Historical Data to Generate'
+        required: true
+        default: '10'
+        type: choice
+        options:
+          - '3'
+          - '5'
+          - '10'
+      seed_hex:
+        description: 'Deterministic Master Cryptographic Seed'
+        required: false
+        default: '0x4a9f82c1e703bd55'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release-scenario:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Compiler Dependencies
+        run: |
+          pip install duckdb pydantic pyyaml numpy
+
+      - name: Compile 10-Year Business Reality & Volatility Engine
+        run: |
+          python scenarios/compiler/build_scenario.py \
+            --scenario ${{ inputs.scenario_id }} \
+            --years ${{ inputs.years_of_history }} \
+            --seed ${{ inputs.seed_hex }} \
+            --output-dir ./dist
+
+      - name: Verify Financial Physics Invariants (INV1 - INV6)
+        run: |
+          python -m unittest backend/tests/test_invariants.py
+
+      - name: Publish Scenario Package to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: scenarios-v1.0
+          name: "Compiled Scenario Dataset: ${{ inputs.scenario_id }} (${{ inputs.years_of_history }} Years)"
+          draft: false
+          prerelease: false
+          files: |
+            ./dist/${{ inputs.scenario_id }}/ground_truth.duckdb
+            ./dist/${{ inputs.scenario_id }}_package.tar.gz
+            ./dist/${{ inputs.scenario_id }}/checksum.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

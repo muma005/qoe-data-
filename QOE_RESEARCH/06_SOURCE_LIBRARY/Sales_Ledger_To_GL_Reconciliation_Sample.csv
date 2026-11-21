@@ -1,0 +1,11 @@
+Reconciliation_Step,Sales_Subledger_Component,Source_Account_Code,FY21_Amount,FY22_Amount,FY23_Amount,LTM_2023_Amount,Analytical_Explanation
+1,Gross Invoiced Sales (Sales Subledger),SL-INV-ALL,22150000.00,25280000.00,25685000.00,25800000.00,Sum of all transactional customer invoices emitted by ERP
+2,Less: Credit Memos & Price Adjustments,SL-CM-ALL,-220000.00,-280000.00,-345000.00,-350000.00,Formal credit memos issued for damaged goods pricing errors and returns
+3,Less: Prompt Payment Cash Discounts,GL 4-1100,-85000.00,-95000.00,-115000.00,-118000.00,2/10 Net 30 prompt payment cash discounts taken by distributors
+4,Less: Customer Volume Rebate Accruals,GL 4-1200,-145000.00,-185000.00,-235000.00,-240000.00,Off-invoice annual volume rebates accrued under master customer agreements
+5,Net Sales per General Ledger (Clean Tie-Out),GL 4-1000 Net,21700000.00,24720000.00,24990000.00,25092000.00,Reconciled net revenue baseline tied to Audited Financial Statements
+6,Less: Workstream 03 Cut-Off Error (Bill-and-Hold),INV-9842,0.00,0.00,-240000.00,-240000.00,Reversal of premature bill-and-hold shipment invoiced Dec 31 prior to FOB delivery
+7,Less: Topside Manual Journal Entry Plugs,JE-2023-12-88,0.00,0.00,-42500.00,-42500.00,Elimination of unsupported period-end manual journal entry plug to other income
+8,QoE Normalized Commercial Net Revenue,REV-NORM-01,21700000.00,24720000.00,24707500.00,24809500.00,True sustainable commercial net revenue after forensic diligence adjustments
+9,Less: Lost Customer Run-Rate Haircut (Great Plains),CUST-017,0.00,0.00,-320000.00,-320000.00,Full-year run-rate deduction for bankrupt distributor customer exiting in Q4
+10,QoE Pro-Forma Run-Rate Sustainable Revenue,REV-RUNRATE-01,21700000.00,24720000.00,24387500.00,24489500.00,Sustainable top-line run-rate for transaction underwriting

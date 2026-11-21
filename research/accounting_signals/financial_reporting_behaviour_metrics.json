@@ -1,0 +1,258 @@
+{
+  "metadata": {
+    "title": "Empirical Corporate Financial Reporting Behaviour Study",
+    "source": "SEC EDGAR Financial Statement Data Sets (FSDS 2024 Q3)",
+    "filings_analyzed": 5961,
+    "reporting_quarter": "2024 Q3"
+  },
+  "overall_metrics": {
+    "profitability_margins": {
+      "gross_margin": {
+        "count": 2562,
+        "mean": 1.7353455851778432,
+        "std": 11.637914269948885,
+        "median": 0.5698279895439458,
+        "p10": -1.3111350065170986,
+        "p25": 0.1688362186503715,
+        "p75": 1.1846498582087046,
+        "p90": 6.123724363774551,
+        "p95": 17.554805180180157
+      },
+      "operating_margin": {
+        "count": 3141,
+        "mean": -1.325041068354249,
+        "std": 10.206542867449778,
+        "median": 0.020589611605053813,
+        "p10": -6.238043181197049,
+        "p25": -0.7017389088200121,
+        "p75": 0.3489498745442337,
+        "p90": 1.8872816210041747,
+        "p95": 7.017241379310345
+      },
+      "net_margin": {
+        "count": 3515,
+        "mean": -0.3768250215268389,
+        "std": 8.699420841711554,
+        "median": 0.015221707478491065,
+        "p10": -3.6875971949824478,
+        "p25": -0.30670346744176546,
+        "p75": 0.3986606761261233,
+        "p90": 3.4639456675566436,
+        "p95": 8.983521469196312
+      }
+    },
+    "quality_of_earnings_accruals": {
+      "accruals_to_assets_ratio": {
+        "count": 5048,
+        "mean": 0.0023082133583220373,
+        "std": 0.14157324462125664,
+        "median": -0.007868693441198504,
+        "p10": -0.09021242449656844,
+        "p25": -0.03911898581785799,
+        "p75": 0.02514257064308543,
+        "p90": 0.12665905668396324,
+        "p95": 0.253574258955321
+      },
+      "divergence_positive_ni_negative_cfo_pct": 9.85080336648814,
+      "divergence_negative_opinc_positive_cfo_pct": 12.472010747872817
+    },
+    "working_capital_days": {
+      "dso_days": {
+        "count": 2761,
+        "mean": 1105.7518042665704,
+        "std": 3823.829984359807,
+        "median": 119.48834281039724,
+        "p10": 15.644051069971594,
+        "p25": 47.02645051194539,
+        "p75": 477.83810028248587,
+        "p90": 2085.986449655456,
+        "p95": 5744.747807017544
+      },
+      "dio_days": {
+        "count": 1843,
+        "mean": 473.2188675843013,
+        "std": 1807.916224191786,
+        "median": 110.90703300221558,
+        "p10": 20.42536620631313,
+        "p25": 49.83237229451274,
+        "p75": 225.10656133947447,
+        "p90": 611.8201056750036,
+        "p95": 2087.2859736180885
+      },
+      "dpo_days": {
+        "count": 2388,
+        "mean": 371.42055808812796,
+        "std": 1163.7802208549206,
+        "median": 64.15842198471486,
+        "p10": 16.176591888942912,
+        "p25": 32.98627740893755,
+        "p75": 183.7890363070001,
+        "p90": 820.3350235267166,
+        "p95": 2254.9057364324813
+      },
+      "cash_conversion_cycle_days": {
+        "count": 2761,
+        "mean": 1293.3145571891632,
+        "std": 4540.009257924255,
+        "median": 154.25977653631284,
+        "p10": -31.193875603304996,
+        "p25": 36.610138805069404,
+        "p75": 584.8737456115823,
+        "p90": 2672.5065054390557,
+        "p95": 8060.895014245015
+      },
+      "nwc_to_revenue_ratio": {
+        "count": 3265,
+        "mean": 1.7389224242247994,
+        "std": 6.642790199580096,
+        "median": 0.2130106841937632,
+        "p10": -0.4180968548674285,
+        "p25": -0.011015642211940957,
+        "p75": 0.992218641842702,
+        "p90": 4.265705162525863,
+        "p95": 11.621448699421942
+      }
+    },
+    "balance_sheet_structure": {
+      "goodwill_to_assets": {
+        "count": 5702,
+        "mean": 0.07655648474439586,
+        "std": 0.13284036064180885,
+        "median": 0.0,
+        "p10": 0.0,
+        "p25": 0.0,
+        "p75": 0.1064713023087756,
+        "p90": 0.3114601984039562,
+        "p95": 0.4154876234602854
+      },
+      "cash_to_assets": {
+        "count": 5672,
+        "mean": 0.2129867463775168,
+        "std": 0.2691271949629377,
+        "median": 0.10393185837045563,
+        "p10": 0.007113992059303431,
+        "p25": 0.03681854327847875,
+        "p75": 0.2877882006843845,
+        "p90": 0.6447599338353512,
+        "p95": 0.9106971174442102
+      },
+      "liabilities_to_assets": {
+        "count": 5058,
+        "mean": 0.7749628509185467,
+        "std": 1.1124515755320563,
+        "median": 0.5854564652355524,
+        "p10": 0.13276261927427918,
+        "p25": 0.3291433278986897,
+        "p75": 0.8763229368641671,
+        "p90": 1.169641965162569,
+        "p95": 2.1644833095896168
+      },
+      "negative_equity_rate_pct": 21.722251632256924
+    }
+  },
+  "sector_breakdown": {
+    "Finance, Banking & Real Estate": {
+      "filings_count": 1423,
+      "median_gross_margin": 0.44161280124782104,
+      "median_operating_margin": 0.14050917445707659,
+      "median_dso_days": 81.40390243902439,
+      "median_dio_days": 24.7306910256739,
+      "median_dpo_days": 56.50296052631579,
+      "median_ccc_days": 76.37721643786504,
+      "divergence_pos_ni_neg_cfo_pct": 13.654946852003272,
+      "median_goodwill_to_assets": 0.0
+    },
+    "Manufacturing & Industrial": {
+      "filings_count": 1151,
+      "median_gross_margin": 0.5789578270866154,
+      "median_operating_margin": 0.057859883634334724,
+      "median_dso_days": 129.3114973262032,
+      "median_dio_days": 114.8635081615407,
+      "median_dpo_days": 60.8338300471293,
+      "median_ccc_days": 244.501534472569,
+      "divergence_pos_ni_neg_cfo_pct": 8.517034068136272,
+      "median_goodwill_to_assets": 0.02802299918689743
+    },
+    "Life Sciences & Pharma": {
+      "filings_count": 780,
+      "median_gross_margin": 0.676425654969218,
+      "median_operating_margin": -1.7025555874715905,
+      "median_dso_days": 111.79860928890055,
+      "median_dio_days": 201.3785339114495,
+      "median_dpo_days": 193.12442957395405,
+      "median_ccc_days": 160.51041752460384,
+      "divergence_pos_ni_neg_cfo_pct": 5.467625899280575,
+      "median_goodwill_to_assets": 0.0
+    },
+    "Commercial & Professional Services": {
+      "filings_count": 480,
+      "median_gross_margin": 0.4131887083598076,
+      "median_operating_margin": 0.07014218009478673,
+      "median_dso_days": 135.6351563566844,
+      "median_dio_days": 38.6206768501075,
+      "median_dpo_days": 61.41831732105595,
+      "median_ccc_days": 92.70590878151985,
+      "divergence_pos_ni_neg_cfo_pct": 8.80195599022005,
+      "median_goodwill_to_assets": 0.11206251799512001
+    },
+    "Software & Tech Services": {
+      "filings_count": 463,
+      "median_gross_margin": 0.8086579028205834,
+      "median_operating_margin": -0.11388117572486091,
+      "median_dso_days": 130.0933674743942,
+      "median_dio_days": 50.20765577147194,
+      "median_dpo_days": 55.567626428329,
+      "median_ccc_days": 84.81826811793351,
+      "divergence_pos_ni_neg_cfo_pct": 4.411764705882353,
+      "median_goodwill_to_assets": 0.1002427776899993
+    },
+    "Transportation & Utilities": {
+      "filings_count": 346,
+      "median_gross_margin": 0.3443055499368457,
+      "median_operating_margin": 0.1411589895988113,
+      "median_dso_days": 116.29397752246129,
+      "median_dio_days": 44.85352907941716,
+      "median_dpo_days": 134.71410334053652,
+      "median_ccc_days": 95.88294514984662,
+      "divergence_pos_ni_neg_cfo_pct": 4.984423676012461,
+      "median_goodwill_to_assets": 0.017706940192101513
+    },
+    "Technology Hardware & Electronics": {
+      "filings_count": 311,
+      "median_gross_margin": 0.694601381042059,
+      "median_operating_margin": -0.026769741886020954,
+      "median_dso_days": 150.83049354668773,
+      "median_dio_days": 140.12118842845973,
+      "median_dpo_days": 63.74308445385226,
+      "median_ccc_days": 236.062948196107,
+      "divergence_pos_ni_neg_cfo_pct": 7.194244604316546,
+      "median_goodwill_to_assets": 0.05182149220547824
+    }
+  },
+  "filer_scale_breakdown": {
+    "1-LAF": {
+      "filings_count": 2064,
+      "median_revenue": 125291000.0,
+      "median_operating_margin": 0.18218623481781376,
+      "divergence_pos_ni_neg_cfo_pct": 7.331670822942643,
+      "negative_equity_rate_pct": 6.65024630541872,
+      "median_cash_to_assets": 0.08541201655165015
+    },
+    "2-ACC": {
+      "filings_count": 758,
+      "median_revenue": 21359936.0,
+      "median_operating_margin": 0.023543652935360655,
+      "divergence_pos_ni_neg_cfo_pct": 8.71934604904632,
+      "negative_equity_rate_pct": 10.068027210884352,
+      "median_cash_to_assets": 0.09569904736608192
+    },
+    "4-NON": {
+      "filings_count": 3139,
+      "median_revenue": 1057000.0,
+      "median_operating_margin": -0.3195621840233328,
+      "divergence_pos_ni_neg_cfo_pct": 12.213740458015266,
+      "negative_equity_rate_pct": 35.2170916609235,
+      "median_cash_to_assets": 0.1391258894580229
+    }
+  }
+}

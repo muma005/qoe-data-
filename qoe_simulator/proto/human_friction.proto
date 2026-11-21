@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package qoe.humanfriction.v1;
+
+enum PushbackTier {
+  TIER_UNSPECIFIED = 0;
+  TIER_1_PROFESSIONAL_COOPERATION = 1;
+  TIER_2_PROCRASTINATION_DELAY = 2;
+  TIER_3_COMMERCIAL_PRESSURE = 3;
+  TIER_4_AGGRESSIVE_OBFUSCATION = 4;
+}
+
+message SubmitInquiryRequest {
+  string simulation_id = 1;
+  string irl_item_id = 2;
+  string target_persona_id = 3;
+  string inquiry_text = 4;
+  uint32 current_sim_hour = 5;
+}
+
+message SubmitInquiryResponse {
+  string ticket_id = 1;
+  uint32 scheduled_response_sim_hour = 2; // Scheduled delivery hour
+  PushbackTier current_persona_tier = 3;
+}
+
+message StartInterviewSessionRequest {
+  string simulation_id = 1;
+  repeated string attendee_persona_ids = 2;
+  string topic = 3;
+}
+
+message StartInterviewSessionResponse {
+  string session_id = 1;
+  bool banker_chaperone_present = 2;
+  string opening_statement = 3;
+}
+
+message InterviewDialogueRequest {
+  string session_id = 1;
+  string speaker_actor_id = 2;
+  string target_persona_id = 3;
+  string question_prompt = 4;
+}
+
+message InterviewDialogueResponse {
+  string response_transcript = 1;
+  double response_latency_seconds = 2;
+  bool is_heuristic_fallback = 3;     // True if served via circuit breaker
+  repeated string cited_vdr_document_ids = 4;
+}
+
+message NotifyHaircutImpactRequest {
+  string simulation_id = 1;
+  string adjustment_id = 2;
+  double ebitda_haircut_amount = 3;
+  string related_accounting_issue = 4;
+}
+
+message NotifyHaircutImpactResponse {
+  double total_equity_value_lost = 1;
+  map<string, PushbackTier> updated_persona_tiers = 2;
+}
+
+service HumanFrictionService {
+  rpc SubmitInquiry (SubmitInquiryRequest) returns (SubmitInquiryResponse);
+  rpc StartInterviewSession (StartInterviewSessionRequest) returns (StartInterviewSessionResponse);
+  rpc SendInterviewDialogue (InterviewDialogueRequest) returns (InterviewDialogueResponse);
+  rpc NotifyHaircutImpact (NotifyHaircutImpactRequest) returns (NotifyHaircutImpactResponse);
+}

@@ -1,0 +1,35 @@
+mapping_id,entity_code,raw_account_code,raw_account_title,erp_source_system,l1_statement_tier,l2_core_category,l3_analytical_line,l4_diligence_tag,sign_multiplier,analyst_notes
+MAP-001,ENT-01,1010-00,Operating Checking Account,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Cash & Cash Equivalents,CASH_ITEM,1,Standard operating cash account
+MAP-002,ENT-01,1020-00,Payroll Clearing Account,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Cash & Cash Equivalents,CASH_ITEM,1,Must zero out at period end
+MAP-003,ENT-01,1100-00,Trade Accounts Receivable,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Trade Receivables,WORKING_CAPITAL_OPERATING,1,Ties to AR aging subledger
+MAP-004,ENT-01,1150-00,Allowance for Doubtful Accounts,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Allowance for Doubtful Accounts,WORKING_CAPITAL_OPERATING,-1,Contra-asset credit balance
+MAP-005,ENT-01,1200-00,Finished Goods Inventory,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Inventory Finished Goods,WORKING_CAPITAL_OPERATING,1,Ties to perpetual inventory count
+MAP-006,ENT-01,1250-00,Inventory E&O Reserve,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Inventory Reserve,WORKING_CAPITAL_OPERATING,-1,Contra-asset obsolescence reserve
+MAP-007,ENT-01,1300-00,Prepaid Insurance & Expenses,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Prepaid Expenses,WORKING_CAPITAL_OPERATING,1,Operating working capital asset
+MAP-008,ENT-01,1500-00,Warehouse Equipment,Sage 100,BALANCE_SHEET,NON_CURRENT_ASSET,Property Plant & Equipment,CAPEX_TANGIBLE,1,Fixed asset register tie-out
+MAP-009,ENT-01,1550-00,Accumulated Depreciation - Equip,Sage 100,BALANCE_SHEET,NON_CURRENT_ASSET,Accumulated Depreciation,NON_OPERATING,-1,Contra-asset balance
+MAP-010,ENT-01,2010-00,Trade Accounts Payable,Sage 100,BALANCE_SHEET,CURRENT_LIABILITY,Trade Accounts Payable,WORKING_CAPITAL_OPERATING,-1,Ties to AP aging subledger
+MAP-011,ENT-01,2050-00,Accrued Payroll & Bonuses,Sage 100,BALANCE_SHEET,CURRENT_LIABILITY,Accrued Payroll,WORKING_CAPITAL_OPERATING,-1,Operating current liability
+MAP-012,ENT-01,2060-00,Accrued Employee PTO & Vacation,Sage 100,BALANCE_SHEET,CURRENT_LIABILITY,Accrued PTO Liability,DEBT_LIKE_ITEM,-1,Deducted as debt-like item
+MAP-013,ENT-01,2100-00,Sales Tax Payable,Sage 100,BALANCE_SHEET,CURRENT_LIABILITY,Taxes Payable,DEBT_LIKE_ITEM,-1,Unremitted state sales tax liability
+MAP-014,ENT-01,2200-00,Deferred Customer Revenue,Sage 100,BALANCE_SHEET,CURRENT_LIABILITY,Deferred Revenue,DEBT_LIKE_ITEM,-1,Haircut or debt-like treatment
+MAP-015,ENT-01,2500-00,Senior Bank Revolver,Sage 100,BALANCE_SHEET,LONG_TERM_LIABILITY,Bank Credit Facilities,NET_DEBT_ITEM,-1,Funded interest-bearing debt
+MAP-016,ENT-01,2600-00,Shareholder Subordinated Note,Sage 100,BALANCE_SHEET,LONG_TERM_LIABILITY,Shareholder Debt,NET_DEBT_ITEM,-1,Related-party note payable
+MAP-017,ENT-01,3010-00,Common Stock,Sage 100,BALANCE_SHEET,EQUITY,Common Stock,EQUITY,-1,Ties to legal cap table
+MAP-018,ENT-01,3050-00,Retained Earnings,Sage 100,BALANCE_SHEET,EQUITY,Retained Earnings,EQUITY,-1,Cumulative historical earnings
+MAP-019,ENT-01,4010-00,Commercial Product Sales,Sage 100,INCOME_STATEMENT,REVENUE,Gross Commercial Revenue,OPERATING_EBITDA,-1,Multiplied by -1 for positive revenue
+MAP-020,ENT-01,4020-00,Installation & Service Revenue,Sage 100,INCOME_STATEMENT,REVENUE,Service Revenue,OPERATING_EBITDA,-1,Recurring service revenue
+MAP-021,ENT-01,4090-00,Customer Volume Rebates,Sage 100,INCOME_STATEMENT,REVENUE,Sales Allowances & Rebates,OPERATING_EBITDA,1,Contra-revenue debit balance
+MAP-022,ENT-01,5010-00,Cost of Goods Sold - Products,Sage 100,INCOME_STATEMENT,COGS,Direct Material Cost,OPERATING_EBITDA,1,Standard material costs
+MAP-023,ENT-01,5020-00,Direct Warehouse Labor,Sage 100,INCOME_STATEMENT,COGS,Direct Labor Cost,OPERATING_EBITDA,1,In-house fulfillment labor
+MAP-024,ENT-01,5050-00,Inbound Freight & Customs Duty,Sage 100,INCOME_STATEMENT,COGS,Inbound Freight,OPERATING_EBITDA,1,Inbound transport added to COGS
+MAP-025,ENT-01,6010-00,Executive & Officer Salaries,Sage 100,INCOME_STATEMENT,OPEX,Executive Compensation,OPERATING_EBITDA,1,Target for owner normalization
+MAP-026,ENT-01,6020-00,Sales Staff Base Salaries,Sage 100,INCOME_STATEMENT,OPEX,Sales Compensation,OPERATING_EBITDA,1,Base payroll
+MAP-027,ENT-01,6030-00,Sales Commissions,Sage 100,INCOME_STATEMENT,OPEX,Sales Commissions,OPERATING_EBITDA,1,Variable sales cost
+MAP-028,ENT-01,6100-00,Facility Rent & Common Area Maint,Sage 100,INCOME_STATEMENT,OPEX,Rent & Occupancy,OPERATING_EBITDA,1,Inspect for related-party lease rates
+MAP-029,ENT-01,6200-00,Corporate Marketing & Advertising,Sage 100,INCOME_STATEMENT,OPEX,Advertising & Marketing,OPERATING_EBITDA,1,Discretionary marketing spend
+MAP-030,ENT-01,6400-00,Legal & Professional Audit Fees,Sage 100,INCOME_STATEMENT,OPEX,Professional Fees,OPERATING_EBITDA,1,Check for transaction deal fees
+MAP-031,ENT-01,6800-00,Depreciation & Amortization Expense,Sage 100,INCOME_STATEMENT,OPEX,Depreciation & Amortization,NON_OPERATING,1,Added back in EBITDA bridge
+MAP-032,ENT-01,7010-00,Bank Senior Interest Expense,Sage 100,INCOME_STATEMENT,OTHER_INC_EXP,Interest Expense,NON_OPERATING,1,Financing cost added back in EBITDA
+MAP-033,ENT-01,7050-00,Gain on Disposal of Fixed Assets,Sage 100,INCOME_STATEMENT,OTHER_INC_EXP,Non-Operating Gain/Loss,NON_OPERATING,-1,One-time non-recurring gain
+MAP-034,ENT-01,9990-00,Suspense & Clearing Account,Sage 100,BALANCE_SHEET,CURRENT_ASSET,Suspense Clearing,WORKING_CAPITAL_OPERATING,1,Must be audited and cleared to zero

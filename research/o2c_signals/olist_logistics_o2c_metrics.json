@@ -1,0 +1,99 @@
+{
+  "total_orders": 99441,
+  "order_status_distribution": {
+    "delivered": 96478,
+    "shipped": 1107,
+    "canceled": 625,
+    "unavailable": 609,
+    "invoiced": 314,
+    "processing": 301,
+    "created": 5,
+    "approved": 2
+  },
+  "order_status_percentage": {
+    "delivered": 97.02,
+    "shipped": 1.11,
+    "canceled": 0.63,
+    "unavailable": 0.61,
+    "invoiced": 0.32,
+    "processing": 0.3,
+    "created": 0.01,
+    "approved": 0.0
+  },
+  "attrition_cancellation_rate_pct": 1.24,
+  "fulfillment_latencies": {
+    "payment_authorization_latency_hours": {
+      "count": 99274,
+      "mean": 10.32,
+      "median": 0.34,
+      "std": 20.6,
+      "min": 0.0,
+      "p25": 0.21,
+      "p75": 14.57,
+      "p95": 48.42,
+      "max": 676.07
+    },
+    "warehouse_fulfillment_latency_days": {
+      "count": 96282,
+      "mean": 2.86,
+      "median": 1.85,
+      "std": 3.45,
+      "min": 0.0,
+      "p25": 0.9,
+      "p75": 3.62,
+      "p95": 8.16,
+      "max": 64.57
+    },
+    "carrier_transit_latency_days": {
+      "count": 96381,
+      "mean": 9.24,
+      "median": 7.1,
+      "std": 8.01,
+      "min": 0.0,
+      "p25": 4.1,
+      "p75": 12.02,
+      "p95": 24.12,
+      "max": 89.95
+    },
+    "end_to_end_order_to_delivery_days": {
+      "count": 96433,
+      "mean": 12.49,
+      "median": 10.21,
+      "std": 8.99,
+      "min": 0.53,
+      "p25": 6.76,
+      "p75": 15.71,
+      "p95": 29.21,
+      "max": 118.97
+    }
+  },
+  "sla_performance": {
+    "total_delivered_evaluated": 96476,
+    "on_time_deliveries_count": 88649,
+    "sla_breach_late_count": 7827,
+    "sla_breach_rate_pct": 8.11,
+    "on_time_rate_pct": 91.89,
+    "late_delivery_delay_days": {
+      "count": 7827,
+      "mean": 9.55,
+      "median": 5.81,
+      "std": 13.95,
+      "min": 0.0,
+      "p25": 1.87,
+      "p75": 11.82,
+      "p95": 29.64,
+      "max": 188.98
+    },
+    "early_delivery_lead_days": {
+      "count": 88649,
+      "mean": 13.01,
+      "median": 12.32,
+      "std": 7.38,
+      "min": 0.0,
+      "p25": 8.0,
+      "p75": 17.04,
+      "p95": 26.26,
+      "max": 146.02
+    }
+  }
+}

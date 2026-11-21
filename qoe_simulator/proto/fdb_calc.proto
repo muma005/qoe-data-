@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package qoe.fdbcalc.v1;
+
+enum CheckBarStatus {
+  CHECK_STATUS_UNSPECIFIED = 0;
+  CHECK_PASS = 1;
+  CHECK_FAIL = 2;
+  CHECK_CIRCULAR_ERROR = 3;
+}
+
+message CellUpdate {
+  string tab_id = 1;                  // e.g. "02_EBITDA_Bridges"
+  string cell_coordinate = 2;         // e.g. "E14"
+  string formula_or_value = 3;        // e.g. "=-SUM(C14:D14)"
+}
+
+message RecalculateBatchRequest {
+  string simulation_id = 1;
+  repeated CellUpdate cell_updates = 2;
+  bool trigger_full_recalc = 3;
+}
+
+message RecalculatedCell {
+  string tab_id = 1;
+  string cell_coordinate = 2;
+  string evaluated_value = 3;
+  string display_formatting = 4;      // Font RGB, number format
+  string error_flag = 5;              // Empty if valid; "#CIRCULAR!", "#DIV/0!"
+}
+
+message CheckBarResult {
+  string tab_id = 1;
+  CheckBarStatus status = 2;
+  double imbalance_amount = 3;
+  string failure_diagnostic = 4;
+}
+
+message RecalculateBatchResponse {
+  bool success = 1;
+  double calculation_time_ms = 2;
+  repeated RecalculatedCell dirty_cells = 3;
+  repeated CheckBarResult check_bar_results = 4;
+}
+
+message ValidateAntiDoubleDippingRequest {
+  string simulation_id = 1;
+  string haircut_id = 2;
+  string affected_gl_account = 3;
+  double haircut_amount = 4;
+  string proposed_bucket = 5;         // "EBITDA_HAIRCUT", "NWC_LIABILITY", "NET_DEBT"
+}
+
+message ValidateAntiDoubleDippingResponse {
+  bool is_double_dipping = 1;
+  string conflicting_deduction_id = 2;
+  string legal_doctrine_rule = 3;     // "AICPA CS 100 Mutual Exclusivity Rule"
+  string remediation_guidance = 4;
+}
+
+service FdbCalculationService {
+  rpc RecalculateBatch (RecalculateBatchRequest) returns (RecalculateBatchResponse);
+  rpc ValidateAntiDoubleDipping (ValidateAntiDoubleDippingRequest) returns (ValidateAntiDoubleDippingResponse);
+}

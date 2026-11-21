@@ -1,0 +1,15 @@
+Line_ID,Description,Col1_Beginning_Balance_2024_01_01,Col2_Receipts,Col3_Disbursements,Col4_Ending_Balance_2024_01_31,Notes
+BANK-01,Balance per Bank Statement,482500.00,1245000.00,1180200.00,547300.00,Confirmed via 3rd party bank confirmation letter
+ADJ-01,Prior Month Deposits in Transit (cleared Jan),35000.00,-35000.00,0.00,0.00,"Recorded in Dec books, cleared Jan bank"
+ADJ-02,Current Month Deposits in Transit (Jan 31),0.00,48500.00,0.00,48500.00,"Recorded in Jan books, cleared Feb bank"
+ADJ-03,Prior Month Outstanding Checks (cleared Jan),-62400.00,0.00,-62400.00,0.00,"Written Dec, cleared Jan bank"
+ADJ-04,Current Month Outstanding Checks (Jan 31),0.00,0.00,71800.00,-71800.00,"Written Jan, unpresented at Jan 31"
+ADJ-05,Bank Error: Improper debit cleared (corrected Feb),0.00,0.00,-5200.00,5200.00,"Unauthorized wire fee charged by bank, reversed Feb 03"
+CALC-01,Adjusted Bank Balance,455100.00,1258500.00,1184400.00,529200.00,Sum of Bank rows
+BOOK-01,Balance per General Ledger (A/C 1000 Operating),455100.00,1252100.00,1183150.00,524050.00,Raw GL export balance at Jan 31
+ADJ-06,Unrecorded Bank Interest Income,0.00,1400.00,0.00,1400.00,"Earned Jan, not yet posted to GL"
+ADJ-07,Customer Direct Wire (Unrecorded AR receipt),0.00,5000.00,0.00,5000.00,"Customer wire received Jan 30, no GL receipt created"
+ADJ-08,Bank Service Charges & Wire Fees,0.00,0.00,850.00,-850.00,Jan bank charges not yet posted to GL
+ADJ-09,Customer NSF Check Returned,0.00,0.00,400.00,-400.00,"Returned check from Apex client, GL not adjusted"
+CALC-02,Adjusted Book Balance,455100.00,1258500.00,1184400.00,529200.00,Sum of Book rows
+VARIANCE,Reconciliation Variance (Adjusted Bank - Adjusted Book),0.00,0.00,0.00,0.00,Mathematically fully reconciled across all 4 columns

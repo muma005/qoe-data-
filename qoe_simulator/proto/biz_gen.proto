@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package qoe.bizgen.v1;
+
+enum ERPSchemaType {
+  ERP_UNSPECIFIED = 0;
+  ERP_ORACLE_NETSUITE = 1;
+  ERP_SAP_S4HANA = 2;
+  ERP_QUICKBOOKS_DESKTOP = 3;
+  ERP_MICROSOFT_DYNAMICS_365 = 4;
+}
+
+message CompileScenarioPackageRequest {
+  string scenario_id = 1;
+  uint64 random_seed = 2;
+  string sector_naics = 3;             // e.g. "4238", "3327", "5112"
+  double base_annual_revenue = 4;
+  uint32 historical_months = 5;       // e.g. 36 to 120 months
+  ERPSchemaType target_erp = 6;
+  repeated string active_anomaly_ids = 7;
+}
+
+message CompileScenarioPackageResponse {
+  string package_path = 1;            // e.g. "/packages/scenario_apex_001.csp"
+  string sha256_checksum = 2;
+  uint32 total_journal_entries = 3;
+  uint32 total_vdr_documents = 4;
+  bool invariant_check_passed = 5;
+}
+
+message ExportERPDatasetRequest {
+  string scenario_id = 1;
+  ERPSchemaType erp_type = 2;
+  string start_date = 3;
+  string end_date = 4;
+}
+
+message ExportERPDatasetResponse {
+  string export_filename = 1;
+  bytes file_content = 2;
+  string mime_type = 3;               // "text/csv", "application/vnd.ms-excel"
+  uint32 row_count = 4;
+}
+
+service DataGenerationService {
+  rpc CompileScenarioPackage (CompileScenarioPackageRequest) returns (CompileScenarioPackageResponse);
+  rpc ExportERPDataset (ExportERPDatasetRequest) returns (ExportERPDatasetResponse);
+}

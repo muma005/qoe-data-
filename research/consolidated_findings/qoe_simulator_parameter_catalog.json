@@ -1,0 +1,1463 @@
+{
+  "metadata": {
+    "title": "Master QoE Simulator Empirical Parameter Catalog",
+    "description": "Unified repository of empirical signals, probability distributions, hazard parameters, and anomaly rates extracted from real-world datasets for QoE simulation.",
+    "created_at": "2026-11-12",
+    "version": "1.4.0",
+    "sources": {
+      "p2p_corporate": "AkzoNobel SAP ERP Event Log (BPI Challenge 2019) - 1,595,923 events, 251,734 cases, \u20ac996.8M spend",
+      "p2p_public": "Kenya Public Procurement Information Portal (PPIP) - 200 active sovereign tenders",
+      "o2c_commercial": "UCI Online Retail Commercial Subledger - 541,909 transactions, \u00a310.67M gross sales",
+      "o2c_fulfillment": "Brazilian E-Commerce (Olist) Logistics - 99,441 marketplace orders, 96,478 deliveries",
+      "working_capital_banking": "Czech Commercial Bank (Berka) Database - 1,056,320 transactions, 682 loan facilities",
+      "labor_and_payroll": "City of San Francisco Employee Compensation - 50,000 workforce records, $7.0B total spend",
+      "financial_accounting": "SEC EDGAR Financial Statement Data Sets (FSDS 2024 Q3) - 6,699 corporate filers, 83,106 tags, 3.52M facts",
+      "mna_advisory_and_window_dressing": "SEC Form DEFM14A ($44B Twitter / Musk buyout; Goldman Sachs & J.P. Morgan Fairness Opinions) & SDNY Bankruptcy Examiner Report (Lehman Brothers Repo 105 Forensic Investigation)",
+      "financial_reporting_behaviour": "SEC EDGAR Corporate Operating Filings (5,961 public filers across 14 economic sectors) - Margins, Sloan Accruals, Cash Conversion Cycles (DSO/DIO/DPO), and Balance Sheet Solvency",
+      "deep_financial_reporting_forensics": "SEC EDGAR 5,961 Corporate Filings Forensic Deep Dive - EBITDA Add-Backs (SBC, Restructuring, Impairments), Channel Stuffing & Inventory Decoupling Tests, Restatement Autopsies, and Real Corporate Case Studies"
+    }
+  },
+  "purchase_to_pay_parameters": {
+    "control_flow_and_governance": {
+      "purchase_requisition_compliance_rate_pct": 18.51,
+      "purchase_requisition_bypass_rate_pct": 81.49,
+      "maverick_buying_inversion_rate_pct": 1.47,
+      "maverick_buying_cases_count": 3693,
+      "trace_initiating_vendor_invoices_count": 3451,
+      "three_way_match_invoice_before_gr_rate_pct": 6.5,
+      "three_way_match_invoice_before_gr_cases_count": 16356
+    },
+    "payment_gating_and_friction": {
+      "payment_block_rate_pct": 22.18,
+      "payment_block_cases_count": 55839,
+      "unblocking_trigger_breakdown_pct": {
+        "manual_ap_review_tolerance_clearing": 68.0,
+        "three_way_match_goods_receipt_fulfillment": 27.6,
+        "retroactive_po_price_revision": 2.4,
+        "invoice_cancellation_reversal": 1.2,
+        "quantity_amendment_other": 0.8
+      },
+      "hold_duration_under_block_days": {
+        "median": 6.18,
+        "mean": 19.71,
+        "p25": 2.18,
+        "p75": 24.89,
+        "p95": 81.1
+      }
+    },
+    "retroactive_order_modifications": {
+      "price_revision_rate_pct": 4.46,
+      "price_revision_cases_count": 11224,
+      "quantity_revision_rate_pct": 6.99,
+      "quantity_revision_cases_count": 17590
+    },
+    "operational_latencies_days": {
+      "po_to_gr_delivery_lead_time": {
+        "count": 234479,
+        "mean": 15.48,
+        "median": 10.02,
+        "std": 18.32,
+        "p25": 4.95,
+        "p75": 19.27,
+        "p95": 48.77
+      },
+      "gr_to_ir_invoicing_latency": {
+        "count": 194014,
+        "mean": 20.57,
+        "median": 11.29,
+        "std": 27.27,
+        "p25": 3.98,
+        "p75": 28.02,
+        "p95": 63.97
+      },
+      "ir_to_clear_payment_latency": {
+        "count": 183269,
+        "mean": 48.17,
+        "median": 42.06,
+        "std": 31.42,
+        "p25": 22.13,
+        "p75": 70.14,
+        "p95": 107.15
+      },
+      "maverick_invoice_precedence_lead_days": null
+    },
+    "vendor_concentration": {
+      "total_spend_eur": 996818747.0,
+      "herfindahl_hirschman_index_hhi": 85.06,
+      "top_1_pct_vendors_spend_share": 33.08,
+      "top_5_pct_vendors_spend_share": 64.36,
+      "top_20_pct_vendors_spend_share": 89.61
+    },
+    "stochastic_markov_transition_kernel": {
+      "Block Purchase Order Item": {
+        "Change Quantity": 0.1988,
+        "Clear Invoice": 0.0058,
+        "Delete Purchase Order Item": 0.3804,
+        "Reactivate Purchase Order Item": 0.3429,
+        "Vendor creates invoice": 0.0663
+      },
+      "Cancel Goods Receipt": {
+        "Cancel Goods Receipt": 0.105,
+        "Cancel Invoice Receipt": 0.1129,
+        "Change Delivery Indicator": 0.0331,
+        "Change Price": 0.0166,
+        "Change Quantity": 0.0335,
+        "Clear Invoice": 0.0083,
+        "Delete Purchase Order Item": 0.0226,
+        "Record Goods Receipt": 0.3348,
+        "Record Invoice Receipt": 0.0282,
+        "Record Service Entry Sheet": 0.0553,
+        "Remove Payment Block": 0.0053,
+        "Vendor creates debit memo": 0.1934,
+        "Vendor creates invoice": 0.0455
+      },
+      "Cancel Invoice Receipt": {
+        "Cancel Invoice Receipt": 0.0113,
+        "Clear Invoice": 0.4886,
+        "Record Invoice Receipt": 0.3627,
+        "Remove Payment Block": 0.113,
+        "Vendor creates debit memo": 0.0056
+      },
+      "Cancel Subsequent Invoice": {
+        "Cancel Invoice Receipt": 0.0064,
+        "Clear Invoice": 0.4946,
+        "Record Goods Receipt": 0.0064,
+        "Record Invoice Receipt": 0.0193,
+        "Record Subsequent Invoice": 0.0128,
+        "Remove Payment Block": 0.4325,
+        "Vendor creates debit memo": 0.0128
+      },
+      "Change Approval for Purchase Order": {
+        "Block Purchase Order Item": 0.017,
+        "Change Approval for Purchase Order": 0.2588,
+        "Change Price": 0.0698,
+        "Change Quantity": 0.0546,
+        "Clear Invoice": 0.019,
+        "Create Purchase Order Item": 0.0511,
+        "Delete Purchase Order Item": 0.0287,
+        "Receive Order Confirmation": 0.1134,
+        "Record Goods Receipt": 0.0392,
+        "Record Invoice Receipt": 0.1067,
+        "Release Purchase Order": 0.098,
+        "Vendor creates invoice": 0.1392
+      },
+      "Change Currency": {
+        "Change Approval for Purchase Order": 0.0588,
+        "Change Price": 0.5294,
+        "Create Purchase Order Item": 0.0588,
+        "Record Goods Receipt": 0.0294,
+        "Vendor creates invoice": 0.3235
+      },
+      "Change Delivery Indicator": {
+        "Cancel Invoice Receipt": 0.0139,
+        "Change Delivery Indicator": 0.0628,
+        "Change Price": 0.005,
+        "Change Quantity": 0.2422,
+        "Clear Invoice": 0.0905,
+        "Delete Purchase Order Item": 0.0069,
+        "Record Goods Receipt": 0.174,
+        "Record Invoice Receipt": 0.2326,
+        "Remove Payment Block": 0.0327,
+        "Vendor creates debit memo": 0.0585,
+        "Vendor creates invoice": 0.0658
+      },
+      "Change Final Invoice Indicator": {
+        "Change Delivery Indicator": 0.0909,
+        "Clear Invoice": 0.2727,
+        "Delete Purchase Order Item": 0.0909,
+        "Record Goods Receipt": 0.0909,
+        "SRM: Deleted": 0.1818,
+        "SRM: Document Completed": 0.0909,
+        "SRM: In Transfer to Execution Syst.": 0.0909,
+        "SRM: Ordered": 0.0909
+      },
+      "Change Price": {
+        "Cancel Goods Receipt": 0.0067,
+        "Change Approval for Purchase Order": 0.0065,
+        "Change Price": 0.0574,
+        "Change Quantity": 0.0752,
+        "Clear Invoice": 0.0561,
+        "Delete Purchase Order Item": 0.0102,
+        "Receive Order Confirmation": 0.0112,
+        "Record Goods Receipt": 0.2611,
+        "Record Invoice Receipt": 0.076,
+        "Record Service Entry Sheet": 0.0073,
+        "Remove Payment Block": 0.1121,
+        "Vendor creates debit memo": 0.0079,
+        "Vendor creates invoice": 0.2894
+      },
+      "Change Quantity": {
+        "Change Approval for Purchase Order": 0.0059,
+        "Change Delivery Indicator": 0.0298,
+        "Change Price": 0.034,
+        "Change Quantity": 0.1088,
+        "Clear Invoice": 0.0089,
+        "Delete Purchase Order Item": 0.0117,
+        "Receive Order Confirmation": 0.0104,
+        "Record Goods Receipt": 0.443,
+        "Record Invoice Receipt": 0.0368,
+        "Remove Payment Block": 0.0056,
+        "Vendor creates invoice": 0.2857
+      },
+      "Change Rejection Indicator": {
+        "Change Rejection Indicator": 0.5,
+        "Reactivate Purchase Order Item": 0.5
+      },
+      "Change Storage Location": {
+        "Cancel Goods Receipt": 0.0177,
+        "Change Delivery Indicator": 0.0051,
+        "Change Price": 0.0684,
+        "Change Quantity": 0.0608,
+        "Change Storage Location": 0.1013,
+        "Clear Invoice": 0.0177,
+        "Create Purchase Order Item": 0.0278,
+        "Delete Purchase Order Item": 0.0304,
+        "Receive Order Confirmation": 0.0127,
+        "Record Goods Receipt": 0.4684,
+        "Record Invoice Receipt": 0.0152,
+        "Vendor creates invoice": 0.1696
+      },
+      "Change payment term": {
+        "Change Currency": 0.3333,
+        "Change Storage Location": 0.1667,
+        "Record Goods Receipt": 0.5
+      },
+      "Clear Invoice": {
+        "Cancel Invoice Receipt": 0.1792,
+        "Cancel Subsequent Invoice": 0.0066,
+        "Change Approval for Purchase Order": 0.0098,
+        "Change Price": 0.0092,
+        "Change Quantity": 0.0076,
+        "Clear Invoice": 0.2445,
+        "Record Goods Receipt": 0.0338,
+        "Record Invoice Receipt": 0.2909,
+        "Record Service Entry Sheet": 0.0311,
+        "Remove Payment Block": 0.0569,
+        "Vendor creates debit memo": 0.0128,
+        "Vendor creates invoice": 0.0956
+      },
+      "Create Purchase Order Item": {
+        "Change Approval for Purchase Order": 0.0133,
+        "Change Price": 0.0252,
+        "Change Quantity": 0.0481,
+        "Delete Purchase Order Item": 0.0273,
+        "Receive Order Confirmation": 0.1181,
+        "Record Goods Receipt": 0.3133,
+        "Record Invoice Receipt": 0.0072,
+        "Record Service Entry Sheet": 0.0116,
+        "Vendor creates invoice": 0.4165
+      },
+      "Create Purchase Requisition Item": {
+        "Create Purchase Order Item": 0.9902,
+        "Release Purchase Requisition": 0.0091
+      },
+      "Delete Purchase Order Item": {
+        "Change Approval for Purchase Order": 0.2855,
+        "Change Delivery Indicator": 0.0093,
+        "Change Price": 0.0417,
+        "Change Quantity": 0.0787,
+        "Clear Invoice": 0.0139,
+        "Create Purchase Order Item": 0.0602,
+        "Reactivate Purchase Order Item": 0.3827,
+        "Release Purchase Order": 0.0231,
+        "Remove Payment Block": 0.0062,
+        "SRM: Deleted": 0.0062,
+        "Vendor creates invoice": 0.071
+      },
+      "Reactivate Purchase Order Item": {
+        "Block Purchase Order Item": 0.0189,
+        "Change Price": 0.0114,
+        "Change Quantity": 0.1383,
+        "Delete Purchase Order Item": 0.0701,
+        "Receive Order Confirmation": 0.0114,
+        "Record Goods Receipt": 0.5095,
+        "Record Invoice Receipt": 0.0492,
+        "Vendor creates invoice": 0.1761
+      },
+      "Receive Order Confirmation": {
+        "Change Price": 0.0071,
+        "Change Quantity": 0.0139,
+        "Create Purchase Order Item": 0.0526,
+        "Delete Purchase Order Item": 0.0376,
+        "Record Goods Receipt": 0.5923,
+        "Update Order Confirmation": 0.0056,
+        "Vendor creates invoice": 0.2865
+      },
+      "Record Goods Receipt": {
+        "Record Goods Receipt": 0.1488,
+        "Record Invoice Receipt": 0.3864,
+        "Record Service Entry Sheet": 0.1076,
+        "Remove Payment Block": 0.0527,
+        "Vendor creates invoice": 0.2788
+      },
+      "Record Invoice Receipt": {
+        "Cancel Invoice Receipt": 0.0122,
+        "Change Price": 0.0074,
+        "Clear Invoice": 0.6572,
+        "Record Goods Receipt": 0.0743,
+        "Record Invoice Receipt": 0.033,
+        "Remove Payment Block": 0.1846,
+        "Vendor creates invoice": 0.0192
+      },
+      "Record Service Entry Sheet": {
+        "Create Purchase Order Item": 0.0122,
+        "Record Goods Receipt": 0.1944,
+        "Record Invoice Receipt": 0.0072,
+        "Record Service Entry Sheet": 0.7725,
+        "Vendor creates invoice": 0.0103
+      },
+      "Record Subsequent Invoice": {
+        "Cancel Invoice Receipt": 0.0127,
+        "Cancel Subsequent Invoice": 0.0443,
+        "Change Price": 0.0127,
+        "Clear Invoice": 0.6076,
+        "Record Goods Receipt": 0.0063,
+        "Record Subsequent Invoice": 0.0253,
+        "Remove Payment Block": 0.2722,
+        "Vendor creates invoice": 0.019
+      },
+      "Release Purchase Order": {
+        "Change Approval for Purchase Order": 0.877,
+        "Change Price": 0.0286,
+        "Change Quantity": 0.0211,
+        "Create Purchase Order Item": 0.0627
+      },
+      "Release Purchase Requisition": {
+        "Change Price": 0.0133,
+        "Create Purchase Order Item": 0.9403,
+        "Record Goods Receipt": 0.0288,
+        "Vendor creates invoice": 0.0177
+      },
+      "Remove Payment Block": {
+        "Cancel Invoice Receipt": 0.0063,
+        "Change Price": 0.0099,
+        "Clear Invoice": 0.9477,
+        "Record Goods Receipt": 0.0081,
+        "Record Invoice Receipt": 0.009,
+        "Vendor creates invoice": 0.0053
+      },
+      "SRM: Awaiting Approval": {
+        "Create Purchase Order Item": 0.0711,
+        "Record Goods Receipt": 0.0155,
+        "Record Service Entry Sheet": 0.0062,
+        "SRM: Change was Transmitted": 0.0587,
+        "SRM: Complete": 0.3164,
+        "SRM: Deleted": 0.0068,
+        "SRM: Document Completed": 0.3288,
+        "SRM: In Transfer to Execution Syst.": 0.068,
+        "SRM: Ordered": 0.0686,
+        "Vendor creates invoice": 0.0476
+      },
+      "SRM: Change was Transmitted": {
+        "Create Purchase Order Item": 0.294,
+        "Record Goods Receipt": 0.0316,
+        "Record Service Entry Sheet": 0.007,
+        "SRM: Awaiting Approval": 0.0695,
+        "SRM: Complete": 0.0884,
+        "SRM: Document Completed": 0.0639,
+        "SRM: In Transfer to Execution Syst.": 0.1032,
+        "SRM: Ordered": 0.2295,
+        "Vendor creates invoice": 0.1046
+      },
+      "SRM: Complete": {
+        "Change Price": 0.0068,
+        "Create Purchase Order Item": 0.1024,
+        "Record Goods Receipt": 0.0261,
+        "SRM: Awaiting Approval": 0.3207,
+        "SRM: Change was Transmitted": 0.0968,
+        "SRM: Created": 0.0074,
+        "SRM: Deleted": 0.0074,
+        "SRM: Document Completed": 0.1117,
+        "SRM: In Transfer to Execution Syst.": 0.0806,
+        "SRM: Ordered": 0.0943,
+        "Vendor creates invoice": 0.134
+      },
+      "SRM: Created": {
+        "Create Purchase Order Item": 0.1443,
+        "SRM: Awaiting Approval": 0.1499,
+        "SRM: Change was Transmitted": 0.1161,
+        "SRM: Complete": 0.25,
+        "SRM: Document Completed": 0.1327,
+        "SRM: In Transfer to Execution Syst.": 0.0915,
+        "SRM: Ordered": 0.0928
+      },
+      "SRM: Deleted": {
+        "Change Delivery Indicator": 0.0163,
+        "Change Final Invoice Indicator": 0.0163,
+        "Change Price": 0.1359,
+        "Clear Invoice": 0.0217,
+        "Delete Purchase Order Item": 0.038,
+        "Record Goods Receipt": 0.0489,
+        "Record Invoice Receipt": 0.0326,
+        "Record Service Entry Sheet": 0.0489,
+        "Remove Payment Block": 0.0054,
+        "SRM: Awaiting Approval": 0.0326,
+        "SRM: Complete": 0.0707,
+        "SRM: Created": 0.0054,
+        "SRM: Document Completed": 0.0326,
+        "SRM: In Transfer to Execution Syst.": 0.2011,
+        "SRM: Ordered": 0.2609,
+        "Vendor creates invoice": 0.0326
+      },
+      "SRM: Document Completed": {
+        "Change Price": 0.008,
+        "Create Purchase Order Item": 0.0697,
+        "Record Goods Receipt": 0.0203,
+        "SRM: Awaiting Approval": 0.2904,
+        "SRM: Change was Transmitted": 0.0721,
+        "SRM: Complete": 0.1017,
+        "SRM: Deleted": 0.0074,
+        "SRM: In Transfer to Execution Syst.": 0.2404,
+        "SRM: Ordered": 0.1215,
+        "Vendor creates invoice": 0.0573
+      },
+      "SRM: Held": {
+        "SRM: Awaiting Approval": 0.1667,
+        "SRM: Complete": 0.1667,
+        "SRM: Document Completed": 0.1667,
+        "SRM: In Transfer to Execution Syst.": 0.1667,
+        "SRM: Incomplete": 0.3333
+      },
+      "SRM: In Transfer to Execution Syst.": {
+        "Change Price": 0.0172,
+        "Create Purchase Order Item": 0.1084,
+        "Record Goods Receipt": 0.0361,
+        "Record Service Entry Sheet": 0.0142,
+        "SRM: Awaiting Approval": 0.0569,
+        "SRM: Change was Transmitted": 0.0983,
+        "SRM: Complete": 0.0729,
+        "SRM: Created": 0.0077,
+        "SRM: Deleted": 0.0219,
+        "SRM: Document Completed": 0.1783,
+        "SRM: In Transfer to Execution Syst.": 0.0083,
+        "SRM: Ordered": 0.2695,
+        "SRM: Transfer Failed (E.Sys.)": 0.0136,
+        "Vendor creates invoice": 0.0818
+      },
+      "SRM: Incomplete": {
+        "SRM: Change was Transmitted": 0.1667,
+        "SRM: Document Completed": 0.1667,
+        "SRM: Held": 0.6667
+      },
+      "SRM: Ordered": {
+        "Change Price": 0.0161,
+        "Create Purchase Order Item": 0.129,
+        "Record Goods Receipt": 0.0192,
+        "Record Service Entry Sheet": 0.0074,
+        "SRM: Awaiting Approval": 0.0577,
+        "SRM: Change was Transmitted": 0.1929,
+        "SRM: Complete": 0.0744,
+        "SRM: Created": 0.0062,
+        "SRM: Deleted": 0.0354,
+        "SRM: Document Completed": 0.1048,
+        "SRM: In Transfer to Execution Syst.": 0.286,
+        "Vendor creates invoice": 0.0645
+      },
+      "SRM: Transaction Completed": {
+        "Change Delivery Indicator": 0.2,
+        "Delete Purchase Order Item": 0.4,
+        "SRM: Document Completed": 0.2,
+        "SRM: In Transfer to Execution Syst.": 0.2
+      },
+      "SRM: Transfer Failed (E.Sys.)": {
+        "SRM: In Transfer to Execution Syst.": 0.9565,
+        "Vendor creates debit memo": 0.0435
+      },
+      "Set Payment Block": {
+        "Cancel Invoice Receipt": 0.0159,
+        "Cancel Subsequent Invoice": 0.0159,
+        "Change Approval for Purchase Order": 0.127,
+        "Change Price": 0.0159,
+        "Clear Invoice": 0.6667,
+        "Remove Payment Block": 0.1587
+      },
+      "Update Order Confirmation": {
+        "Change Price": 0.0373,
+        "Change Quantity": 0.083,
+        "Clear Invoice": 0.0207,
+        "Delete Purchase Order Item": 0.0539,
+        "Receive Order Confirmation": 0.0456,
+        "Record Goods Receipt": 0.4191,
+        "Record Invoice Receipt": 0.029,
+        "Update Order Confirmation": 0.0456,
+        "Vendor creates invoice": 0.2614
+      },
+      "Vendor creates debit memo": {
+        "Cancel Goods Receipt": 0.0064,
+        "Cancel Invoice Receipt": 0.1482,
+        "Cancel Subsequent Invoice": 0.036,
+        "Change Price": 0.0053,
+        "Change Quantity": 0.0074,
+        "Clear Invoice": 0.0232,
+        "Create Purchase Order Item": 0.0187,
+        "Record Goods Receipt": 0.1588,
+        "Record Invoice Receipt": 0.183,
+        "Remove Payment Block": 0.0187,
+        "Vendor creates invoice": 0.3817
+      },
+      "Vendor creates invoice": {
+        "Change Quantity": 0.0112,
+        "Clear Invoice": 0.0068,
+        "Create Purchase Order Item": 0.0149,
+        "Record Goods Receipt": 0.4983,
+        "Record Invoice Receipt": 0.4339,
+        "Record Service Entry Sheet": 0.0057,
+        "Vendor creates debit memo": 0.0106,
+        "Vendor creates invoice": 0.0078
+      }
+    },
+    "public_procurement_gating": {
+      "statutory_notice_squeeze_less_14d_rate_pct": 88.0,
+      "statutory_notice_squeeze_works_category_rate_pct": 92.6,
+      "advertising_notice_days": {
+        "mean": 11.10729166666667,
+        "median": 11.416666666666666,
+        "min": 6.416666666666667,
+        "max": 27.4375,
+        "std": 2.9168706183178816,
+        "p25": 9.458333333333334,
+        "p75": 11.416666666666666,
+        "statutory_short_notice_less_14d_pct": 88.0
+      },
+      "affirmative_action_agpo_reservation_rate_pct": 33.0,
+      "pay_to_bid_fee_barrier_rate_pct": 7.0,
+      "free_tender_access_rate_pct": 93.0,
+      "specification_addenda_volatility_rate_pct": 5.0
+    }
+  },
+  "order_to_cash_parameters": {
+    "revenue_and_commercial_dilution": {
+      "gross_invoiced_revenue_gbp": 10666684.54,
+      "credit_notes_and_returns_gbp": 896812.49,
+      "net_recognized_revenue_gbp": 9769872.05,
+      "revenue_dilution_rate_pct": 8.41,
+      "total_commercial_invoices": 25900,
+      "sales_invoices_count": 20728,
+      "credit_note_invoices_count": 5172,
+      "credit_note_invoice_share_pct": 19.97
+    },
+    "customer_concentration_and_loyalty": {
+      "total_identified_customers": 4372,
+      "top_1_pct_customers_share_pct": 29.71,
+      "top_5_pct_customers_share_pct": 48.52,
+      "top_10_pct_customers_share_pct": 60.01,
+      "top_20_pct_customers_share_pct": 73.82,
+      "herfindahl_hirschman_index_hhi": 45.15,
+      "repeat_buyer_rate_pct": 69.97,
+      "one_time_buyer_rate_pct": 30.03,
+      "repeat_order_inter_purchase_latency_days": {
+        "count": 14196,
+        "mean": 39.94,
+        "median": 21.91,
+        "std": 51.81,
+        "min": 0.0,
+        "p25": 6.84,
+        "p75": 51.03,
+        "p95": 146.1,
+        "max": 364.92
+      },
+      "unidentified_guest_checkout_revenue_gbp": 1733152.52,
+      "unidentified_guest_checkout_revenue_share_pct": 16.25
+    },
+    "invoicing_granularity": {
+      "skus_per_invoice": {
+        "count": 20728,
+        "mean": 25.63,
+        "median": 15.0,
+        "std": 46.9,
+        "min": 1.0,
+        "p25": 5.0,
+        "p75": 29.0,
+        "p95": 77.0,
+        "max": 1114.0
+      },
+      "monetary_value_per_invoice_gbp": {
+        "count": 19960,
+        "mean": 534.4,
+        "median": 303.84,
+        "std": 1780.49,
+        "min": 0.38,
+        "p25": 152.51,
+        "p75": 495.62,
+        "p95": 1585.92,
+        "max": 168469.6
+      }
+    },
+    "fulfillment_latencies": {
+      "payment_authorization_latency_hours": {
+        "count": 99274,
+        "mean": 10.32,
+        "median": 0.34,
+        "std": 20.6,
+        "min": 0.0,
+        "p25": 0.21,
+        "p75": 14.57,
+        "p95": 48.42,
+        "max": 676.07
+      },
+      "warehouse_fulfillment_latency_days": {
+        "count": 96282,
+        "mean": 2.86,
+        "median": 1.85,
+        "std": 3.45,
+        "min": 0.0,
+        "p25": 0.9,
+        "p75": 3.62,
+        "p95": 8.16,
+        "max": 64.57
+      },
+      "carrier_transit_latency_days": {
+        "count": 96381,
+        "mean": 9.24,
+        "median": 7.1,
+        "std": 8.01,
+        "min": 0.0,
+        "p25": 4.1,
+        "p75": 12.02,
+        "p95": 24.12,
+        "max": 89.95
+      },
+      "end_to_end_order_to_delivery_days": {
+        "count": 96433,
+        "mean": 12.49,
+        "median": 10.21,
+        "std": 8.99,
+        "min": 0.53,
+        "p25": 6.76,
+        "p75": 15.71,
+        "p95": 29.21,
+        "max": 118.97
+      }
+    },
+    "sla_performance_and_attrition": {
+      "on_time_delivery_rate_pct": 91.89,
+      "contractual_sla_breach_rate_pct": 8.11,
+      "sla_breach_late_count": 7827,
+      "late_delivery_delay_days": {
+        "count": 7827,
+        "mean": 9.55,
+        "median": 5.81,
+        "std": 13.95,
+        "min": 0.0,
+        "p25": 1.87,
+        "p75": 11.82,
+        "p95": 29.64,
+        "max": 188.98
+      },
+      "early_delivery_lead_days": {
+        "count": 88649,
+        "mean": 13.01,
+        "median": 12.32,
+        "std": 7.38,
+        "min": 0.0,
+        "p25": 8.0,
+        "p75": 17.04,
+        "p95": 26.26,
+        "max": 146.02
+      },
+      "order_attrition_cancellation_rate_pct": 1.24,
+      "order_status_distribution": {
+        "delivered": 96478,
+        "shipped": 1107,
+        "canceled": 625,
+        "unavailable": 609,
+        "invoiced": 314,
+        "processing": 301,
+        "created": 5,
+        "approved": 2
+      }
+    }
+  },
+  "working_capital_and_banking_parameters": {
+    "cashflow_summary_czk": {
+      "total_inflow_volume": 3227472424.5,
+      "total_outflow_volume": 3030321135.7999997,
+      "net_cash_drift": 197151288.7000003,
+      "inflow_transaction_stats": {
+        "count": 405083,
+        "mean": 7967.43,
+        "median": 1600.0,
+        "std": 11835.61,
+        "min": 0.0,
+        "p25": 143.5,
+        "p75": 12087.5,
+        "p95": 35331.0,
+        "max": 74812.0
+      },
+      "outflow_transaction_stats": {
+        "count": 651237,
+        "mean": 4653.18,
+        "median": 2128.0,
+        "std": 7466.12,
+        "min": 0.0,
+        "p25": 95.0,
+        "p75": 5520.0,
+        "p95": 19187.0,
+        "max": 87400.0
+      },
+      "running_balance_stats": {
+        "count": 1056320,
+        "mean": 38518.33,
+        "median": 33143.4,
+        "std": 22117.87,
+        "min": -41125.7,
+        "p25": 22402.5,
+        "p75": 49603.62,
+        "p95": 82672.82,
+        "max": 209637.0
+      }
+    },
+    "authorized_overdraft_dynamics": {
+      "total_accounts_analyzed": 4500,
+      "accounts_with_overdraft_count": 288,
+      "accounts_with_overdraft_pct": 6.4,
+      "severe_overdraft_accounts_count": 231,
+      "severe_overdraft_accounts_pct": 5.13,
+      "negative_balance_transactions_count": 2999,
+      "negative_balance_transactions_pct": 0.28,
+      "overdraft_exposure_depth_stats_czk": {
+        "count": 2999,
+        "mean": 4341.7,
+        "median": 2440.8,
+        "std": 5504.71,
+        "min": 1.6,
+        "p25": 1100.55,
+        "p75": 5455.7,
+        "p95": 14575.1,
+        "max": 41125.7
+      }
+    },
+    "standing_orders_commitments": {
+      "total_standing_orders": 6471,
+      "accounts_with_orders": 3758,
+      "accounts_with_orders_pct": 83.51,
+      "monthly_committed_per_account_czk": {
+        "count": 3758,
+        "mean": 5649.01,
+        "median": 4501.0,
+        "std": 3778.1,
+        "min": 312.0,
+        "p25": 2710.75,
+        "p75": 7603.23,
+        "p95": 13667.63,
+        "max": 22704.3
+      },
+      "order_type_distribution": {
+        "SIPO": 3502,
+        " ": 1379,
+        "UVER": 717,
+        "POJISTNE": 532,
+        "LEASING": 341
+      }
+    },
+    "credit_risk_and_loan_defaults": {
+      "total_loan_facilities": 682,
+      "total_principal_lent_czk": 103261740.0,
+      "status_distribution": {
+        "C": 403,
+        "A": 203,
+        "D": 45,
+        "B": 31
+      },
+      "duration_distribution": {
+        "60": 145,
+        "48": 138,
+        "24": 138,
+        "12": 131,
+        "36": 130
+      },
+      "overall_default_rate_pct": 11.14,
+      "closed_loan_default_rate_pct": 13.25,
+      "total_defaulted_loans_count": 76,
+      "capital_at_risk_czk": 103261740.0,
+      "capital_at_risk_pct": 15.09,
+      "loan_metrics_by_status": {
+        "A": {
+          "loan_count": 203,
+          "mean_loan_amount": 91641.45812807881,
+          "median_loan_amount": 79632.0,
+          "mean_acc_balance": 47295.53527203082,
+          "median_acc_balance": 45228.45,
+          "overdraft_incidence": 0.0,
+          "mean_monthly_payment": 4264.137931034483
+        },
+        "B": {
+          "loan_count": 31,
+          "mean_loan_amount": 140720.90322580645,
+          "median_loan_amount": 96396.0,
+          "mean_acc_balance": 35159.5881918764,
+          "median_acc_balance": 31301.6,
+          "overdraft_incidence": 100.0,
+          "mean_monthly_payment": 5396.258064516129
+        },
+        "C": {
+          "loan_count": 403,
+          "mean_loan_amount": 171410.3523573201,
+          "median_loan_amount": 153504.0,
+          "mean_acc_balance": 45588.57098466595,
+          "median_acc_balance": 43348.5,
+          "overdraft_incidence": 0.0,
+          "mean_monthly_payment": 3938.5359801488835
+        },
+        "D": {
+          "loan_count": 45,
+          "mean_loan_amount": 249284.53333333333,
+          "median_loan_amount": 260400.0,
+          "mean_acc_balance": 35170.943657856966,
+          "median_acc_balance": 29474.9,
+          "overdraft_incidence": 100.0,
+          "mean_monthly_payment": 5286.644444444444
+        }
+      }
+    }
+  },
+  "labor_cost_and_payroll_parameters": {
+    "total_labor_cost_summary_usd": {
+      "total_compensation": 6999942542.01,
+      "base_salaries": 4572675082.469999,
+      "overtime_pay": 467250320.39,
+      "other_salaries_and_bonuses": 264466262.08,
+      "total_cash_salaries": 5304391664.940001,
+      "mandatory_retirement_pension": 691598887.59,
+      "mandatory_health_and_dental": 681600511.96,
+      "other_benefits": 322351477.52,
+      "total_benefits": 1695550877.0700002,
+      "shares_of_total_compensation_pct": {
+        "base_salary_share": 65.32,
+        "overtime_share": 6.68,
+        "other_salaries_share": 3.78,
+        "total_benefits_share": 24.22,
+        "retirement_share": 9.88,
+        "health_share": 9.74
+      },
+      "loading_multipliers": {
+        "benefit_loading_on_base_salary_pct": 37.08,
+        "benefit_loading_on_total_cash_salary_pct": 31.97,
+        "full_labor_cost_multiplier_on_base": 1.53
+      }
+    },
+    "compensation_statistical_distributions": {
+      "base_salaries_usd": {
+        "count": 49508,
+        "mean": 92362.45,
+        "median": 85691.4,
+        "std": 60823.35,
+        "min": 2.94,
+        "p25": 51848.71,
+        "p75": 124125.05,
+        "p95": 201934.82,
+        "max": 1138860.92
+      },
+      "overtime_pay_usd": {
+        "count": 24269,
+        "mean": 19253.33,
+        "median": 7732.91,
+        "std": 32947.05,
+        "min": 0.01,
+        "p25": 1989.06,
+        "p75": 21558.84,
+        "p95": 79445.51,
+        "max": 504713.8
+      },
+      "total_compensation_usd": {
+        "count": 49998,
+        "mean": 140004.45,
+        "median": 128046.74,
+        "std": 95751.75,
+        "min": 5.95,
+        "p25": 77437.78,
+        "p75": 189111.63,
+        "p95": 313990.87,
+        "max": 2097292.99
+      }
+    },
+    "overtime_dynamics": {
+      "overtime_recipients_count": 24269,
+      "overtime_recipients_rate_pct": 48.54,
+      "employees_with_ot_gt_25_pct_of_base": 5662,
+      "employees_with_ot_gt_50_pct_of_base": 2057,
+      "employees_with_ot_gt_100_pct_of_base": 438,
+      "ot_gt_25_pct_rate": 12.39,
+      "ot_gt_50_pct_rate": 4.5
+    },
+    "top_departments_spend": {
+      "Public Health": {
+        "headcount": 11930,
+        "total_spend": 1635928711.27,
+        "total_base": 1128365665.2,
+        "total_ot": 64258377.07,
+        "total_benefits": 387895685.14,
+        "mean_comp": 137127.3,
+        "median_comp": 125141.58,
+        "ot_share_pct": 3.93,
+        "benefit_loading_pct": 34.38
+      },
+      "Municipal Transportation Agcy": {
+        "headcount": 7328,
+        "total_spend": 922460191.07,
+        "total_base": 571918099.28,
+        "total_ot": 76261636.78,
+        "total_benefits": 237008797.63,
+        "mean_comp": 125881.58,
+        "median_comp": 117913.4,
+        "ot_share_pct": 8.27,
+        "benefit_loading_pct": 41.44
+      },
+      "Police": {
+        "headcount": 3551,
+        "total_spend": 720107733.44,
+        "total_base": 385545057.76,
+        "total_ot": 148568759.59,
+        "total_benefits": 126948152.59,
+        "mean_comp": 202790.12,
+        "median_comp": 185184.0,
+        "ot_share_pct": 20.63,
+        "benefit_loading_pct": 32.93
+      },
+      "Public Utilities Commission": {
+        "headcount": 3242,
+        "total_spend": 497522265.32,
+        "total_base": 349229164.53,
+        "total_ot": 13285583.44,
+        "total_benefits": 124987224.09,
+        "mean_comp": 153461.53,
+        "median_comp": 144926.53,
+        "ot_share_pct": 2.67,
+        "benefit_loading_pct": 35.79
+      },
+      "Fire Department": {
+        "headcount": 2380,
+        "total_spend": 469776326.08,
+        "total_base": 272213343.34,
+        "total_ot": 62009107.04,
+        "total_benefits": 90325556.2,
+        "mean_comp": 197385.01,
+        "median_comp": 178751.23,
+        "ot_share_pct": 13.2,
+        "benefit_loading_pct": 33.18
+      },
+      "Human Services Agency": {
+        "headcount": 3162,
+        "total_spend": 354827419.84,
+        "total_base": 248482515.89,
+        "total_ot": 3229428.39,
+        "total_benefits": 99309138.79,
+        "mean_comp": 112216.14,
+        "median_comp": 104245.79,
+        "ot_share_pct": 0.91,
+        "benefit_loading_pct": 39.97
+      },
+      "Airport Commission": {
+        "headcount": 2458,
+        "total_spend": 331962579.27,
+        "total_base": 225623278.33,
+        "total_ot": 10471361.69,
+        "total_benefits": 87695042.23,
+        "mean_comp": 135053.94,
+        "median_comp": 127299.04,
+        "ot_share_pct": 3.15,
+        "benefit_loading_pct": 38.87
+      },
+      "Sheriff": {
+        "headcount": 1245,
+        "total_spend": 265837681.13,
+        "total_base": 125437041.17,
+        "total_ot": 55421929.67,
+        "total_benefits": 71299873.87,
+        "mean_comp": 213524.24,
+        "median_comp": 188000.7,
+        "ot_share_pct": 20.85,
+        "benefit_loading_pct": 56.84
+      },
+      "Public Works": {
+        "headcount": 1901,
+        "total_spend": 261591463.8,
+        "total_base": 181856440.1,
+        "total_ot": 7354999.88,
+        "total_benefits": 67230062.45,
+        "mean_comp": 137607.29,
+        "median_comp": 125862.18,
+        "ot_share_pct": 2.81,
+        "benefit_loading_pct": 36.97
+      },
+      "City Administrator": {
+        "headcount": 1248,
+        "total_spend": 161085638.56,
+        "total_base": 111204712.42,
+        "total_ot": 3909849.6,
+        "total_benefits": 42388496.79,
+        "mean_comp": 129075.03,
+        "median_comp": 121044.09,
+        "ot_share_pct": 2.43,
+        "benefit_loading_pct": 38.12
+      }
+    },
+    "employment_type_breakdown": {
+      "Other": {
+        "headcount": 237,
+        "total_comp": 5183035.45,
+        "mean_base": 15488.39,
+        "mean_benefits": 5261.7,
+        "zero_benefit_rate": 0.42
+      },
+      "Permanent Civil Service": {
+        "headcount": 37673,
+        "total_comp": 5851939155.21,
+        "mean_base": 98873.13,
+        "mean_benefits": 38205.4,
+        "zero_benefit_rate": 0.01
+      },
+      "Permanent Exempt": {
+        "headcount": 3990,
+        "total_comp": 737705873.37,
+        "mean_base": 134892.92,
+        "mean_benefits": 45074.68,
+        "zero_benefit_rate": 0.03
+      },
+      "Temporary Civil Service": {
+        "headcount": 1,
+        "total_comp": 84112.15,
+        "mean_base": 57898.12,
+        "mean_benefits": 25614.03,
+        "zero_benefit_rate": 0.0
+      },
+      "Temporary Exempt": {
+        "headcount": 7816,
+        "total_comp": 369350288.26,
+        "mean_base": 36079.57,
+        "mean_benefits": 8470.65,
+        "zero_benefit_rate": 0.08
+      },
+      "Temporary Provisional": {
+        "headcount": 281,
+        "total_comp": 35680077.57,
+        "mean_base": 84976.5,
+        "mean_benefits": 31714.69,
+        "zero_benefit_rate": 0.0
+      }
+    }
+  },
+  "financial_accounting_and_restatements": {
+    "corporate_restatements_hazard": {
+      "overall_restatement_prevrpt_rate_pct": 2.522764591730109,
+      "total_filings_analyzed": 6699,
+      "total_restatements_count": 169,
+      "restatements_by_form": {
+        "S-1/A": 47,
+        "10-Q": 27,
+        "S-1": 26,
+        "S-4/A": 12,
+        "10-K": 10,
+        "F-1": 10,
+        "F-1/A": 10,
+        "10-K/A": 9,
+        "S-4": 5,
+        "20-F": 4,
+        "6-K": 2,
+        "10-Q/A": 2,
+        "20-F/A": 1,
+        "F-4/A": 1,
+        "10-QT": 1,
+        "10-12G": 1,
+        "8-K": 1
+      },
+      "restatements_by_accelerated_filer_status": {
+        "1_large_accelerated_filer_1_LAF": {
+          "count": 2164,
+          "restatements": 6,
+          "rate_pct": 0.2773
+        },
+        "2_accelerated_filer_2_ACC": {
+          "count": 833,
+          "restatements": 5,
+          "rate_pct": 0.6002
+        },
+        "4_non_accelerated_smaller_4_NON": {
+          "count": 3670,
+          "restatements": 157,
+          "rate_pct": 4.2779
+        },
+        "hazard_ratio_non_accel_vs_large_accel": 15.42
+      }
+    },
+    "taxonomy_customization_and_reporting_opacity": {
+      "custom_extension_tag_ratio_pct": 90.18963733063798,
+      "standard_us_gaap_tags_count": 8153,
+      "custom_extension_tags_count": 74953,
+      "monetary_custom_share_pct": 89.76954469072578
+    },
+    "financial_statement_architecture": {
+      "statement_distribution_pct": {
+        "BS": 32.88213339949195,
+        "CF": 30.19785559804329,
+        "IS": 18.89525006337204,
+        "EQ": 12.277321439165538,
+        "CI": 2.6683673744559444,
+        "UN": 2.6178045768096085,
+        "SI": 0.46113271453457955,
+        "CP": 0.00013483412705689462
+      },
+      "contra_account_negating_rate_pct": 14.139344262295081,
+      "balance_sheet_line_stats": {
+        "count": 6688.0,
+        "mean": 36.463965311004785,
+        "std": 8.923426100395336,
+        "min": 1.0,
+        "25%": 31.0,
+        "50%": 37.0,
+        "75%": 42.0,
+        "max": 125.0
+      },
+      "income_statement_line_stats": {
+        "count": 6685.0,
+        "mean": 20.96290201944652,
+        "std": 7.156337451814328,
+        "min": 1.0,
+        "25%": 16.0,
+        "50%": 20.0,
+        "75%": 24.0,
+        "max": 57.0
+      },
+      "cash_flow_statement_line_stats": {
+        "count": 6647.0,
+        "mean": 33.6938468482022,
+        "std": 10.969152012238835,
+        "min": 5.0,
+        "25%": 27.0,
+        "50%": 33.0,
+        "75%": 40.0,
+        "max": 112.0
+      }
+    },
+    "numeric_facts_and_footnotes": {
+      "total_numeric_facts": 3521878,
+      "footnote_attachment_rate_pct": 0.20653753480387455,
+      "core_gaap_concept_counts": {
+        "Revenues": 50730,
+        "NetIncomeLoss": 73212,
+        "GrossProfit": 14380,
+        "OperatingIncomeLoss": 33526,
+        "Assets": 27667,
+        "Liabilities": 16201,
+        "StockholdersEquity": 141501,
+        "CashAndCashEquivalentsAtCarryingValue": 14919,
+        "AccountsReceivableNetCurrent": 8818,
+        "InventoryNet": 6406,
+        "AccountsPayableCurrent": 9521,
+        "Goodwill": 14083
+      }
+    }
+  },
+  "mna_advisory_ebitda_and_window_dressing": {
+    "prospective_cash_flow_and_sbc_dilution": {
+      "revenue_cagr_6yr_pct": 16.855912999665357,
+      "adjusted_ebitda_cagr_6yr_pct": 27.505865378128156,
+      "cumulative_6yr_revenue_millions": 55583,
+      "cumulative_6yr_sbc_millions": 7141,
+      "sbc_as_pct_of_cumulative_revenue": 12.847453358041127,
+      "cumulative_management_ufcf_millions": 12899,
+      "cumulative_banker_ufcf_millions": 5758,
+      "sbc_cash_flow_dilution_percentage": 55.36088068842546,
+      "cumulative_working_capital_drag_millions": -815
+    },
+    "historical_ebitda_normalization_bridge": {
+      "reported_adj_ebitda_base_millions": 1448,
+      "litigation_one_time_addback_millions": 766,
+      "unadjusted_base_ebitda_millions": 682,
+      "addback_share_of_adj_ebitda_pct": 52.90055248618785,
+      "transaction_multiple_range": [
+        28.0,
+        36.0
+      ],
+      "enterprise_value_swing_millions": [
+        21448.0,
+        27576.0
+      ]
+    },
+    "fairness_opinion_valuation_parameters": {
+      "goldman_sachs": {
+        "wacc_discount_rate_range": [
+          0.1,
+          0.12
+        ],
+        "cost_of_equity": 0.114,
+        "exit_terminal_ebitda_multiples": [
+          10.0,
+          15.0
+        ],
+        "implied_perpetuity_growth_rates": [
+          0.056,
+          0.09
+        ],
+        "ltm_ev_ebitda_peer_multiples": [
+          28.2,
+          35.7
+        ],
+        "discounting_convention": "mid-year"
+      },
+      "jp_morgan": {
+        "wacc_discount_rate_range": [
+          0.1025,
+          0.1125
+        ],
+        "terminal_perpetuity_growth_rates": [
+          0.06,
+          0.07
+        ],
+        "ltm_ev_ebitda_peer_multiples": [
+          28.0,
+          36.0
+        ],
+        "discounting_convention": "mid-year"
+      }
+    },
+    "forensic_window_dressing_mechanics_lehman_repo105": {
+      "accounting_rule_exploited": "SFAS 140 (Accounting for Transfers and Servicing of Financial Assets)",
+      "collateral_haircuts_pct": {
+        "equities_haircut_pct": 105.0,
+        "fixed_income_haircut_pct": 108.0,
+        "legal_fiction": "Surrender of control under English law true-sale opinion (Linklaters) despite operational intent to repurchase"
+      },
+      "quarterly_derecognition_scale_billions": {
+        "Q4_2007_Nov": 38.6,
+        "Q1_2008_Feb": 49.1,
+        "Q2_2008_May": 50.38
+      },
+      "execution_lead_days_pre_close": [
+        2,
+        3
+      ],
+      "unwind_lag_days_post_close": [
+        2,
+        4
+      ],
+      "leverage_suppression_pct": {
+        "net_leverage_suppression_pct": 15.702479338842979,
+        "gross_leverage_suppression_pct": 12.949640287769789
+      }
+    }
+  },
+  "financial_reporting_behaviour_and_accruals": {
+    "quality_of_earnings_accrual_anomalies": {
+      "paper_profit_divergence_rate_pct": 9.85080336648814,
+      "non_cash_loss_addback_divergence_pct": 12.472010747872817,
+      "accruals_to_assets_distribution": {
+        "count": 5048,
+        "mean": 0.0023082133583220373,
+        "std": 0.14157324462125664,
+        "median": -0.007868693441198504,
+        "p10": -0.09021242449656844,
+        "p25": -0.03911898581785799,
+        "p75": 0.02514257064308543,
+        "p90": 0.12665905668396324,
+        "p95": 0.253574258955321
+      }
+    },
+    "working_capital_cycles_and_liquidity": {
+      "median_dso_days": 119.48834281039724,
+      "median_dio_days": 110.90703300221558,
+      "median_dpo_days": 64.15842198471486,
+      "median_cash_conversion_cycle_days": 154.25977653631284,
+      "median_nwc_to_revenue_ratio": 0.2130106841937632
+    },
+    "profitability_margins_overall": {
+      "median_gross_margin_pct": 56.982798954394575,
+      "median_operating_margin_pct": 2.0589611605053815,
+      "median_net_margin_pct": 1.5221707478491064
+    },
+    "filer_scale_governance_chasm": {
+      "large_accelerated_1_LAF": {
+        "median_revenue_quarterly": 125291000.0,
+        "median_operating_margin_pct": 18.218623481781375,
+        "negative_equity_rate_pct": 6.65024630541872,
+        "cash_to_assets_ratio": 0.08541201655165015
+      },
+      "accelerated_2_ACC": {
+        "median_revenue_quarterly": 21359936.0,
+        "median_operating_margin_pct": 2.3543652935360657,
+        "negative_equity_rate_pct": 10.068027210884352,
+        "cash_to_assets_ratio": 0.09569904736608192
+      },
+      "non_accelerated_smaller_4_NON": {
+        "median_revenue_quarterly": 1057000.0,
+        "median_operating_margin_pct": -31.95621840233328,
+        "negative_equity_rate_pct": 35.2170916609235,
+        "cash_to_assets_ratio": 0.1391258894580229
+      }
+    },
+    "balance_sheet_asset_quality": {
+      "overall_negative_equity_rate_pct": 21.722251632256924,
+      "goodwill_p90_share_of_assets_pct": 31.146019840395624,
+      "goodwill_p95_share_of_assets_pct": 41.54876234602854,
+      "median_cash_to_assets_pct": 10.393185837045563
+    },
+    "sector_benchmarks": {
+      "Finance, Banking & Real Estate": {
+        "filings_count": 1423,
+        "median_gross_margin": 0.44161280124782104,
+        "median_operating_margin": 0.14050917445707659,
+        "median_dso_days": 81.40390243902439,
+        "median_dio_days": 24.7306910256739,
+        "median_dpo_days": 56.50296052631579,
+        "median_ccc_days": 76.37721643786504,
+        "divergence_pos_ni_neg_cfo_pct": 13.654946852003272,
+        "median_goodwill_to_assets": 0.0
+      },
+      "Manufacturing & Industrial": {
+        "filings_count": 1151,
+        "median_gross_margin": 0.5789578270866154,
+        "median_operating_margin": 0.057859883634334724,
+        "median_dso_days": 129.3114973262032,
+        "median_dio_days": 114.8635081615407,
+        "median_dpo_days": 60.8338300471293,
+        "median_ccc_days": 244.501534472569,
+        "divergence_pos_ni_neg_cfo_pct": 8.517034068136272,
+        "median_goodwill_to_assets": 0.02802299918689743
+      },
+      "Life Sciences & Pharma": {
+        "filings_count": 780,
+        "median_gross_margin": 0.676425654969218,
+        "median_operating_margin": -1.7025555874715905,
+        "median_dso_days": 111.79860928890055,
+        "median_dio_days": 201.3785339114495,
+        "median_dpo_days": 193.12442957395405,
+        "median_ccc_days": 160.51041752460384,
+        "divergence_pos_ni_neg_cfo_pct": 5.467625899280575,
+        "median_goodwill_to_assets": 0.0
+      },
+      "Commercial & Professional Services": {
+        "filings_count": 480,
+        "median_gross_margin": 0.4131887083598076,
+        "median_operating_margin": 0.07014218009478673,
+        "median_dso_days": 135.6351563566844,
+        "median_dio_days": 38.6206768501075,
+        "median_dpo_days": 61.41831732105595,
+        "median_ccc_days": 92.70590878151985,
+        "divergence_pos_ni_neg_cfo_pct": 8.80195599022005,
+        "median_goodwill_to_assets": 0.11206251799512001
+      },
+      "Software & Tech Services": {
+        "filings_count": 463,
+        "median_gross_margin": 0.8086579028205834,
+        "median_operating_margin": -0.11388117572486091,
+        "median_dso_days": 130.0933674743942,
+        "median_dio_days": 50.20765577147194,
+        "median_dpo_days": 55.567626428329,
+        "median_ccc_days": 84.81826811793351,
+        "divergence_pos_ni_neg_cfo_pct": 4.411764705882353,
+        "median_goodwill_to_assets": 0.1002427776899993
+      },
+      "Transportation & Utilities": {
+        "filings_count": 346,
+        "median_gross_margin": 0.3443055499368457,
+        "median_operating_margin": 0.1411589895988113,
+        "median_dso_days": 116.29397752246129,
+        "median_dio_days": 44.85352907941716,
+        "median_dpo_days": 134.71410334053652,
+        "median_ccc_days": 95.88294514984662,
+        "divergence_pos_ni_neg_cfo_pct": 4.984423676012461,
+        "median_goodwill_to_assets": 0.017706940192101513
+      },
+      "Technology Hardware & Electronics": {
+        "filings_count": 311,
+        "median_gross_margin": 0.694601381042059,
+        "median_operating_margin": -0.026769741886020954,
+        "median_dso_days": 150.83049354668773,
+        "median_dio_days": 140.12118842845973,
+        "median_dpo_days": 63.74308445385226,
+        "median_ccc_days": 236.062948196107,
+        "divergence_pos_ni_neg_cfo_pct": 7.194244604316546,
+        "median_goodwill_to_assets": 0.05182149220547824
+      }
+    }
+  },
+  "deep_financial_reporting_forensics": {
+    "ebitda_addback_prevalence_and_severity": {
+      "share_based_compensation": {
+        "reporting_filings_count": 4422,
+        "prevalence_rate_pct": 74.18218419728233,
+        "median_sbc_usd": 5894500.0,
+        "mean_sbc_usd": 48020605.50226142,
+        "median_sbc_to_revenue_pct": 20.579289211057162,
+        "p75_sbc_to_revenue_pct": 102.65834386870493,
+        "p90_sbc_to_revenue_pct": 512.7723092615258
+      },
+      "restructuring_charges": {
+        "reporting_filings_count": 395,
+        "prevalence_rate_pct": 6.626404965609797,
+        "median_restruct_usd": 9900000.0,
+        "mean_restruct_usd": 50965610.164556965,
+        "median_restruct_to_revenue_pct": 9.492880339745192
+      },
+      "asset_impairments": {
+        "reporting_filings_count": 428,
+        "prevalence_rate_pct": 7.180003355141755,
+        "median_impairment_usd": 6000000.0,
+        "mean_impairment_usd": 56535514.60514019,
+        "median_impair_to_assets_pct": 0.30548294649324476
+      },
+      "goodwill_impairments": {
+        "reporting_filings_count": 163,
+        "prevalence_rate_pct": 2.7344405301123973,
+        "median_goodwill_impair_usd": 36745000.0,
+        "mean_goodwill_impair_usd": 242716085.58282208
+      }
+    },
+    "working_capital_decoupling_hazards": {
+      "channel_stuffing_risk_pct": 43.348017621145374,
+      "channel_stuffing_spread_p75": 0.6803254778274809,
+      "inventory_bloat_risk_pct": 30.181418361737215,
+      "inventory_bloat_spread_p75": 0.20858570521332642
+    },
+    "restatement_autopsy_signatures": {
+      "restated_median_revenue": 1054291.5,
+      "normal_median_revenue": 14526000.0,
+      "restated_negative_equity_rate_pct": 37.5,
+      "normal_negative_equity_rate_pct": 19.617791307289025,
+      "restated_median_ebit_margin": -0.6279925416831388
+    },
+    "sector_ebitda_margin_expansion_bps": {
+      "Software & SaaS": 6343.920829625636,
+      "Manufacturing": 2149.4176763058595,
+      "Tech Hardware": 3611.1675316645133,
+      "Life Sciences": 11254.766254565533,
+      "Services": 8011.982431493806,
+      "Retail & Wholesale": 1648.4486671662758
+    },
+    "benchmark_corporate_archetypes": {
+      "profile_a_saas_sbc_swing": {
+        "name": "NUTANIX, INC.",
+        "cik": 1618732,
+        "adsh": "0000950170-24-108159",
+        "revenue": 2148816000.0,
+        "ebit": -207150000.0,
+        "cfo": 67543000.0,
+        "sbc": 343246000.0,
+        "total_dda": 87952000.0,
+        "adjusted_ebitda": 224048000.0
+      },
+      "profile_b_mfg_working_capital_trap": {
+        "name": "RTX CORP",
+        "cik": 101829,
+        "adsh": "0000101829-24-000027",
+        "revenue": 18315000000.0,
+        "cogs": 12625000000.0,
+        "inventory": 13047000000.0,
+        "ar": 0.0,
+        "ap": 10939000000.0,
+        "ebit": 899000000.0,
+        "cfo": -144000000.0
+      },
+      "profile_c_restatement_distress": {
+        "name": "SINGLEPOINT INC.",
+        "cik": 1443611,
+        "adsh": "0001477932-24-004300",
+        "revenue": 21786149.0,
+        "ebit": -15588481.0,
+        "net_income": 0.0,
+        "equity": -9320038.0,
+        "liabilities": 23998245.0
+      }
+    }
+  }
+}

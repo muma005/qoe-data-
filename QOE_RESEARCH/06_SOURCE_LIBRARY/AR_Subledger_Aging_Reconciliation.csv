@@ -1,0 +1,12 @@
+Customer_ID,Customer_Name,Current_Amount,Days_1_30,Days_31_60,Days_61_90,Days_91_120,Days_Over_120,Total_Subledger_Balance,Disputed_Status,Notes
+CUST-101,Midwest Industrial Logistics,124500.00,45000.00,12000.00,0.00,0.00,0.00,181500.00,Clean,Regular paying customer
+CUST-102,Great Lakes Equipment Corp,85200.00,28400.00,15600.00,9800.00,0.00,0.00,139000.00,Clean,Net 30 terms
+CUST-103,Summit Fabrication Ltd,42000.00,18000.00,0.00,0.00,0.00,0.00,60000.00,Clean,Bimonthly invoicing
+CUST-104,Vanguard Precision Tooling,15000.00,32000.00,28000.00,22500.00,18000.00,45000.00,160500.00,Disputed,Severe quality dispute on shipment #884;  past 120 days uncollectible
+CUST-105,Apex Distribution Partners,68400.00,14200.00,0.00,0.00,0.00,0.00,82600.00,Clean,Affiliated partner wholesale
+CUST-106,Horizon Supply Chain LLC,0.00,0.00,0.00,0.00,0.00,-12500.00,-12500.00,Credit_Memo,Unapplied customer credit memo floating in subledger since Q3
+CUST-107,Delta Manufacturing Services,94000.00,21000.00,8500.00,0.00,0.00,0.00,123500.00,Clean,Prompt payer
+CUST-108,Keystone Components Corp,31500.00,9800.00,4200.00,1500.00,0.00,0.00,47000.00,Clean,Standard account
+SUBTOTAL,Total AR Subledger Outstanding,460600.00,168400.00,68300.00,33800.00,18000.00,32500.00,781600.00,,Sum of customer balances
+GL-CONTROL,General Ledger Control Account (1-1100),,,,,,,824100.00,,Ending balance per General Ledger Trial Balance
+VARIANCE,Unreconciled Subledger Break (GL - Subledger),,,,,,,42500.00,BREAK,"GL is ,500 higher than subledger. Root cause: Direct manual journal entry posted to GL A/C 1-1100 without subledger entry"

@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "title": "Deep Forensic Corporate Financial Reporting Study",
+    "source": "SEC EDGAR FSDS 2024 Q3 (US-GAAP Filings)",
+    "total_filings_evaluated": 5961
+  },
+  "addback_prevalence_and_intensity": {
+    "share_based_compensation": {
+      "reporting_filings_count": 4422,
+      "prevalence_rate_pct": 74.18218419728233,
+      "median_sbc_usd": 5894500.0,
+      "mean_sbc_usd": 48020605.50226142,
+      "median_sbc_to_revenue_pct": 20.579289211057162,
+      "p75_sbc_to_revenue_pct": 102.65834386870493,
+      "p90_sbc_to_revenue_pct": 512.7723092615258
+    },
+    "restructuring_charges": {
+      "reporting_filings_count": 395,
+      "prevalence_rate_pct": 6.626404965609797,
+      "median_restruct_usd": 9900000.0,
+      "mean_restruct_usd": 50965610.164556965,
+      "median_restruct_to_revenue_pct": 9.492880339745192
+    },
+    "asset_impairments": {
+      "reporting_filings_count": 428,
+      "prevalence_rate_pct": 7.180003355141755,
+      "median_impairment_usd": 6000000.0,
+      "mean_impairment_usd": 56535514.60514019,
+      "median_impair_to_assets_pct": 0.30548294649324476
+    },
+    "goodwill_impairments": {
+      "reporting_filings_count": 163,
+      "prevalence_rate_pct": 2.7344405301123973,
+      "median_goodwill_impair_usd": 36745000.0,
+      "mean_goodwill_impair_usd": 242716085.58282208
+    }
+  },
+  "working_capital_forensics": {
+    "channel_stuffing_risk": {
+      "companies_evaluated": 2270,
+      "positive_channel_stuffing_flags": 984,
+      "channel_stuffing_prevalence_pct": 43.348017621145374,
+      "median_ar_rev_growth_spread": 0.026322348744398087,
+      "p75_ar_rev_growth_spread": 0.6803254778274809,
+      "p90_ar_rev_growth_spread": 1.1107838821585436
+    },
+    "inventory_bloat_risk": {
+      "companies_evaluated": 1819,
+      "positive_inventory_bloat_flags": 549,
+      "inventory_bloat_prevalence_pct": 30.181418361737215,
+      "median_inv_cogs_growth_spread": 0.014076977904490376,
+      "p75_inv_cogs_growth_spread": 0.20858570521332642,
+      "p90_inv_cogs_growth_spread": 0.7902535917395168
+    }
+  },
+  "restatement_autopsy": {
+    "restated_filings_count": 48,
+    "normal_filings_count": 5913,
+    "median_revenue": {
+      "restated": 1054291.5,
+      "normal": 14526000.0
+    },
+    "median_operating_margin": {
+      "restated": -0.6279925416831388,
+      "normal": 0.01779875605378961
+    },
+    "negative_equity_rate_pct": {
+      "restated": 37.5,
+      "normal": 19.617791307289025
+    },
+    "paper_profit_rate_pct": {
+      "restated": 10.416666666666668,
+      "normal": 10.400811770674784
+    }
+  },
+  "sector_ebitda_bridges": {
+    "Software & SaaS": {
+      "filings": 463,
+      "median_ebit_margin": -0.1136254212806933,
+      "median_standard_ebitda_margin": 0.009588309544615982,
+      "median_adjusted_ebitda_margin": 0.5207666616818702,
+      "median_margin_expansion_bps": 6343.920829625636
+    },
+    "Manufacturing": {
+      "filings": 1151,
+      "median_ebit_margin": 0.056373549481500224,
+      "median_standard_ebitda_margin": 0.18214750161655158,
+      "median_adjusted_ebitda_margin": 0.2713153171120862,
+      "median_margin_expansion_bps": 2149.4176763058595
+    },
+    "Tech Hardware": {
+      "filings": 311,
+      "median_ebit_margin": -0.012105868515847473,
+      "median_standard_ebitda_margin": 0.1272204008577093,
+      "median_adjusted_ebitda_margin": 0.3490108846506038,
+      "median_margin_expansion_bps": 3611.1675316645133
+    },
+    "Life Sciences": {
+      "filings": 780,
+      "median_ebit_margin": -1.7833264548080892,
+      "median_standard_ebitda_margin": -1.6228206623890078,
+      "median_adjusted_ebitda_margin": -0.6578498293515358,
+      "median_margin_expansion_bps": 11254.766254565533
+    },
+    "Services": {
+      "filings": 266,
+      "median_ebit_margin": 0.06099525508147154,
+      "median_standard_ebitda_margin": 0.2651659668552767,
+      "median_adjusted_ebitda_margin": 0.8621934982308521,
+      "median_margin_expansion_bps": 8011.982431493806
+    },
+    "Retail & Wholesale": {
+      "filings": 395,
+      "median_ebit_margin": 0.044204824771162596,
+      "median_standard_ebitda_margin": 0.12822430380388627,
+      "median_adjusted_ebitda_margin": 0.20904969148779018,
+      "median_margin_expansion_bps": 1648.4486671662758
+    }
+  },
+  "archetype_profiles": {
+    "profile_a_saas_sbc_swing": {
+      "name": "NUTANIX, INC.",
+      "cik": 1618732,
+      "adsh": "0000950170-24-108159",
+      "revenue": 2148816000.0,
+      "ebit": -207150000.0,
+      "cfo": 67543000.0,
+      "sbc": 343246000.0,
+      "total_dda": 87952000.0,
+      "adjusted_ebitda": 224048000.0
+    },
+    "profile_b_mfg_working_capital_trap": {
+      "name": "RTX CORP",
+      "cik": 101829,
+      "adsh": "0000101829-24-000027",
+      "revenue": 18315000000.0,
+      "cogs": 12625000000.0,
+      "inventory": 13047000000.0,
+      "ar": 0.0,
+      "ap": 10939000000.0,
+      "ebit": 899000000.0,
+      "cfo": -144000000.0
+    },
+    "profile_c_restatement_distress": {
+      "name": "SINGLEPOINT INC.",
+      "cik": 1443611,
+      "adsh": "0001477932-24-004300",
+      "revenue": 21786149.0,
+      "ebit": -15588481.0,
+      "net_income": 0.0,
+      "equity": -9320038.0,
+      "liabilities": 23998245.0
+    }
+  }
+}

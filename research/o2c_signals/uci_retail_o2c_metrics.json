@@ -1,0 +1,83 @@
+{
+  "total_records": 541909,
+  "revenue_summary_gbp": {
+    "gross_invoiced_revenue": 10666684.54,
+    "credit_notes_and_returns": 896812.49,
+    "net_recognized_revenue": 9769872.05,
+    "credit_dilution_rate_pct": 8.41
+  },
+  "invoice_counts": {
+    "total_invoices": 25900,
+    "sales_invoices": 20728,
+    "credit_invoices": 5172,
+    "credit_invoice_share_pct": 19.97
+  },
+  "customer_identification": {
+    "records_with_customer_id": 406829,
+    "records_without_customer_id": 135080,
+    "revenue_with_customer_id": 8911407.9,
+    "revenue_without_customer_id": 1733152.52,
+    "unidentified_revenue_share_pct": 16.25
+  },
+  "customer_concentration": {
+    "unique_identified_customers": 4372,
+    "herfindahl_hirschman_index_hhi": 45.15,
+    "top_1_pct_customers_share": 29.71,
+    "top_5_pct_customers_share": 48.52,
+    "top_10_pct_customers_share": 60.01,
+    "top_20_pct_customers_share": 73.82,
+    "one_time_buyers_count": 1313,
+    "repeat_buyers_count": 3059,
+    "repeat_buyer_rate_pct": 69.97
+  },
+  "invoice_size_distributions": {
+    "skus_per_invoice": {
+      "count": 20728,
+      "mean": 25.63,
+      "median": 15.0,
+      "std": 46.9,
+      "min": 1.0,
+      "p25": 5.0,
+      "p75": 29.0,
+      "p95": 77.0,
+      "max": 1114.0
+    },
+    "monetary_value_per_invoice_gbp": {
+      "count": 19960,
+      "mean": 534.4,
+      "median": 303.84,
+      "std": 1780.49,
+      "min": 0.38,
+      "p25": 152.51,
+      "p75": 495.62,
+      "p95": 1585.92,
+      "max": 168469.6
+    },
+    "repeat_order_inter_purchase_latency_days": {
+      "count": 14196,
+      "mean": 39.94,
+      "median": 21.91,
+      "std": 51.81,
+      "min": 0.0,
+      "p25": 6.84,
+      "p75": 51.03,
+      "p95": 146.1,
+      "max": 364.92
+    }
+  },
+  "geographic_distribution": {
+    "uk_domestic_share_pct": 84.4,
+    "top_10_countries": {
+      "United Kingdom": 9003097.96,
+      "Netherlands": 285446.34,
+      "EIRE": 283453.96,
+      "Germany": 228867.14,
+      "France": 209715.11,
+      "Australia": 138521.31,
+      "Spain": 61577.11,
+      "Switzerland": 57089.9,
+      "Belgium": 41196.34,
+      "Sweden": 38378.33
+    }
+  }
+}

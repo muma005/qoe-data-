@@ -1,0 +1,811 @@
+﻿<USER_REQUEST>
+here is our next 
+# MODULE 04 â€” CLIENT AND HUMAN BEHAVIOUR
+## Research Assignment: Understanding the Human Side of Real QoE and Financial Due Diligence Engagements
+
+### 1. Research objective
+
+Conduct a rigorous investigation into the people involved in real Quality of Earnings (QoE) and Financial Due Diligence (FDD) engagements, their responsibilities, incentives, behaviour, interactions and influence on the engagement.
+
+The purpose is to understand how human behaviour affects:
+
+- Access to company information.
+- The quality and completeness of information received.
+- The explanations provided by management.
+- The investigation of unusual financial results.
+- The identification and resolution of issues.
+- Communication and coordination.
+- Professional judgment.
+- The reliability of conclusions.
+- The final assessment communicated to the client or transaction stakeholders.
+
+We need to understand the difference between a technically correct financial analysis and an actual professional engagement involving people with different responsibilities, priorities, interests and levels of knowledge.
+
+**This is a research module, not an attempt to create autonomous human agents or automate professional judgment.**
+
+Do not develop the simulator, generate synthetic conversations or implement behavioural models during this research.
+
+### 2. Foundational principle: a QoE engagement involves people with different perspectives
+
+Start by establishing who participates in an engagement and why.
+
+Investigate the following participant groups:
+
+**A. The diligence team**
+- Engagement partner.
+- Engagement director.
+- Senior manager or manager.
+- Senior associate.
+- Associate or analyst.
+- Specialist advisers, where relevant.
+
+Investigate how responsibilities differ in practice, including who:
+- Leads the engagement.
+- Defines and manages scope.
+- Requests information.
+- Conducts analysis.
+- Communicates with management.
+- Reviews work.
+- Challenges explanations.
+- Escalates issues.
+- Makes decisions about conclusions and reporting.
+
+Do not assume every firm uses identical titles or team structures.
+
+**B. The target company's management and finance team**
+- CEO or managing director.
+- CFO or finance director.
+- Financial controller.
+- Financial accountants.
+- Management accountants.
+- Accounts receivable and payable personnel.
+- Payroll personnel.
+- Operations managers.
+- Sales managers.
+- Procurement managers.
+- Production managers.
+- IT or systems personnel.
+
+Investigate who actually holds relevant information and who is responsible for producing it.
+
+**C. Transaction stakeholders**
+- Buyer or investor.
+- Seller or shareholders.
+- Private equity deal team.
+- Corporate development team.
+- Investment banker.
+- Legal advisers.
+- Tax advisers.
+- Other financial or operational advisers.
+
+Establish their interests, responsibilities and involvement in the diligence process.
+
+**Required deliverable 1: Participant and responsibility model.**
+
+---
+
+### 3. Research area A â€” The motivations and incentives of participants
+
+Investigate what different participants want from an engagement and how those interests affect their behaviour.
+
+Do not assume that everyone involved shares the same objective.
+
+Examine:
+
+**Management**
+- Maintaining credibility with the buyer or investor.
+- Explaining business performance.
+- Demonstrating sustainable profitability.
+- Protecting commercial reputation.
+- Managing operational disruption.
+- Avoiding unnecessary disclosure of sensitive information.
+- Meeting transaction deadlines.
+- Explaining unusual or unfavourable results.
+
+**Finance teams**
+- Responding to information requests.
+- Maintaining normal business operations during diligence.
+- Defending accounting treatments and reporting decisions.
+- Explaining reconciliations and adjustments.
+- Managing competing demands from management and diligence teams.
+- Working within available resources and reporting capabilities.
+
+**Seller and shareholders**
+- Supporting the transaction.
+- Explaining historical performance.
+- Responding to findings that may affect valuation.
+- Protecting confidential information.
+- Managing disagreements about proposed adjustments.
+
+**Buyer and investors**
+- Understanding the target's financial performance.
+- Identifying risks and uncertainties.
+- Assessing the sustainability of earnings.
+- Understanding working capital and debt.
+- Evaluating the financial implications of findings.
+- Making investment or transaction decisions.
+
+**Diligence professionals**
+- Producing defensible analysis.
+- Meeting the agreed scope and timetable.
+- Identifying significant issues.
+- Maintaining professional scepticism.
+- Communicating findings accurately.
+- Managing engagement risks and limitations.
+
+Investigate how these incentives may align or conflict.
+
+Do not automatically equate a participant's commercial interest with dishonesty or manipulation. Establish the difference between legitimate advocacy, incomplete understanding, ordinary operational pressure and deliberate misrepresentation.
+
+**Required deliverable 2: Participant incentives and potential conflicts analysis.**
+
+---
+
+### 4. Research area B â€” How management and finance teams respond to diligence requests
+
+Investigate the actual human process behind information requests.
+
+Examine what happens when a diligence team requests information.
+
+Questions to investigate:
+
+1. Who receives the request?
+2. Who decides who should respond?
+3. How are requests delegated internally?
+4. Who locates or prepares the information?
+5. Who reviews it before submission?
+6. Who approves explanations?
+7. What happens when the requested information does not exist?
+8. What happens when employees do not understand the request?
+9. What happens when the information is held by another department?
+10. What happens when the request conflicts with normal business responsibilities?
+
+Investigate the difference between:
+
+- A company with a mature finance department.
+- A company with a small finance team.
+- A company where the CFO controls most financial information.
+- A company where information is spread across several departments.
+- A company dependent on external accountants or bookkeepers.
+- A company with weak reporting systems.
+
+Explore how these circumstances affect response quality and speed.
+
+Also investigate how information requests evolve. A request may generate further questions after the initial documents are reviewed.
+
+**Required deliverable 3: Management information-request response model.**
+
+---
+
+### 5. Research area C â€” Management explanations and the investigation of unusual results
+
+This is one of the most important areas.
+
+A financial analysis can identify an unusual movement, but the diligence team often needs management to explain what happened.
+
+Investigate how these explanations are obtained, evaluated and challenged.
+
+Examples of issues that may require explanations include:
+
+- A sudden increase in revenue.
+- A decline in gross margin.
+- A large one-off expense.
+- A change in payroll costs.
+- A significant customer loss.
+- A major supplier price increase.
+- A large inventory adjustment.
+- An unusual journal entry.
+- A change in working capital.
+- A sharp increase in accounts receivable.
+- A significant difference between reported EBITDA and cash generation.
+
+For each type of issue, investigate:
+
+1. What triggers the question?
+2. Who is approached for an explanation?
+3. What information does that person possess?
+4. How are explanations initially communicated?
+5. What supporting evidence may be requested?
+6. How does the diligence team challenge or corroborate the explanation?
+7. What happens if the explanation is incomplete?
+8. What happens if the explanation conflicts with accounting records?
+9. How is the issue documented and resolved?
+10. How does the outcome affect the analysis or report?
+
+Investigate the difference between:
+
+- A verbal explanation.
+- A written management response.
+- A response supported by documents.
+- A response supported by accounting records.
+- An explanation that is plausible but not independently verified.
+- An explanation that remains unresolved.
+
+Do not assume management explanations are either automatically accepted or automatically rejected.
+
+**Required deliverable 4: Management explanation and challenge framework.**
+
+---
+
+### 6. Research area D â€” Cooperation, resistance and information withholding
+
+Investigate the different ways participants respond to scrutiny during diligence.
+
+Research documented examples and professional observations of:
+
+**Cooperative behaviour**
+- Prompt responses.
+- Voluntary disclosure of relevant information.
+- Clear explanations.
+- Identification of known limitations.
+- Assistance in tracing transactions.
+- Willingness to correct mistakes.
+
+**Ordinary operational constraints**
+- Staff unavailable.
+- Documents held by external accountants.
+- Incomplete historical records.
+- Limited finance-team capacity.
+- Difficulties extracting information from systems.
+- Competing transaction and operational deadlines.
+
+**Defensive or resistant behaviour**
+- Disagreement with the diligence team's interpretation.
+- Reluctance to provide sensitive information.
+- Delayed responses.
+- Repeated explanations without supporting evidence.
+- Disputes about the relevance of requests.
+- Resistance to proposed adjustments.
+
+**Potentially concerning behaviour**
+- Contradictory explanations.
+- Selective information provision.
+- Unsupported assertions.
+- Changes in explanations after challenge.
+- Inconsistent representations across participants.
+- Evidence suggesting deliberate misclassification or concealment.
+
+For each behaviour establish:
+- Its observable form.
+- Plausible causes.
+- What can and cannot be inferred from it.
+- How a professional team typically responds.
+- Whether escalation may be appropriate.
+- The potential consequences for the engagement.
+
+Important: a late response is not proof of dishonesty. A disagreement is not proof of concealment. A difficult management team is not necessarily a dishonest management team.
+
+**Required deliverable 5: Cooperation, resistance and information-risk catalogue.**
+
+---
+
+### 7. Research area E â€” Communication and interpersonal dynamics
+
+Investigate how people communicate during real engagements.
+
+Examine:
+
+- Formal information requests.
+- Email correspondence.
+- Meetings and interviews.
+- Management presentations.
+- Follow-up questions.
+- Clarification requests.
+- Status meetings.
+- Issue discussions.
+- Review meetings.
+- Escalation discussions.
+- Final findings presentations.
+
+Investigate how communication changes depending on:
+
+- The seniority of participants.
+- The sensitivity of the issue.
+- The urgency of the request.
+- The quality of available information.
+- The relationship between buyer and seller.
+- The stage of the transaction.
+- Whether an issue is routine or potentially material.
+
+Understand how different communication channels are used and what is normally documented.
+
+Investigate:
+- Who normally attends management meetings.
+- How questions are allocated.
+- How disagreements are handled.
+- How action points are recorded.
+- How unresolved issues are followed up.
+- How important conclusions are communicated.
+
+Do not invent universal meeting schedules or communication protocols.
+
+**Required deliverable 6: Engagement communication and interaction model.**
+
+---
+
+### 8. Research area F â€” The influence of company culture and finance-team maturity
+
+Investigate how the target company's organisational characteristics influence the engagement.
+
+Consider:
+
+**Finance-team maturity**
+- Formal versus informal reporting.
+- Separation of responsibilities.
+- Internal controls.
+- Accounting knowledge.
+- Month-end close discipline.
+- Documentation practices.
+- Reconciliation practices.
+- Management oversight.
+
+**Organisational structure**
+- Centralised versus decentralised finance.
+- Owner-managed businesses.
+- Family-owned companies.
+- Private equity-backed businesses.
+- Multi-entity groups.
+- Businesses with several locations.
+- Businesses with outsourced finance functions.
+
+**Company culture**
+- Transparency.
+- Accountability.
+- Documentation discipline.
+- Reliance on personal knowledge.
+- Management control of information.
+- Cross-department cooperation.
+- Attitudes towards external scrutiny.
+
+Investigate how these differences affect:
+- Information availability.
+- Explanation quality.
+- Speed of responses.
+- Consistency of reporting.
+- Access to relevant employees.
+- The amount of follow-up investigation required.
+
+Do not reduce company culture to simplistic labels. Base conclusions on observable organisational practices and credible evidence.
+
+**Required deliverable 7: Organisational maturity and engagement-behaviour model.**
+
+---
+
+### 9. Research area G â€” Professional scepticism and human judgment
+
+Investigate how diligence professionals apply judgment when dealing with management explanations and conflicting evidence.
+
+Examine:
+
+- Professional scepticism.
+- Materiality.
+- Prioritisation.
+- Corroboration.
+- Conflicting evidence.
+- Uncertainty.
+- Management estimates.
+- Incomplete documentation.
+- Contradictory explanations.
+- Escalation.
+- Scope limitations.
+- Documentation of unresolved matters.
+
+Investigate how an analyst's initial observation moves through review and challenge before becoming a reported finding.
+
+Explore:
+- When an analyst raises an issue with a manager.
+- When a manager involves the engagement partner.
+- When additional procedures are considered.
+- When management is asked for further evidence.
+- When a finding is downgraded, retained or removed.
+- When the engagement team concludes that the evidence is insufficient.
+
+Distinguish professional judgment from arbitrary suspicion.
+
+Do not attempt to prescribe one universal decision-making framework if actual practices vary.
+
+**Required deliverable 8: Human judgment, challenge and escalation model.**
+
+---
+
+### 10. Research area H â€” Pressure, deadlines and human error
+
+Investigate how the pressures of a live transaction affect participants.
+
+Consider:
+- Tight transaction timelines.
+- Auction deadlines.
+- Late information.
+- Competing client demands.
+- Limited staffing.
+- Management availability.
+- Incomplete financial records.
+- Changes in transaction scope.
+- Time pressure during review and reporting.
+
+Investigate the consequences for:
+- Management response quality.
+- Analyst prioritisation.
+- Communication.
+- Review depth.
+- Follow-up procedures.
+- Documentation.
+- Unresolved issues.
+
+Also investigate human errors that can occur:
+- Misunderstanding a request.
+- Providing the wrong document.
+- Using an outdated schedule.
+- Misinterpreting a transaction.
+- Failing to communicate a known limitation.
+- Incorrectly summarising an explanation.
+- Overlooking a contradictory record.
+- Making an unsupported assumption.
+
+Distinguish isolated human mistakes from systemic weaknesses.
+
+Do not assume that time pressure necessarily produces poor work. Investigate how experienced teams manage it and what limitations may remain.
+
+**Required deliverable 9: Human pressure, error and response model.**
+
+---
+
+### 11. Research area I â€” Disagreements, sensitive issues and difficult conversations
+
+Investigate how disagreements arise and are handled during QoE engagements.
+
+Potential examples:
+- Management disputes an EBITDA adjustment.
+- The buyer questions the sustainability of a revenue stream.
+- Finance cannot reconcile a reported balance.
+- The seller considers an adjustment commercially unfair.
+- The diligence team identifies a potentially misleading classification.
+- Management argues that an expense is non-recurring.
+- The buyer requests additional procedures.
+- A finding cannot be resolved before the transaction deadline.
+
+For each scenario investigate:
+1. The issue that creates the disagreement.
+2. The participants involved.
+3. Their different perspectives.
+4. The evidence available.
+5. How the disagreement is discussed.
+6. Whether further evidence is requested.
+7. How professional judgment is applied.
+8. How the issue is documented.
+9. Whether it is resolved or remains an explicit limitation.
+
+Also investigate how professionals communicate sensitive findings without overstating the evidence.
+
+**Required deliverable 10: Disagreement and sensitive-issue handling catalogue.**
+
+---
+
+### 12. Research area J â€” What makes simulated human behaviour artificial?
+
+Use the evidence collected to identify characteristics that would make a simulated engagement feel staged.
+
+Potential hypotheses:
+
+- Every management participant responds immediately.
+- Every person knows all relevant company information.
+- All explanations are complete and consistent.
+- The finance team has unlimited capacity.
+- Management always cooperates.
+- Management always behaves suspiciously.
+- Every question produces the exact evidence needed.
+- Employees have no conflicting responsibilities.
+- All participants understand accounting terminology equally.
+- Every disagreement is resolved immediately.
+- The diligence team never misunderstands anything.
+- Analysts identify every issue without review.
+- The CFO always provides a definitive answer.
+- The buyer, seller and management share identical priorities.
+- No information is delayed, disputed or corrected.
+
+These are hypotheses, not conclusions.
+
+Investigate which behaviours are genuinely characteristic of real engagements, which vary, and which would undermine realism.
+
+Pay particular attention to the danger of making every human interaction serve the simulation's intended storyline.
+
+People should behave according to their roles, knowledge, responsibilities and circumstancesâ€”not simply to create an interesting case.
+
+**Required deliverable 11: Human-behaviour artificiality risk register.**
+
+---
+
+### 13. Research area K â€” Requirements for simulating credible human participation
+
+Only after completing the research, derive the requirements for representing people and interactions in the simulator.
+
+Investigate what must be represented about:
+
+**Participants**
+- Roles.
+- Responsibilities.
+- Knowledge.
+- Access to information.
+- Reporting relationships.
+- Authority.
+- Availability.
+
+**Motivations**
+- Transaction objectives.
+- Operational responsibilities.
+- Reputation.
+- Confidentiality.
+- Time pressure.
+- Conflicting incentives.
+
+**Behaviour**
+- Response patterns.
+- Cooperation.
+- Uncertainty.
+- Disagreement.
+- Information limitations.
+- Errors.
+- Follow-up behaviour.
+
+**Interactions**
+- Information requests.
+- Explanations.
+- Clarifications.
+- Challenges.
+- Meetings.
+- Escalations.
+- Review.
+- Resolution.
+
+**Historical consistency**
+- What each participant knows.
+- What they have previously said.
+- What documents they have provided.
+- What questions they have already answered.
+- What remains unresolved.
+- Whether subsequent explanations are consistent with previous statements and evidence.
+
+Classify requirements as:
+- Essential.
+- Important.
+- Context-dependent.
+- Optional.
+- Unresolved.
+
+For each requirement provide:
+- Requirement statement.
+- Supporting evidence.
+- Relevant participant roles.
+- Relevant business models.
+- Why it matters.
+- Consequence of omitting it.
+- Dependencies.
+- Confidence level.
+- Evidence classification.
+
+Do not assume every participant requires a complicated psychological profile. Focus on the human characteristics that materially influence the engagement.
+
+**Required deliverable 12: Human participation and behaviour requirements specification.**
+
+---
+
+### 14. Source strategy and evidence standards
+
+Use a deliberate source hierarchy.
+
+**Priority 1 â€” Professional and regulatory guidance**
+- ICAEW.
+- AICPA.
+- ACCA.
+- Relevant professional standards and guidance.
+- Relevant ethical and professional conduct guidance.
+- Guidance concerning professional scepticism, evidence, judgment and client relationships.
+
+**Priority 2 â€” Transaction advisory and professional services publications**
+
+Investigate material from:
+- Deloitte.
+- PwC.
+- EY.
+- KPMG.
+- Grant Thornton.
+- BDO.
+- RSM.
+- Alvarez & Marsal.
+- Kroll.
+- FTI Consulting.
+- Other specialist financial diligence firms.
+
+Look for documented descriptions of management interactions, information requests, diligence challenges and transaction pressures.
+
+**Priority 3 â€” Practitioner evidence**
+- Identifiable practitioner interviews.
+- Professional webinars.
+- Conference presentations.
+- Case studies.
+- Published transaction experiences.
+- Interviews with finance leaders and transaction advisers.
+
+**Priority 4 â€” Academic research**
+
+Investigate relevant research on:
+- Organisational behaviour.
+- Professional services.
+- Information asymmetry.
+- Management incentives.
+- Negotiation.
+- Professional judgment.
+- Human error.
+- Organisational culture.
+- Communication under pressure.
+- Trust and cooperation.
+
+**Priority 5 â€” Transaction and company evidence**
+
+Where available, inspect documented transaction experiences, public disputes, due diligence limitations and disclosures that demonstrate how different parties interact.
+
+#### Evidence classification
+
+Label important claims:
+
+- E1 â€” Professional or regulatory guidance.
+- E2 â€” Documented professional practice.
+- E3 â€” Directly documented engagement or transaction evidence.
+- E4 â€” Practitioner observation.
+- E5 â€” Academic research.
+- E6 â€” Researcher inference.
+- E7 â€” Proposed simulation requirement.
+
+For every source record:
+- Author or organisation.
+- Exact title.
+- Publication date.
+- Original URL or document reference.
+- Source type.
+- Relevant passage, page or section.
+- What it establishes.
+- What it does not establish.
+- Evidence classification.
+
+Do not treat generic management advice as proof of QoE engagement behaviour.
+
+Do not invent interviews, quotations, case studies or professional practices.
+
+If direct evidence about a particular behaviour is unavailable, state that limitation rather than presenting speculation as fact.
+
+---
+
+### 15. Required final deliverables
+
+The completed research must contain:
+
+1. Participant and responsibility model.
+2. Participant incentives and potential conflicts analysis.
+3. Management information-request response model.
+4. Management explanation and challenge framework.
+5. Cooperation, resistance and information-risk catalogue.
+6. Engagement communication and interaction model.
+7. Organisational maturity and engagement-behaviour model.
+8. Human judgment, challenge and escalation model.
+9. Human pressure, error and response model.
+10. Disagreement and sensitive-issue handling catalogue.
+11. Human-behaviour artificiality risk register.
+12. Human participation and behaviour requirements specification.
+13. Complete source register and research limitations.
+
+Additionally, produce at least four worked human-interaction scenarios:
+
+**Scenario 1 â€” Cooperative and well-prepared management**
+The finance team responds promptly, provides organised information and supports explanations with evidence.
+
+**Scenario 2 â€” Overstretched finance team**
+The company has limited finance resources. Requests are delayed, schedules require clarification and some information must be obtained from external accountants.
+
+**Scenario 3 â€” Conflicting management explanations**
+Different employees provide explanations that do not initially agree. The diligence team must investigate the discrepancy without assuming dishonesty.
+
+**Scenario 4 â€” Disputed EBITDA adjustment**
+The diligence team proposes an adjustment, management disagrees, further evidence is requested and the issue goes through review.
+
+For each scenario, document:
+- Company circumstances.
+- Participants and responsibilities.
+- Their knowledge and interests.
+- Initial event or question.
+- Communications.
+- Information provided.
+- Delays or disagreements.
+- Supporting evidence.
+- Diligence-team response.
+- Escalation and review.
+- Final outcome or unresolved position.
+
+Scenarios must be grounded in documented practice. Clearly label any constructed dialogue or illustrative details. Do not present invented conversations as actual interviews.
+
+---
+
+### 16. Final report structure
+
+Use this structure:
+
+1. Executive summary.
+2. Scope and methodology.
+3. Participant landscape.
+4. Roles and responsibilities.
+5. Participant incentives and conflicts.
+6. Management information-request behaviour.
+7. Management explanations and challenge.
+8. Cooperation, resistance and information risks.
+9. Communication and interaction.
+10. Organisational maturity and company culture.
+11. Professional judgment and escalation.
+12. Pressure and human error.
+13. Disagreements and sensitive issues.
+14. Human-behaviour artificiality risks.
+15. Human participation requirements.
+16. Worked interaction scenarios.
+17. Evidence gaps and limitations.
+18. Final assessment.
+19. Source register.
+
+---
+
+### 17. Quality gates
+
+Evaluate the work against these gates. Mark each PASS, PARTIAL or FAIL, with evidence and explanation.
+
+**G1 â€” Participant understanding:** Are the relevant participants, roles and responsibilities accurately established?
+
+**G2 â€” Incentive understanding:** Are the interests and potential conflicts of different parties understood without assuming dishonesty?
+
+**G3 â€” Information-request realism:** Does the research explain how information is actually obtained from a company?
+
+**G4 â€” Explanation and challenge:** Is there a credible model for how management explanations are investigated and corroborated?
+
+**G5 â€” Behavioural variation:** Does the research establish meaningful differences in cooperation, resistance, knowledge and availability?
+
+**G6 â€” Organisational context:** Are company structure and finance-team maturity reflected appropriately?
+
+**G7 â€” Professional judgment:** Does the research explain how professionals challenge, escalate and resolve issues?
+
+**G8 â€” Pressure and disagreement:** Are transaction pressures, errors and disputes grounded in evidence?
+
+**G9 â€” Simulation relevance:** Are proposed human-behaviour requirements derived from research rather than stereotypes?
+
+**G10 â€” Evidence quality:** Are claims supported by credible, inspected sources and clearly labelled according to evidence strength?
+
+Overall PASS requires a credible account of how different participants influence the engagement, how information and explanations move between them, and how human circumstances affect the diligence process.
+
+---
+
+### 18. Non-negotiable research rules
+
+1. Do not portray management as inherently dishonest.
+2. Do not portray diligence professionals as infallible.
+3. Do not invent universal behaviour patterns.
+4. Do not confuse slow responses with deliberate obstruction.
+5. Do not confuse disagreement with dishonesty.
+6. Do not assume every employee has access to all company information.
+7. Do not give every participant identical knowledge.
+8. Do not manufacture conversations and present them as authentic.
+9. Do not invent professional escalation procedures.
+10. Do not create simplistic personality stereotypes.
+11. Distinguish observable behaviour from assumptions about motives.
+12. Distinguish documented practice from researcher inference.
+13. Do not build behavioural models or implement simulated people during this module.
+14. Report evidence gaps and uncertainty honestly.
+15. Prioritise realistic professional interactions over dramatic storytelling.
+
+### Final instruction
+
+The goal is to understand how real people shape a QoE engagement.
+
+A realistic engagement must not feel as though the analyst asks a question and the correct answer magically appears. Information comes from people with different responsibilities, knowledge, incentives and constraints. Explanations may be incomplete, evidence may be unavailable, disagreements may persist, and professional conclusions must be reached through investigation and judgment.
+
+Research this human environment carefully enough that the simulator can eventually reproduce credible interactions without turning people into predictable characters whose only purpose is to advance a scripted investigation.
+
+Complete this module independently. Do not begin Module 05 until the findings have been reviewed and the quality gates evaluated. 
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-15T17:44:00+03:00.
+</ADDITIONAL_METADATA>

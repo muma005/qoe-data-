@@ -1,0 +1,527 @@
+{
+  "total_events_in_dataset": 1595923,
+  "total_cases_analyzed": 251734,
+  "unique_vendors_total": 1975,
+  "vendor_concentration": {
+    "total_spend_eur": 996818747.0,
+    "herfindahl_hirschman_index_hhi": 85.06,
+    "top_1_pct_vendors_spend_share": 33.08,
+    "top_5_pct_vendors_spend_share": 64.36,
+    "top_20_pct_vendors_spend_share": 89.61
+  },
+  "control_flow_deviation_rates": {
+    "maverick_buying_ir_before_po_rate_pct": 0.0,
+    "maverick_cases_count": 0,
+    "ir_before_gr_rate_pct": 6.5,
+    "ir_before_gr_cases_count": 16356,
+    "payment_block_unblocking_rate_pct": 22.18,
+    "payment_block_cases_count": 55839,
+    "retroactive_price_change_rate_pct": 4.46,
+    "retroactive_price_change_cases_count": 11224,
+    "retroactive_quantity_change_rate_pct": 6.99,
+    "retroactive_quantity_change_cases_count": 17590
+  },
+  "latency_distributions_days": {
+    "po_to_gr_delivery_lead_time": {
+      "count": 234479,
+      "mean": 15.48,
+      "median": 10.02,
+      "std": 18.32,
+      "p25": 4.95,
+      "p75": 19.27,
+      "p95": 48.77
+    },
+    "gr_to_ir_invoicing_latency": {
+      "count": 194014,
+      "mean": 20.57,
+      "median": 11.29,
+      "std": 27.27,
+      "p25": 3.98,
+      "p75": 28.02,
+      "p95": 63.97
+    },
+    "ir_to_clear_payment_latency": {
+      "count": 183269,
+      "mean": 48.17,
+      "median": 42.06,
+      "std": 31.42,
+      "p25": 22.13,
+      "p75": 70.14,
+      "p95": 107.15
+    },
+    "maverick_invoice_precedence_lead_days": null
+  },
+  "price_drift_impact": {
+    "mean_price_delta_pct": 0.02,
+    "median_price_delta_pct": 0.0,
+    "positive_creep_share_pct": 0.02
+  },
+  "activity_distribution": {
+    "Record Goods Receipt": 314097,
+    "Create Purchase Order Item": 251734,
+    "Record Invoice Receipt": 228760,
+    "Vendor creates invoice": 219919,
+    "Clear Invoice": 194393,
+    "Record Service Entry Sheet": 164975,
+    "Remove Payment Block": 57136,
+    "Create Purchase Requisition Item": 46592,
+    "Receive Order Confirmation": 32065,
+    "Change Quantity": 21449,
+    "Change Price": 12423,
+    "Delete Purchase Order Item": 8875,
+    "Change Approval for Purchase Order": 7541,
+    "Cancel Invoice Receipt": 7096,
+    "Vendor creates debit memo": 6255,
+    "Change Delivery Indicator": 3289,
+    "Cancel Goods Receipt": 3096,
+    "SRM: In Transfer to Execution Syst.": 1765,
+    "SRM: Created": 1628,
+    "SRM: Ordered": 1628,
+    "SRM: Awaiting Approval": 1628,
+    "SRM: Document Completed": 1628,
+    "SRM: Complete": 1628,
+    "Release Purchase Order": 1610,
+    "SRM: Change was Transmitted": 1440,
+    "Reactivate Purchase Order Item": 543,
+    "Block Purchase Order Item": 514,
+    "Cancel Subsequent Invoice": 491,
+    "Release Purchase Requisition": 467,
+    "Change Storage Location": 415,
+    "Update Order Confirmation": 244,
+    "SRM: Deleted": 188,
+    "Record Subsequent Invoice": 167,
+    "Set Payment Block": 124,
+    "SRM: Transfer Failed (E.Sys.)": 45,
+    "Change Currency": 35,
+    "Change Final Invoice Indicator": 11,
+    "SRM: Transaction Completed": 8,
+    "Change payment term": 7,
+    "SRM: Incomplete": 6,
+    "SRM: Held": 6,
+    "Change Rejection Indicator": 2
+  },
+  "item_category_distribution": {
+    "3-way match, invoice before GR": 1234708,
+    "3-way match, invoice after GR": 319233,
+    "Consignment": 36084,
+    "2-way match": 5898
+  },
+  "markov_transition_probabilities": {
+    "Block Purchase Order Item": {
+      "Change Quantity": 0.1988,
+      "Clear Invoice": 0.0058,
+      "Delete Purchase Order Item": 0.3804,
+      "Reactivate Purchase Order Item": 0.3429,
+      "Vendor creates invoice": 0.0663
+    },
+    "Cancel Goods Receipt": {
+      "Cancel Goods Receipt": 0.105,
+      "Cancel Invoice Receipt": 0.1129,
+      "Change Delivery Indicator": 0.0331,
+      "Change Price": 0.0166,
+      "Change Quantity": 0.0335,
+      "Clear Invoice": 0.0083,
+      "Delete Purchase Order Item": 0.0226,
+      "Record Goods Receipt": 0.3348,
+      "Record Invoice Receipt": 0.0282,
+      "Record Service Entry Sheet": 0.0553,
+      "Remove Payment Block": 0.0053,
+      "Vendor creates debit memo": 0.1934,
+      "Vendor creates invoice": 0.0455
+    },
+    "Cancel Invoice Receipt": {
+      "Cancel Invoice Receipt": 0.0113,
+      "Clear Invoice": 0.4886,
+      "Record Invoice Receipt": 0.3627,
+      "Remove Payment Block": 0.113,
+      "Vendor creates debit memo": 0.0056
+    },
+    "Cancel Subsequent Invoice": {
+      "Cancel Invoice Receipt": 0.0064,
+      "Clear Invoice": 0.4946,
+      "Record Goods Receipt": 0.0064,
+      "Record Invoice Receipt": 0.0193,
+      "Record Subsequent Invoice": 0.0128,
+      "Remove Payment Block": 0.4325,
+      "Vendor creates debit memo": 0.0128
+    },
+    "Change Approval for Purchase Order": {
+      "Block Purchase Order Item": 0.017,
+      "Change Approval for Purchase Order": 0.2588,
+      "Change Price": 0.0698,
+      "Change Quantity": 0.0546,
+      "Clear Invoice": 0.019,
+      "Create Purchase Order Item": 0.0511,
+      "Delete Purchase Order Item": 0.0287,
+      "Receive Order Confirmation": 0.1134,
+      "Record Goods Receipt": 0.0392,
+      "Record Invoice Receipt": 0.1067,
+      "Release Purchase Order": 0.098,
+      "Vendor creates invoice": 0.1392
+    },
+    "Change Currency": {
+      "Change Approval for Purchase Order": 0.0588,
+      "Change Price": 0.5294,
+      "Create Purchase Order Item": 0.0588,
+      "Record Goods Receipt": 0.0294,
+      "Vendor creates invoice": 0.3235
+    },
+    "Change Delivery Indicator": {
+      "Cancel Invoice Receipt": 0.0139,
+      "Change Delivery Indicator": 0.0628,
+      "Change Price": 0.005,
+      "Change Quantity": 0.2422,
+      "Clear Invoice": 0.0905,
+      "Delete Purchase Order Item": 0.0069,
+      "Record Goods Receipt": 0.174,
+      "Record Invoice Receipt": 0.2326,
+      "Remove Payment Block": 0.0327,
+      "Vendor creates debit memo": 0.0585,
+      "Vendor creates invoice": 0.0658
+    },
+    "Change Final Invoice Indicator": {
+      "Change Delivery Indicator": 0.0909,
+      "Clear Invoice": 0.2727,
+      "Delete Purchase Order Item": 0.0909,
+      "Record Goods Receipt": 0.0909,
+      "SRM: Deleted": 0.1818,
+      "SRM: Document Completed": 0.0909,
+      "SRM: In Transfer to Execution Syst.": 0.0909,
+      "SRM: Ordered": 0.0909
+    },
+    "Change Price": {
+      "Cancel Goods Receipt": 0.0067,
+      "Change Approval for Purchase Order": 0.0065,
+      "Change Price": 0.0574,
+      "Change Quantity": 0.0752,
+      "Clear Invoice": 0.0561,
+      "Delete Purchase Order Item": 0.0102,
+      "Receive Order Confirmation": 0.0112,
+      "Record Goods Receipt": 0.2611,
+      "Record Invoice Receipt": 0.076,
+      "Record Service Entry Sheet": 0.0073,
+      "Remove Payment Block": 0.1121,
+      "Vendor creates debit memo": 0.0079,
+      "Vendor creates invoice": 0.2894
+    },
+    "Change Quantity": {
+      "Change Approval for Purchase Order": 0.0059,
+      "Change Delivery Indicator": 0.0298,
+      "Change Price": 0.034,
+      "Change Quantity": 0.1088,
+      "Clear Invoice": 0.0089,
+      "Delete Purchase Order Item": 0.0117,
+      "Receive Order Confirmation": 0.0104,
+      "Record Goods Receipt": 0.443,
+      "Record Invoice Receipt": 0.0368,
+      "Remove Payment Block": 0.0056,
+      "Vendor creates invoice": 0.2857
+    },
+    "Change Rejection Indicator": {
+      "Change Rejection Indicator": 0.5,
+      "Reactivate Purchase Order Item": 0.5
+    },
+    "Change Storage Location": {
+      "Cancel Goods Receipt": 0.0177,
+      "Change Delivery Indicator": 0.0051,
+      "Change Price": 0.0684,
+      "Change Quantity": 0.0608,
+      "Change Storage Location": 0.1013,
+      "Clear Invoice": 0.0177,
+      "Create Purchase Order Item": 0.0278,
+      "Delete Purchase Order Item": 0.0304,
+      "Receive Order Confirmation": 0.0127,
+      "Record Goods Receipt": 0.4684,
+      "Record Invoice Receipt": 0.0152,
+      "Vendor creates invoice": 0.1696
+    },
+    "Change payment term": {
+      "Change Currency": 0.3333,
+      "Change Storage Location": 0.1667,
+      "Record Goods Receipt": 0.5
+    },
+    "Clear Invoice": {
+      "Cancel Invoice Receipt": 0.1792,
+      "Cancel Subsequent Invoice": 0.0066,
+      "Change Approval for Purchase Order": 0.0098,
+      "Change Price": 0.0092,
+      "Change Quantity": 0.0076,
+      "Clear Invoice": 0.2445,
+      "Record Goods Receipt": 0.0338,
+      "Record Invoice Receipt": 0.2909,
+      "Record Service Entry Sheet": 0.0311,
+      "Remove Payment Block": 0.0569,
+      "Vendor creates debit memo": 0.0128,
+      "Vendor creates invoice": 0.0956
+    },
+    "Create Purchase Order Item": {
+      "Change Approval for Purchase Order": 0.0133,
+      "Change Price": 0.0252,
+      "Change Quantity": 0.0481,
+      "Delete Purchase Order Item": 0.0273,
+      "Receive Order Confirmation": 0.1181,
+      "Record Goods Receipt": 0.3133,
+      "Record Invoice Receipt": 0.0072,
+      "Record Service Entry Sheet": 0.0116,
+      "Vendor creates invoice": 0.4165
+    },
+    "Create Purchase Requisition Item": {
+      "Create Purchase Order Item": 0.9902,
+      "Release Purchase Requisition": 0.0091
+    },
+    "Delete Purchase Order Item": {
+      "Change Approval for Purchase Order": 0.2855,
+      "Change Delivery Indicator": 0.0093,
+      "Change Price": 0.0417,
+      "Change Quantity": 0.0787,
+      "Clear Invoice": 0.0139,
+      "Create Purchase Order Item": 0.0602,
+      "Reactivate Purchase Order Item": 0.3827,
+      "Release Purchase Order": 0.0231,
+      "Remove Payment Block": 0.0062,
+      "SRM: Deleted": 0.0062,
+      "Vendor creates invoice": 0.071
+    },
+    "Reactivate Purchase Order Item": {
+      "Block Purchase Order Item": 0.0189,
+      "Change Price": 0.0114,
+      "Change Quantity": 0.1383,
+      "Delete Purchase Order Item": 0.0701,
+      "Receive Order Confirmation": 0.0114,
+      "Record Goods Receipt": 0.5095,
+      "Record Invoice Receipt": 0.0492,
+      "Vendor creates invoice": 0.1761
+    },
+    "Receive Order Confirmation": {
+      "Change Price": 0.0071,
+      "Change Quantity": 0.0139,
+      "Create Purchase Order Item": 0.0526,
+      "Delete Purchase Order Item": 0.0376,
+      "Record Goods Receipt": 0.5923,
+      "Update Order Confirmation": 0.0056,
+      "Vendor creates invoice": 0.2865
+    },
+    "Record Goods Receipt": {
+      "Record Goods Receipt": 0.1488,
+      "Record Invoice Receipt": 0.3864,
+      "Record Service Entry Sheet": 0.1076,
+      "Remove Payment Block": 0.0527,
+      "Vendor creates invoice": 0.2788
+    },
+    "Record Invoice Receipt": {
+      "Cancel Invoice Receipt": 0.0122,
+      "Change Price": 0.0074,
+      "Clear Invoice": 0.6572,
+      "Record Goods Receipt": 0.0743,
+      "Record Invoice Receipt": 0.033,
+      "Remove Payment Block": 0.1846,
+      "Vendor creates invoice": 0.0192
+    },
+    "Record Service Entry Sheet": {
+      "Create Purchase Order Item": 0.0122,
+      "Record Goods Receipt": 0.1944,
+      "Record Invoice Receipt": 0.0072,
+      "Record Service Entry Sheet": 0.7725,
+      "Vendor creates invoice": 0.0103
+    },
+    "Record Subsequent Invoice": {
+      "Cancel Invoice Receipt": 0.0127,
+      "Cancel Subsequent Invoice": 0.0443,
+      "Change Price": 0.0127,
+      "Clear Invoice": 0.6076,
+      "Record Goods Receipt": 0.0063,
+      "Record Subsequent Invoice": 0.0253,
+      "Remove Payment Block": 0.2722,
+      "Vendor creates invoice": 0.019
+    },
+    "Release Purchase Order": {
+      "Change Approval for Purchase Order": 0.877,
+      "Change Price": 0.0286,
+      "Change Quantity": 0.0211,
+      "Create Purchase Order Item": 0.0627
+    },
+    "Release Purchase Requisition": {
+      "Change Price": 0.0133,
+      "Create Purchase Order Item": 0.9403,
+      "Record Goods Receipt": 0.0288,
+      "Vendor creates invoice": 0.0177
+    },
+    "Remove Payment Block": {
+      "Cancel Invoice Receipt": 0.0063,
+      "Change Price": 0.0099,
+      "Clear Invoice": 0.9477,
+      "Record Goods Receipt": 0.0081,
+      "Record Invoice Receipt": 0.009,
+      "Vendor creates invoice": 0.0053
+    },
+    "SRM: Awaiting Approval": {
+      "Create Purchase Order Item": 0.0711,
+      "Record Goods Receipt": 0.0155,
+      "Record Service Entry Sheet": 0.0062,
+      "SRM: Change was Transmitted": 0.0587,
+      "SRM: Complete": 0.3164,
+      "SRM: Deleted": 0.0068,
+      "SRM: Document Completed": 0.3288,
+      "SRM: In Transfer to Execution Syst.": 0.068,
+      "SRM: Ordered": 0.0686,
+      "Vendor creates invoice": 0.0476
+    },
+    "SRM: Change was Transmitted": {
+      "Create Purchase Order Item": 0.294,
+      "Record Goods Receipt": 0.0316,
+      "Record Service Entry Sheet": 0.007,
+      "SRM: Awaiting Approval": 0.0695,
+      "SRM: Complete": 0.0884,
+      "SRM: Document Completed": 0.0639,
+      "SRM: In Transfer to Execution Syst.": 0.1032,
+      "SRM: Ordered": 0.2295,
+      "Vendor creates invoice": 0.1046
+    },
+    "SRM: Complete": {
+      "Change Price": 0.0068,
+      "Create Purchase Order Item": 0.1024,
+      "Record Goods Receipt": 0.0261,
+      "SRM: Awaiting Approval": 0.3207,
+      "SRM: Change was Transmitted": 0.0968,
+      "SRM: Created": 0.0074,
+      "SRM: Deleted": 0.0074,
+      "SRM: Document Completed": 0.1117,
+      "SRM: In Transfer to Execution Syst.": 0.0806,
+      "SRM: Ordered": 0.0943,
+      "Vendor creates invoice": 0.134
+    },
+    "SRM: Created": {
+      "Create Purchase Order Item": 0.1443,
+      "SRM: Awaiting Approval": 0.1499,
+      "SRM: Change was Transmitted": 0.1161,
+      "SRM: Complete": 0.25,
+      "SRM: Document Completed": 0.1327,
+      "SRM: In Transfer to Execution Syst.": 0.0915,
+      "SRM: Ordered": 0.0928
+    },
+    "SRM: Deleted": {
+      "Change Delivery Indicator": 0.0163,
+      "Change Final Invoice Indicator": 0.0163,
+      "Change Price": 0.1359,
+      "Clear Invoice": 0.0217,
+      "Delete Purchase Order Item": 0.038,
+      "Record Goods Receipt": 0.0489,
+      "Record Invoice Receipt": 0.0326,
+      "Record Service Entry Sheet": 0.0489,
+      "Remove Payment Block": 0.0054,
+      "SRM: Awaiting Approval": 0.0326,
+      "SRM: Complete": 0.0707,
+      "SRM: Created": 0.0054,
+      "SRM: Document Completed": 0.0326,
+      "SRM: In Transfer to Execution Syst.": 0.2011,
+      "SRM: Ordered": 0.2609,
+      "Vendor creates invoice": 0.0326
+    },
+    "SRM: Document Completed": {
+      "Change Price": 0.008,
+      "Create Purchase Order Item": 0.0697,
+      "Record Goods Receipt": 0.0203,
+      "SRM: Awaiting Approval": 0.2904,
+      "SRM: Change was Transmitted": 0.0721,
+      "SRM: Complete": 0.1017,
+      "SRM: Deleted": 0.0074,
+      "SRM: In Transfer to Execution Syst.": 0.2404,
+      "SRM: Ordered": 0.1215,
+      "Vendor creates invoice": 0.0573
+    },
+    "SRM: Held": {
+      "SRM: Awaiting Approval": 0.1667,
+      "SRM: Complete": 0.1667,
+      "SRM: Document Completed": 0.1667,
+      "SRM: In Transfer to Execution Syst.": 0.1667,
+      "SRM: Incomplete": 0.3333
+    },
+    "SRM: In Transfer to Execution Syst.": {
+      "Change Price": 0.0172,
+      "Create Purchase Order Item": 0.1084,
+      "Record Goods Receipt": 0.0361,
+      "Record Service Entry Sheet": 0.0142,
+      "SRM: Awaiting Approval": 0.0569,
+      "SRM: Change was Transmitted": 0.0983,
+      "SRM: Complete": 0.0729,
+      "SRM: Created": 0.0077,
+      "SRM: Deleted": 0.0219,
+      "SRM: Document Completed": 0.1783,
+      "SRM: In Transfer to Execution Syst.": 0.0083,
+      "SRM: Ordered": 0.2695,
+      "SRM: Transfer Failed (E.Sys.)": 0.0136,
+      "Vendor creates invoice": 0.0818
+    },
+    "SRM: Incomplete": {
+      "SRM: Change was Transmitted": 0.1667,
+      "SRM: Document Completed": 0.1667,
+      "SRM: Held": 0.6667
+    },
+    "SRM: Ordered": {
+      "Change Price": 0.0161,
+      "Create Purchase Order Item": 0.129,
+      "Record Goods Receipt": 0.0192,
+      "Record Service Entry Sheet": 0.0074,
+      "SRM: Awaiting Approval": 0.0577,
+      "SRM: Change was Transmitted": 0.1929,
+      "SRM: Complete": 0.0744,
+      "SRM: Created": 0.0062,
+      "SRM: Deleted": 0.0354,
+      "SRM: Document Completed": 0.1048,
+      "SRM: In Transfer to Execution Syst.": 0.286,
+      "Vendor creates invoice": 0.0645
+    },
+    "SRM: Transaction Completed": {
+      "Change Delivery Indicator": 0.2,
+      "Delete Purchase Order Item": 0.4,
+      "SRM: Document Completed": 0.2,
+      "SRM: In Transfer to Execution Syst.": 0.2
+    },
+    "SRM: Transfer Failed (E.Sys.)": {
+      "SRM: In Transfer to Execution Syst.": 0.9565,
+      "Vendor creates debit memo": 0.0435
+    },
+    "Set Payment Block": {
+      "Cancel Invoice Receipt": 0.0159,
+      "Cancel Subsequent Invoice": 0.0159,
+      "Change Approval for Purchase Order": 0.127,
+      "Change Price": 0.0159,
+      "Clear Invoice": 0.6667,
+      "Remove Payment Block": 0.1587
+    },
+    "Update Order Confirmation": {
+      "Change Price": 0.0373,
+      "Change Quantity": 0.083,
+      "Clear Invoice": 0.0207,
+      "Delete Purchase Order Item": 0.0539,
+      "Receive Order Confirmation": 0.0456,
+      "Record Goods Receipt": 0.4191,
+      "Record Invoice Receipt": 0.029,
+      "Update Order Confirmation": 0.0456,
+      "Vendor creates invoice": 0.2614
+    },
+    "Vendor creates debit memo": {
+      "Cancel Goods Receipt": 0.0064,
+      "Cancel Invoice Receipt": 0.1482,
+      "Cancel Subsequent Invoice": 0.036,
+      "Change Price": 0.0053,
+      "Change Quantity": 0.0074,
+      "Clear Invoice": 0.0232,
+      "Create Purchase Order Item": 0.0187,
+      "Record Goods Receipt": 0.1588,
+      "Record Invoice Receipt": 0.183,
+      "Remove Payment Block": 0.0187,
+      "Vendor creates invoice": 0.3817
+    },
+    "Vendor creates invoice": {
+      "Change Quantity": 0.0112,
+      "Clear Invoice": 0.0068,
+      "Create Purchase Order Item": 0.0149,
+      "Record Goods Receipt": 0.4983,
+      "Record Invoice Receipt": 0.4339,
+      "Record Service Entry Sheet": 0.0057,
+      "Vendor creates debit memo": 0.0106,
+      "Vendor creates invoice": 0.0078
+    }
+  }
+}

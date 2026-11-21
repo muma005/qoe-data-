@@ -1,0 +1,10 @@
+Line_Item,Internal_Management_Accounts_Dec31,Audit_Adjustment_Ref,Audit_Adjustment_Description,Audit_Adjustments_Amount,Audited_Statutory_FS_Dec31,QoE_Analytical_Impact,EBITDA_Impact
+Revenue,24850000.00,AJE-01,Cut-off: Reversal of bill-and-hold shipment #904 invoiced Dec 31 but shipped Jan 04,-380000.00,24470000.00,True revenue reduction in FY2023; shifts to FY2024,-380000.00
+Cost of Goods Sold,15400000.00,AJE-02,Inventory lower-of-cost-or-market (NRV) write-down on slow-moving line #B,145000.00,15545000.00,Increases COGS; non-recurring inventory purge or operational margin drag,-145000.00
+Gross Profit,9450000.00,CALC,Subtotal Gross Profit,-525000.00,8925000.00,Gross margin drops from 38.03% to 36.47%,-525000.00
+"Operating Expenses (S&M, G&A)",6120000.00,AJE-03,Unrecorded executive bonus pool accrued post-year-end by audit committee,180000.00,6300000.00,Operating expense under accrual in monthly management books,-180000.00
+Depreciation & Amortization,850000.00,AJE-04,True-up of accelerated tax depreciation vs straight-line book depreciation,-35000.00,815000.00,Reclassification between tax provision and book D&A,0.00
+Operating Income (EBIT),2480000.00,CALC,Subtotal Operating Income,-670000.00,1810000.00,"EBIT overstatement in management accounts of ,000 (27.0%)",-705000.00
+Interest Expense,320000.00,AJE-05,Accrued interest on subordinated shareholder debt unrecorded in monthly pack,45000.00,365000.00,Financing cost under-accrual,0.00
+Tax Expense,453600.00,AJE-06,Deferred tax liability adjustment resulting from revenue reversal & bonus accrual,-142800.00,310800.00,Tax effect of pre-tax audit adjustments at 21% blended rate,0.00
+Net Income,1706400.00,CALC,Subtotal Net Income,-572200.00,1134200.00,"Net income overstatement of ,200 (33.5%)",-705000.00

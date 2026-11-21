@@ -1,0 +1,7 @@
+From_Entity,To_Entity,Transaction_Category,Entity_A_Recorded_Balance,Entity_B_Recorded_Balance,Variance_Break,Root_Cause_Explanation,Elimination_Impact_EBITDA,Elimination_Impact_Balance_Sheet
+Entity_10_US,Entity_20_UK,Trade_Receivable_Payable,450000.00,420000.00,30000.00,"Goods in transit shipped Dec 28, received Jan 08 in UK. Entity 20 did not accrue in-transit inventory",0.00,30000.00
+Entity_10_US,Entity_20_UK,Corporate_Management_Fee,120000.00,120000.00,0.00,Monthly allocation of executive overhead (/mo). Matches perfectly,0.00,0.00
+Entity_20_UK,Entity_30_EU,Sub-Assembly_Component_Sales,310000.00,285000.00,25000.00,"FX translation difference: UK booked at GBP/EUR 1.18, EU booked at 1.15; plus unrecorded price adjustment",25000.00,25000.00
+Entity_30_EU,Entity_10_US,Intercompany_Working_Capital_Loan,500000.00,500000.00,0.00,Principal matches. Zero variance,0.00,0.00
+Entity_30_EU,Entity_10_US,Loan_Accrued_Interest,18500.00,0.00,18500.00,Entity 30 accrued .5k interest receivable; Entity 10 failed to accrue interest expense,-18500.00,18500.00
+TOTAL,Group Intercompany Summary,1398500.00,1325000.00,73500.00,"Net group break of ,500 across trading and financing lines",6500.00,73500.00

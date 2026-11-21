@@ -1,0 +1,19 @@
+Balance_Sheet_Line,FY2021_Amount,FY2022_Amount,FY2023_Amount,Movement_21_22,Movement_22_23,Analytical_Working_Capital_Impact
+Cash & Cash Equivalents,410000.00,485000.00,524050.00,75000.00,39050.00,Cash balance per reconciled bank accounts
+Trade Accounts Receivable,2180000.00,2630000.00,3250000.00,450000.00,620000.00,Working capital drain; DSO stretched from 42 to 48 days
+Allowance for Doubtful Accounts,-45000.00,-52000.00,-42500.00,-7000.00,9500.00,Under-reserved in FY23;  Vanguard dispute not provided for
+"Inventories (Raw, WIP, FG)",3100000.00,3480000.00,4000000.00,380000.00,520000.00,Inventory build; buffer stock of fasteners and titanium
+Prepaid Expenses & Other Current Assets,280000.00,310000.00,345000.00,30000.00,35000.00,Prepaid software licenses and insurance premiums
+Total Current Assets,5925000.00,6853000.00,8076550.00,928000.00,1223550.00,Current asset base expanded 36.3% over 2 years
+"Gross Property, Plant & Equipment",5850000.00,7020000.00,8450000.00,1170000.00,1430000.00,CapEx additions: CNC milling centers and automated warehouse racks
+Less: Accumulated Depreciation,-2100000.00,-2850000.00,-3700000.00,-750000.00,-850000.00,Straight-line book depreciation roll-forward
+"Net Property, Plant & Equipment",3750000.00,4170000.00,4750000.00,420000.00,580000.00,Net fixed assets expanded from .75M to .75M
+Total Assets,9675000.00,11023000.00,12826550.00,1348000.00,1803550.00,Balance sheet expanded to .83M
+Trade Accounts Payable,1420000.00,1730000.00,2110000.00,310000.00,380000.00,Working capital source; DPO extended from 38 to 46 days
+Accrued Payroll & Operating Expenses,480000.00,560000.00,650000.00,80000.00,90000.00,"Accrued wages, commissions, and annual bonus pool"
+Deferred Revenue,180000.00,220000.00,280000.00,40000.00,60000.00,Customer advance deposits on long-lead custom tooling
+Total Current Liabilities,2080000.00,2510000.00,3040000.00,430000.00,530000.00,Current obligations increased +46.2%
+Senior Bank Debt (Term Loan & Revolver),3100000.00,2800000.00,3500000.00,-300000.00,700000.00,Revolver drawn down in Q4 FY23 to finance inventory surge
+Subordinated Shareholder Note,500000.00,500000.00,500000.00,0.00,0.00,Founder subordinated bridge loan; .5k unaccrued interest
+Total Liabilities,5680000.00,5810000.00,7040000.00,130000.00,1230000.00,Total debt and liabilities
+Shareholders Equity & Retained Earnings,3995000.00,5213000.00,5786550.00,1218000.00,573550.00,Net income retained less owner dividends

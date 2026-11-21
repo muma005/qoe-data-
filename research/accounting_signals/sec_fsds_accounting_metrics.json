@@ -1,0 +1,241 @@
+{
+  "metadata": {
+    "dataset": "SEC EDGAR Financial Statement Data Sets (FSDS) 2024 Q3",
+    "source": "U.S. Securities and Exchange Commission (SEC)",
+    "filing_quarter": "2024 Q3 (Filings received July 1, 2024 to September 30, 2024)",
+    "total_submissions": 6699,
+    "unique_ciks": 6008,
+    "total_taxonomy_tags": 83106,
+    "total_presentation_lines": 741760,
+    "total_numeric_facts": 3521878
+  },
+  "corporate_restatements": {
+    "total_filings": 6699,
+    "prevrpt_count": 169,
+    "prevrpt_restatement_rate": 0.02522764591730109,
+    "restatements_by_form": {
+      "S-1/A": 47,
+      "10-Q": 27,
+      "S-1": 26,
+      "S-4/A": 12,
+      "10-K": 10,
+      "F-1": 10,
+      "F-1/A": 10,
+      "10-K/A": 9,
+      "S-4": 5,
+      "20-F": 4,
+      "6-K": 2,
+      "10-Q/A": 2,
+      "20-F/A": 1,
+      "F-4/A": 1,
+      "10-QT": 1,
+      "10-12G": 1,
+      "8-K": 1
+    },
+    "restatements_by_accelerated_filer_status": {
+      "1-LAF": {
+        "count": 2164,
+        "mean": 0.0027726432532347504
+      },
+      "2-ACC": {
+        "count": 833,
+        "mean": 0.006002400960384154
+      },
+      "4-NON": {
+        "count": 3670,
+        "mean": 0.042779291553133515
+      }
+    }
+  },
+  "reporting_complexity_and_opacity": {
+    "total_tags": 83106,
+    "standard_us_gaap_tags": 8153,
+    "custom_extension_tags": 74953,
+    "custom_extension_ratio": 0.9018963733063798,
+    "abstract_structure_ratio": 0.0,
+    "custom_by_datatype": {
+      "decimal": {
+        "count": 29,
+        "sum": 25,
+        "mean": 0.8620689655172413
+      },
+      "integer": {
+        "count": 49,
+        "sum": 43,
+        "mean": 0.8775510204081632
+      },
+      "mass": {
+        "count": 2,
+        "sum": 0,
+        "mean": 0.0
+      },
+      "monetary": {
+        "count": 74982,
+        "sum": 67311,
+        "mean": 0.8976954469072578
+      },
+      "perShare": {
+        "count": 839,
+        "sum": 714,
+        "mean": 0.8510131108462455
+      },
+      "percent": {
+        "count": 803,
+        "sum": 732,
+        "mean": 0.9115815691158157
+      },
+      "pure": {
+        "count": 30,
+        "sum": 24,
+        "mean": 0.8
+      },
+      "shares": {
+        "count": 6372,
+        "sum": 6104,
+        "mean": 0.9579409918392969
+      }
+    }
+  },
+  "financial_statement_architecture": {
+    "total_presentation_lines": 741760,
+    "statement_distribution": {
+      "BS": 243871,
+      "CF": 223963,
+      "IS": 140137,
+      "EQ": 91055,
+      "CI": 19790,
+      "UN": 19415,
+      "SI": 3420,
+      "CP": 1
+    },
+    "statement_percentages": {
+      "BS": 32.88213339949195,
+      "CF": 30.19785559804329,
+      "IS": 18.89525006337204,
+      "EQ": 12.277321439165538,
+      "CI": 2.6683673744559444,
+      "UN": 2.6178045768096085,
+      "SI": 0.46113271453457955,
+      "CP": 0.00013483412705689462
+    },
+    "negating_contra_item_rate": 0.1413934426229508,
+    "depth_statistics": {
+      "count": 741760.0,
+      "mean": 0.07445400129421915,
+      "std": 0.2625084682198013,
+      "min": 0.0,
+      "25%": 0.0,
+      "50%": 0.0,
+      "75%": 0.0,
+      "max": 1.0
+    },
+    "statement_line_counts": {
+      "BS": {
+        "count": 6688.0,
+        "mean": 36.463965311004785,
+        "std": 8.923426100395336,
+        "min": 1.0,
+        "25%": 31.0,
+        "50%": 37.0,
+        "75%": 42.0,
+        "max": 125.0
+      },
+      "CF": {
+        "count": 6647.0,
+        "mean": 33.6938468482022,
+        "std": 10.969152012238835,
+        "min": 5.0,
+        "25%": 27.0,
+        "50%": 33.0,
+        "75%": 40.0,
+        "max": 112.0
+      },
+      "CI": {
+        "count": 2587.0,
+        "mean": 7.649787398531117,
+        "std": 4.6312895355621775,
+        "min": 1.0,
+        "25%": 5.0,
+        "50%": 7.0,
+        "75%": 9.0,
+        "max": 42.0
+      },
+      "CP": {
+        "count": 1.0,
+        "mean": 1.0,
+        "std": NaN,
+        "min": 1.0,
+        "25%": 1.0,
+        "50%": 1.0,
+        "75%": 1.0,
+        "max": 1.0
+      },
+      "EQ": {
+        "count": 6331.0,
+        "mean": 14.38240404359501,
+        "std": 6.367239411767896,
+        "min": 3.0,
+        "25%": 10.0,
+        "50%": 13.0,
+        "75%": 17.0,
+        "max": 64.0
+      },
+      "IS": {
+        "count": 6685.0,
+        "mean": 20.96290201944652,
+        "std": 7.156337451814328,
+        "min": 1.0,
+        "25%": 16.0,
+        "50%": 20.0,
+        "75%": 24.0,
+        "max": 57.0
+      },
+      "SI": {
+        "count": 249.0,
+        "mean": 13.734939759036145,
+        "std": 8.651987004695563,
+        "min": 1.0,
+        "25%": 8.0,
+        "50%": 12.0,
+        "75%": 18.0,
+        "max": 49.0
+      },
+      "UN": {
+        "count": 403.0,
+        "mean": 48.17617866004963,
+        "std": 87.6277247085638,
+        "min": 1.0,
+        "25%": 9.0,
+        "50%": 15.0,
+        "75%": 52.0,
+        "max": 683.0
+      }
+    }
+  },
+  "numeric_disclosure_mechanics": {
+    "total_numeric_facts": 3521878,
+    "footnoted_facts": 7274,
+    "footnote_attachment_rate": 0.0020653753480387453,
+    "units_of_measure": {
+      "USD": 2991451,
+      "shares": 255128,
+      "pure": 184606,
+      "CAD": 21708,
+      "EUR": 18336
+    },
+    "core_gaap_tag_frequency": {
+      "Revenues": 50730,
+      "NetIncomeLoss": 73212,
+      "GrossProfit": 14380,
+      "OperatingIncomeLoss": 33526,
+      "Assets": 27667,
+      "Liabilities": 16201,
+      "StockholdersEquity": 141501,
+      "CashAndCashEquivalentsAtCarryingValue": 14919,
+      "AccountsReceivableNetCurrent": 8818,
+      "InventoryNet": 6406,
+      "AccountsPayableCurrent": 9521,
+      "Goodwill": 14083
+    }
+  }
+}

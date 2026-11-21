@@ -1,0 +1,69 @@
+{
+  "total_tenders": 200,
+  "procurement_methods": {
+    "Open Tender": 190,
+    "Request for Proposals": 5,
+    "Expression of Interest": 4,
+    "Disposal of assets": 1
+  },
+  "procurement_categories": {
+    "Works": 148,
+    "Goods": 25,
+    "Non Consultancy Services": 18,
+    "Consultancy Services": 8,
+    "Disposal of assets": 1
+  },
+  "advertising_notice_days": {
+    "mean": 11.10729166666667,
+    "median": 11.416666666666666,
+    "min": 6.416666666666667,
+    "max": 27.4375,
+    "std": 2.9168706183178816,
+    "p25": 9.458333333333334,
+    "p75": 11.416666666666666,
+    "statutory_short_notice_less_14d_pct": 88.0
+  },
+  "validity_in_days": {
+    "mean": 143.805,
+    "median": 120.0,
+    "min": 0.0,
+    "max": 210.0,
+    "distribution": {
+      "120": 96,
+      "210": 53,
+      "140": 11,
+      "154": 7,
+      "126": 5,
+      "90": 5,
+      "150": 4,
+      "14": 3,
+      "7": 3,
+      "147": 2,
+      "180": 2,
+      "119": 1,
+      "168": 1,
+      "91": 1,
+      "118": 1,
+      "182": 1,
+      "177": 1,
+      "0": 1,
+      "152": 1,
+      "89": 1
+    }
+  },
+  "preference_reservation_pct": 33.0,
+  "spec_volatility_addenda_pct": 5.0,
+  "free_access_tender_fee_0_pct": 93.0,
+  "top_procuring_entities": {
+    "Bungoma County Government": 59,
+    "Nakuru County Government": 53,
+    "Kajiado North NGCDF": 7,
+    "Suna East NGCDF": 7,
+    "NGCDF  BONCHARI": 7,
+    "Kwale County Government": 6,
+    "Nyeri County Government": 6,
+    "Makueni County Government": 4,
+    "Central Bank of Kenya": 4,
+    "Keiyo South constituency": 3
+  }
+}

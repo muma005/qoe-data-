@@ -1,0 +1,14 @@
+Bridge_Line_Item,FY2021_Amount,FY2022_Amount,FY2023_Amount,LTM_2023_Amount,Analytical_Description
+Reported Operating EBITDA (Baseline),3000000.00,3300000.00,3330000.00,3330000.00,Reconciled starting point from Trial Balance & Audited Statements
++ Transaction-Related Legal & Advisory Fees (ADJ-001),0.00,25000.00,145000.00,145000.00,M&A sell-side investment banking retainers and transaction legal fees
++ Restructuring & Severance Costs (ADJ-002),45000.00,0.00,85000.00,85000.00,Severance for closed Ohio warehouse FTEs; site fully shut down
++ Owner Compensation Normalization (ADJ-003),180000.00,190000.00,200000.00,200000.00,Net add-back: Actual salary () less market replacement CEO ()
++ Related-Party Rent Normalization (ADJ-004),60000.00,60000.00,60000.00,60000.00,Net add-back: Rent paid () less independent appraisal FMV ()
++ Exceptional Facility Repair (Net of Recovery) (ADJ-005),0.00,0.00,40000.00,40000.00,Storm roof repair ( invoice less  insurance recovery)
+- Non-Operating Insurance Recovery Gain (ADJ-006),0.00,0.00,-55000.00,-55000.00,Strip out one-off insurance recovery income from operating EBITDA
+- Accounting Cut-Off Reversal (Bill-and-Hold) (ADJ-009),0.00,0.00,-152000.00,-152000.00,Deduction: Reversal of premature invoice #9842 margin billed Dec 31
+- Unsupported Management Topside Plug (ADJ-010),0.00,0.00,-42500.00,-42500.00,Deduction: Reversal of unsupported manual journal entry to Other Income
+Total Net QoE Due Diligence Adjustments,285000.00,275000.00,280500.00,280500.00,Net impact of verified and supported diligence adjustments
+QoE Normalized / Adjusted EBITDA,3285000.00,3575000.00,3610500.00,3610500.00,Defensible baseline earnings for transaction valuation multiple
+Management Proposed EBITDA (Seller Deck),3350000.00,3620000.00,4118000.00,4118000.00,Unvetted EBITDA presented in seller pitch book and teaser
+Variance: QoE Adjusted vs Management Proposed,-65000.00,-45000.00,-507500.00,-507500.00,EBITDA Haircut: Management proposed EBITDA overstated by .5k in FY23

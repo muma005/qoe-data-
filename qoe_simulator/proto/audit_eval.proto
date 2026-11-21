@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package qoe.audit.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum AuditSeverity {
+  AUDIT_SEVERITY_UNSPECIFIED = 0;
+  INFO = 1;
+  MINOR_OBSERVATION = 2;
+  MATERIAL_DEFECT = 3;
+  CRITICAL_DISQUALIFIER = 4;
+}
+
+message SubmitEngagementForGradingRequest {
+  string engagement_id = 1;
+  string user_id = 2;
+  string scenario_id = 3;
+  string seed_hex_64 = 4;
+  string fdb_xlsx_blob_uri = 5;
+  string report_memo_json = 6;
+  string spa_exhibit_b_json = 7;
+  string submission_checksum_sha256 = 8;
+}
+
+message GradingJobQueuedResponse {
+  string job_id = 1;
+  string engagement_id = 2;
+  string status = 3; // "QUEUED", "PROCESSING", "COMPLETED", "FAILED"
+  google.protobuf.Timestamp queued_at = 4;
+  int32 estimated_duration_seconds = 5;
+}
+
+message GradingJobStatusRequest {
+  string job_id = 1;
+}
+
+message CellAuditFinding {
+  string sheet_name = 1;
+  string cell_coordinate = 2;
+  string formula_raw = 3;
+  string violation_type = 4;
+  AuditSeverity severity = 5;
+  double score_deduction = 6;
+  string rationale = 7;
+}
+
+message ASTAuditReport {
+  string engagement_id = 1;
+  int32 total_cells_scanned = 2;
+  int32 formulas_verified_reproducible = 3;
+  int32 hardcoded_constants_flagged = 4;
+  int32 circular_references_trapped = 5;
+  int32 check_bars_reconciled = 6;
+  repeated CellAuditFinding findings = 7;
+}
+
+message BenfordDigitAnomaly {
+  int32 digit = 1;
+  double observed_frequency = 2;
+  double expected_frequency = 3;
+  double z_score = 4;
+  bool is_statistically_anomalous = 5;
+}
+
+message ScanBenfordDistributionRequest {
+  string engagement_id = 1;
+  string ledger_table_name = 2;
+  string account_category_filter = 3;
+}
+
+message BenfordDistributionResult {
+  string engagement_id = 1;
+  int32 total_transactions_scanned = 2;
+  double kolmogorov_smirnov_statistic = 3;
+  bool passes_benford_uniformity = 4;
+  repeated BenfordDigitAnomaly first_digit_distribution = 5;
+  repeated BenfordDigitAnomaly second_digit_distribution = 6;
+}
+
+message QuadrantScoreBreakdown {
+  double q1_investigative_rigor = 1;      // Max 30.0
+  double q2_modeling_hygiene = 2;          // Max 25.0
+  double q3_commercial_judgment = 3;       // Max 25.0
+  double q4_legal_protection = 4;          // Max 20.0
+  double composite_score = 5;              // Max 100.0
+  bool passed_institutional_threshold = 6; // Composite >= 80.0
+}
+
+message GenerateEQCRMemoRequest {
+  string job_id = 1;
+  string engagement_id = 2;
+}
+
+message EQCRMemoResponse {
+  string engagement_id = 1;
+  string evaluating_partner_name = 2;
+  string overall_grade_letter = 3;
+  QuadrantScoreBreakdown scores = 4;
+  string memo_markdown_text = 5;
+  repeated string critical_defects_summary = 6;
+  repeated string commended_strengths_summary = 7;
+}
+
+message GradingJobStatusResponse {
+  string job_id = 1;
+  string status = 2;
+  QuadrantScoreBreakdown scores = 3;
+  ASTAuditReport ast_report = 4;
+  BenfordDistributionResult benford_result = 5;
+  EQCRMemoResponse eqcr_memo = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+service AuditEvaluationService {
+  rpc SubmitEngagementForGrading (SubmitEngagementForGradingRequest) returns (GradingJobQueuedResponse);
+  rpc GetGradingStatus (GradingJobStatusRequest) returns (GradingJobStatusResponse);
+  rpc RunASTFormulaAudit (RunASTFormulaAuditRequest) returns (ASTAuditReport);
+  rpc ScanBenfordDistribution (ScanBenfordDistributionRequest) returns (BenfordDistributionResult);
+  rpc GenerateEQCRMemo (GenerateEQCRMemoRequest) returns (EQCRMemoResponse);
+}

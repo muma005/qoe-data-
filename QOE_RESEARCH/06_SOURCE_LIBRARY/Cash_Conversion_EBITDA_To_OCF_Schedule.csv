@@ -1,0 +1,14 @@
+Cash_Flow_Metric,FY2021_Amount,FY2022_Amount,FY2023_Amount,LTM_2023_Amount,Formula_Definition,Analytical_Observation
+Reported Operating EBITDA,3000000.00,3300000.00,3330000.00,3330000.00,Operating Profit + D&A,Core baseline operating profitability
+Change in Trade Accounts Receivable,-320000.00,-450000.00,-620000.00,-620000.00,Prior AR - Current AR,DSO expanded from 42 days to 51 days in FY23; cash trapped in working capital
+Change in Inventory,-250000.00,-380000.00,-520000.00,-520000.00,Prior Inv - Current Inv,Buffer stock build and titanium raw material safety stock absorption
+Change in Trade Accounts Payable & Accruals,210000.00,310000.00,380000.00,380000.00,Current AP - Prior AP,Supplier credit stretched from 38 days to 46 days
+Total Net Working Capital Investment,-360000.00,-520000.00,-760000.00,-760000.00,AR change + Inv change + AP change,Working capital drag accelerated significantly in FY23
+Cash Taxes Paid,-410000.00,-460000.00,-440000.00,-440000.00,Tax expense adjusted for deferred tax,Corporate income tax cash payments
+Cash Interest Paid,-280000.00,-300000.00,-320000.00,-320000.00,Gross interest paid on debt,Debt service interest burden
+Operating Cash Flow (OCF),1950000.00,2020000.00,1810000.00,1810000.00,EBITDA + NWC + Taxes + Interest,OCF dropped -10.4% in FY23 despite record sales
+Operating Cash Conversion Ratio (OCF / EBITDA),65.00%,61.21%,54.35%,54.35%,OCF / EBITDA,"Cash conversion dropped 1,065 bps; severe red flag for PE debt service"
+Maintenance Capital Expenditure (CapEx),-450000.00,-520000.00,-580000.00,-580000.00,"Routine tooling, vehicle, IT replacement",Required baseline reinvestment to maintain operating capacity
+Free Cash Flow (FCF) Pre-Growth CapEx,1500000.00,1500000.00,1230000.00,1230000.00,OCF - Maintenance CapEx,Operating cash available for debt repayment or expansion
+Growth Capital Expenditure (CapEx),-350000.00,-650000.00,-850000.00,-850000.00,New 5-axis CNC machines and facility expansion,Discretionary growth investments
+Net Free Cash Flow,1150000.00,850000.00,380000.00,380000.00,FCF - Growth CapEx,Bottom-line cash generation after all CapEx

@@ -1,0 +1,13 @@
+Month_ID,Month_Name,Revenue_Amount,Revenue_Share_Pct,COGS_Amount,Gross_Profit,Gross_Margin_Pct,SG_A_Opex,Operating_EBITDA,EBITDA_Margin_Pct,DSO_Days,Seasonal_Trading_Observations
+2023-01,January,1750000.00,7.04,1090000.00,660000.00,37.71,480000.00,180000.00,10.29,44.2,Post-holiday lull; slower plant ramp-up
+2023-02,February,1820000.00,7.32,1125000.00,695000.00,38.19,485000.00,210000.00,11.54,43.8,Short month; normal operating cadence
+2023-03,March,2150000.00,8.65,1330000.00,820000.00,38.14,510000.00,310000.00,14.42,45.1,Q1 quarter-end shipping surge
+2023-04,April,1950000.00,7.85,1210000.00,740000.00,37.95,495000.00,245000.00,12.56,44.6,Spring catalog volume pickup
+2023-05,May,2080000.00,8.37,1285000.00,795000.00,38.22,505000.00,290000.00,13.94,45.8,Peak construction and industrial demand
+2023-06,June,2240000.00,9.01,1380000.00,860000.00,38.39,520000.00,340000.00,15.18,47.2,Q2 close; strong commercial shipments
+2023-07,July,1880000.00,7.57,1180000.00,700000.00,37.23,490000.00,210000.00,11.17,46.5,Summer plant maintenance shutdown (1 week)
+2023-08,August,1920000.00,7.73,1205000.00,715000.00,37.24,495000.00,220000.00,11.46,46.1,Steady late-summer activity
+2023-09,September,2280000.00,9.18,1410000.00,870000.00,38.16,530000.00,340000.00,14.91,48.9,Q3 budget push; steel price surcharge introduced
+2023-10,October,2120000.00,8.53,1315000.00,805000.00,37.97,515000.00,290000.00,13.68,48.2,Solid autumn order backlog fulfillment
+2023-11,November,2180000.00,8.77,1355000.00,825000.00,37.84,525000.00,300000.00,13.76,49.5,Pre-holiday customer inventory buildup
+2023-12,December,2480000.00,9.98,1515000.00,965000.00,38.91,570000.00,395000.00,15.93,51.4,Year-end hockey stick surge; contains  bill-and-hold order #9842

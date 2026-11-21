@@ -1,0 +1,6 @@
+Product_Category,FY22_Units_Sold,FY22_Avg_Price,FY22_Revenue,FY23_Units_Sold,FY23_Avg_Price,FY23_Revenue,Total_Revenue_Change,Price_Effect,Volume_Effect,Mix_Effect,Net_PVM_Reconciliation,Analytical_Driver
+Commercial Fasteners & Hardware,1420000,10.0000,14200000.00,1510000,10.4967,15850000.00,1650000.00,750000.00,900000.00,0.00,1650000.00,Price hike passed through in Q2 (+5.0%); unit volume rose +6.3%
+Precision Machined Components,70000,80.0000,5600000.00,810000,83.9506,6800000.00,1200000.00,320000.00,880000.00,0.00,1200000.00,High organic volume growth in aerospace (+15.7%); selective price increase (+4.9%)
+Assembly & Tooling Services,40000,50.0000,2000000.00,42000,52.3810,2200000.00,200000.00,100000.00,100000.00,0.00,200000.00,Modest contract volume growth (+5.0%); hourly labor billing rate adjustment
+Portfolio Mix Shift Effect,,,,,,,0.00,0.00,0.00,0.00,0.00,Mix shifted slightly toward precision components (25.7% to 27.4% of revenue)
+TOTAL GROUP,1530000,14.2484,21800000.00,1633000,15.2174,24850000.00,3050000.00,1170000.00,1880000.00,0.00,3050000.00,Growth was 61.6% Volume-driven (.88M) and 38.4% Price-driven (.17M)

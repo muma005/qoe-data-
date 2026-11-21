@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package qoe.sim.clock.v1;
+
+enum TimelineTrack {
+  TRACK_UNSPECIFIED = 0;
+  TRACK_AUCTION_COMPRESSED = 1;  // 21–25 Virtual Days
+  TRACK_BILATERAL_EXTENDED = 2;  // 40–50 Virtual Days
+}
+
+enum MilestoneID {
+  MS_UNSPECIFIED = 0;
+  MS01_ENGAGEMENT_SCOPING = 1;
+  MS02_FIRST_VDR_INGESTION = 2;
+  MS03_INITIAL_IRL_DISPATCH = 3;
+  MS04_INTERIM_FLASH_READOUT = 4;
+  MS05_SUPPLEMENTAL_DEEP_DIVE = 5;
+  MS06_DELIVERABLE_SUBMISSION = 6;
+  MS07_POST_SUBMISSION_DEFENSE = 7;
+}
+
+message AdvanceTimeRequest {
+  string simulation_id = 1;
+  uint32 hours_to_advance = 2;   // Discrete advance quantum (e.g. 1, 4, 8)
+  string requesting_actor_id = 3;
+}
+
+message WarpRequest {
+  string simulation_id = 1;
+  string target_event_id = 2;    // Optional: jump to specific matured task
+  bool warp_to_next_business_day = 3;
+}
+
+message ClockStateResponse {
+  string simulation_id = 1;
+  TimelineTrack track_type = 2;
+  uint32 sim_day = 3;
+  uint32 sim_hour = 4;
+  uint32 sim_minute = 5;
+  string virtual_timestamp = 6;  // ISO-8601 UTC
+  bool is_paused = 7;
+  MilestoneID current_milestone = 8;
+  double hours_until_deadline = 9;
+  uint32 active_rework_loops = 10;
+}
+
+message MilestoneStatusRequest {
+  string simulation_id = 1;
+}
+
+message MilestoneDetail {
+  MilestoneID milestone_id = 1;
+  string milestone_name = 2;
+  bool is_completed = 3;
+  bool is_blocked = 4;
+  string target_deadline = 5;
+  repeated string pending_deliverables = 6;
+}
+
+message MilestoneStatusResponse {
+  string simulation_id = 1;
+  MilestoneID active_milestone = 2;
+  repeated MilestoneDetail milestones = 3;
+}
+
+message SubmitMilestoneDeliverableRequest {
+  string simulation_id = 1;
+  MilestoneID milestone_id = 2;
+  string deliverable_artifact_id = 3;
+  string submission_notes = 4;
+}
+
+message SubmitMilestoneDeliverableResponse {
+  bool accepted = 1;
+  string evaluation_status = 2; // "PENDING_EVAL", "ACCEPTED", "REJECTED"
+  repeated string validation_errors = 3;
+}
+
+service ClockService {
+  rpc AdvanceTime (AdvanceTimeRequest) returns (ClockStateResponse);
+  rpc WarpToNextEvent (WarpRequest) returns (ClockStateResponse);
+  rpc GetMilestoneStatus (MilestoneStatusRequest) returns (MilestoneStatusResponse);
+  rpc SubmitMilestoneDeliverable (SubmitMilestoneDeliverableRequest) returns (SubmitMilestoneDeliverableResponse);
+}

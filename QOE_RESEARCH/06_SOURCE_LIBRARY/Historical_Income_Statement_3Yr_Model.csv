@@ -1,0 +1,20 @@
+Line_Item,FY2021_Amount,FY2021_Pct_Rev,FY2022_Amount,FY2022_Pct_Rev,FY2023_Amount,FY2023_Pct_Rev,LTM_2023_Amount,YoY_21_22_Growth_Pct,YoY_22_23_Growth_Pct,CAGR_21_23_Pct,Analytical_Notes
+Commercial Fasteners & Hardware,12400000.00,65.26,14200000.00,65.14,15850000.00,63.78,15850000.00,14.52,11.62,13.06,Core wholesale catalog; steady 12-14% volume growth
+Precision Machined Components,4800000.00,25.26,5600000.00,25.69,6800000.00,27.36,6800000.00,16.67,21.43,19.02,High-margin aerospace & medical CNC lines; rapid expansion
+Assembly & Tooling Services,1800000.00,9.47,2000000.00,9.17,2200000.00,8.85,2200000.00,11.11,10.00,10.55,Value-add kitting and assembly services
+Gross Revenue,19000000.00,100.00,21800000.00,100.00,24850000.00,100.00,24850000.00,14.74,13.99,14.36,Total top-line revenue before returns and discounts
+Direct Raw Materials,7200000.00,37.89,8450000.00,38.76,9850000.00,39.64,9850000.00,17.36,16.57,16.96,"Steel, brass, titanium rod; input cost inflation outpaced price adjustments in FY23"
+Direct Manufacturing Labour,2400000.00,12.63,2750000.00,12.61,3250000.00,13.08,3250000.00,14.58,18.18,16.37,Shop floor machinist wages; overtime spikes in Q4 FY23
+Manufacturing Overhead & Inbound Freight,1850000.00,9.74,2050000.00,9.40,2300000.00,9.26,2300000.00,10.81,12.20,11.50,"Power, maintenance, plant tooling, inbound trucking"
+Cost of Goods Sold (COGS),11450000.00,60.26,13250000.00,60.78,15400000.00,61.97,15400000.00,15.72,16.23,15.97,Direct production and catalog product procurement costs
+Gross Profit,7550000.00,39.74,8550000.00,39.22,9450000.00,38.03,9450000.00,13.25,10.53,11.88,Gross margin compressed by 171 bps over 3 years due to steel inflation
+Sales & Marketing Expenses,2100000.00,11.05,2450000.00,11.24,2850000.00,11.47,2850000.00,16.67,16.33,16.50,"Sales commissions, regional reps, marketing collateral"
+General & Administrative Expenses,2450000.00,12.89,2800000.00,12.84,3270000.00,13.16,3270000.00,14.29,16.79,15.53,"Executive salaries, office leases, IT, audit, insurance"
+Total Operating Expenses (SG&A),4550000.00,23.95,5250000.00,24.08,6120000.00,24.63,6120000.00,15.38,16.57,15.98,Opex expanded from 23.95% to 24.63% of revenue
+Reported Operating EBITDA,3000000.00,15.79,3300000.00,15.14,3330000.00,13.40,3330000.00,10.00,0.91,5.36,EBITDA margin contracted by 239 bps; profit stalled in FY23 despite 14% growth
+Depreciation & Amortization,650000.00,3.42,750000.00,3.44,850000.00,3.42,850000.00,15.38,13.33,14.35,Straight-line book depreciation on plant machinery and fleet
+Operating Profit (EBIT),2350000.00,12.37,2550000.00,11.70,2480000.00,9.98,2480000.00,8.51,-2.75,2.73,Operating profit turned negative in growth (-2.75% in FY23)
+Interest & Financing Expenses,280000.00,1.47,300000.00,1.38,320000.00,1.29,320000.00,7.14,6.67,6.90,Senior bank debt facility interest and equipment financing
+Profit Before Tax (EBT),2070000.00,10.89,2250000.00,10.32,2160000.00,8.69,2160000.00,8.70,-4.00,2.15,Pre-tax income peaked in FY22
+Income Tax Expense,434700.00,2.29,472500.00,2.17,453600.00,1.83,453600.00,8.70,-4.00,2.15,Effective tax rate 21.0%
+Net Income,1635300.00,8.61,1777500.00,8.15,1706400.00,6.87,1706400.00,8.70,-4.00,2.15,Net profit margin eroded from 8.61% to 6.87%

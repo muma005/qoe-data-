@@ -1,0 +1,228 @@
+{
+  "total_records_analyzed": 50000,
+  "active_employees_analyzed": 49998,
+  "total_labor_cost_summary_usd": {
+    "total_compensation": 6999942542.01,
+    "base_salaries": 4572675082.469999,
+    "overtime_pay": 467250320.39,
+    "other_salaries_and_bonuses": 264466262.08,
+    "total_cash_salaries": 5304391664.940001,
+    "mandatory_retirement_pension": 691598887.59,
+    "mandatory_health_and_dental": 681600511.96,
+    "other_benefits": 322351477.52,
+    "total_benefits": 1695550877.0700002,
+    "shares_of_total_compensation_pct": {
+      "base_salary_share": 65.32,
+      "overtime_share": 6.68,
+      "other_salaries_share": 3.78,
+      "total_benefits_share": 24.22,
+      "retirement_share": 9.88,
+      "health_share": 9.74
+    },
+    "loading_multipliers": {
+      "benefit_loading_on_base_salary_pct": 37.08,
+      "benefit_loading_on_total_cash_salary_pct": 31.97,
+      "full_labor_cost_multiplier_on_base": 1.53
+    }
+  },
+  "compensation_statistical_distributions": {
+    "base_salaries_usd": {
+      "count": 49508,
+      "mean": 92362.45,
+      "median": 85691.4,
+      "std": 60823.35,
+      "min": 2.94,
+      "p25": 51848.71,
+      "p75": 124125.05,
+      "p95": 201934.82,
+      "max": 1138860.92
+    },
+    "overtime_pay_usd": {
+      "count": 24269,
+      "mean": 19253.33,
+      "median": 7732.91,
+      "std": 32947.05,
+      "min": 0.01,
+      "p25": 1989.06,
+      "p75": 21558.84,
+      "p95": 79445.51,
+      "max": 504713.8
+    },
+    "total_compensation_usd": {
+      "count": 49998,
+      "mean": 140004.45,
+      "median": 128046.74,
+      "std": 95751.75,
+      "min": 5.95,
+      "p25": 77437.78,
+      "p75": 189111.63,
+      "p95": 313990.87,
+      "max": 2097292.99
+    }
+  },
+  "overtime_dynamics": {
+    "overtime_recipients_count": 24269,
+    "overtime_recipients_rate_pct": 48.54,
+    "employees_with_ot_gt_25_pct_of_base": 5662,
+    "employees_with_ot_gt_50_pct_of_base": 2057,
+    "employees_with_ot_gt_100_pct_of_base": 438,
+    "ot_gt_25_pct_rate": 12.39,
+    "ot_gt_50_pct_rate": 4.5
+  },
+  "top_departments": {
+    "Public Health": {
+      "headcount": 11930,
+      "total_spend": 1635928711.27,
+      "total_base": 1128365665.2,
+      "total_ot": 64258377.07,
+      "total_benefits": 387895685.14,
+      "mean_comp": 137127.3,
+      "median_comp": 125141.58,
+      "ot_share_pct": 3.93,
+      "benefit_loading_pct": 34.38
+    },
+    "Municipal Transportation Agcy": {
+      "headcount": 7328,
+      "total_spend": 922460191.07,
+      "total_base": 571918099.28,
+      "total_ot": 76261636.78,
+      "total_benefits": 237008797.63,
+      "mean_comp": 125881.58,
+      "median_comp": 117913.4,
+      "ot_share_pct": 8.27,
+      "benefit_loading_pct": 41.44
+    },
+    "Police": {
+      "headcount": 3551,
+      "total_spend": 720107733.44,
+      "total_base": 385545057.76,
+      "total_ot": 148568759.59,
+      "total_benefits": 126948152.59,
+      "mean_comp": 202790.12,
+      "median_comp": 185184.0,
+      "ot_share_pct": 20.63,
+      "benefit_loading_pct": 32.93
+    },
+    "Public Utilities Commission": {
+      "headcount": 3242,
+      "total_spend": 497522265.32,
+      "total_base": 349229164.53,
+      "total_ot": 13285583.44,
+      "total_benefits": 124987224.09,
+      "mean_comp": 153461.53,
+      "median_comp": 144926.53,
+      "ot_share_pct": 2.67,
+      "benefit_loading_pct": 35.79
+    },
+    "Fire Department": {
+      "headcount": 2380,
+      "total_spend": 469776326.08,
+      "total_base": 272213343.34,
+      "total_ot": 62009107.04,
+      "total_benefits": 90325556.2,
+      "mean_comp": 197385.01,
+      "median_comp": 178751.23,
+      "ot_share_pct": 13.2,
+      "benefit_loading_pct": 33.18
+    },
+    "Human Services Agency": {
+      "headcount": 3162,
+      "total_spend": 354827419.84,
+      "total_base": 248482515.89,
+      "total_ot": 3229428.39,
+      "total_benefits": 99309138.79,
+      "mean_comp": 112216.14,
+      "median_comp": 104245.79,
+      "ot_share_pct": 0.91,
+      "benefit_loading_pct": 39.97
+    },
+    "Airport Commission": {
+      "headcount": 2458,
+      "total_spend": 331962579.27,
+      "total_base": 225623278.33,
+      "total_ot": 10471361.69,
+      "total_benefits": 87695042.23,
+      "mean_comp": 135053.94,
+      "median_comp": 127299.04,
+      "ot_share_pct": 3.15,
+      "benefit_loading_pct": 38.87
+    },
+    "Sheriff": {
+      "headcount": 1245,
+      "total_spend": 265837681.13,
+      "total_base": 125437041.17,
+      "total_ot": 55421929.67,
+      "total_benefits": 71299873.87,
+      "mean_comp": 213524.24,
+      "median_comp": 188000.7,
+      "ot_share_pct": 20.85,
+      "benefit_loading_pct": 56.84
+    },
+    "Public Works": {
+      "headcount": 1901,
+      "total_spend": 261591463.8,
+      "total_base": 181856440.1,
+      "total_ot": 7354999.88,
+      "total_benefits": 67230062.45,
+      "mean_comp": 137607.29,
+      "median_comp": 125862.18,
+      "ot_share_pct": 2.81,
+      "benefit_loading_pct": 36.97
+    },
+    "City Administrator": {
+      "headcount": 1248,
+      "total_spend": 161085638.56,
+      "total_base": 111204712.42,
+      "total_ot": 3909849.6,
+      "total_benefits": 42388496.79,
+      "mean_comp": 129075.03,
+      "median_comp": 121044.09,
+      "ot_share_pct": 2.43,
+      "benefit_loading_pct": 38.12
+    }
+  },
+  "employment_type_breakdown": {
+    "Other": {
+      "headcount": 237,
+      "total_comp": 5183035.45,
+      "mean_base": 15488.39,
+      "mean_benefits": 5261.7,
+      "zero_benefit_rate": 0.42
+    },
+    "Permanent Civil Service": {
+      "headcount": 37673,
+      "total_comp": 5851939155.21,
+      "mean_base": 98873.13,
+      "mean_benefits": 38205.4,
+      "zero_benefit_rate": 0.01
+    },
+    "Permanent Exempt": {
+      "headcount": 3990,
+      "total_comp": 737705873.37,
+      "mean_base": 134892.92,
+      "mean_benefits": 45074.68,
+      "zero_benefit_rate": 0.03
+    },
+    "Temporary Civil Service": {
+      "headcount": 1,
+      "total_comp": 84112.15,
+      "mean_base": 57898.12,
+      "mean_benefits": 25614.03,
+      "zero_benefit_rate": 0.0
+    },
+    "Temporary Exempt": {
+      "headcount": 7816,
+      "total_comp": 369350288.26,
+      "mean_base": 36079.57,
+      "mean_benefits": 8470.65,
+      "zero_benefit_rate": 0.08
+    },
+    "Temporary Provisional": {
+      "headcount": 281,
+      "total_comp": 35680077.57,
+      "mean_base": 84976.5,
+      "mean_benefits": 31714.69,
+      "zero_benefit_rate": 0.0
+    }
+  }
+}

@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package qoe.workspace.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum VDRNodeType {
+  VDR_NODE_TYPE_UNSPECIFIED = 0;
+  FOLDER = 1;
+  DOCUMENT_PDF = 2;
+  DOCUMENT_XLSX = 3;
+  DOCUMENT_CSV = 4;
+}
+
+enum ReleaseWave {
+  RELEASE_WAVE_UNSPECIFIED = 0;
+  WAVE_1_INITIAL = 1;
+  WAVE_2_SUBLEDGERS = 2;
+  WAVE_3_FRIDAY_DUMP = 3;
+  WAVE_4_DRIP_FEED = 4;
+}
+
+message VDRNode {
+  string node_id = 1;
+  string parent_node_id = 2;
+  string title = 3;
+  VDRNodeType node_type = 4;
+  ReleaseWave release_wave = 5;
+  int32 unlock_sim_day = 6;
+  bool is_locked = 7;
+  int64 file_size_bytes = 8;
+  string sha256_checksum = 9;
+  string canonical_json_ref = 10;
+  repeated VDRNode children = 11;
+}
+
+message GetVDRTreeRequest {
+  string engagement_id = 1;
+  string user_id = 2;
+  int32 current_sim_day = 3;
+}
+
+message VDRTreeResponse {
+  string engagement_id = 1;
+  int32 current_sim_day = 2;
+  repeated VDRNode root_nodes = 3;
+  int32 total_unlocked_documents = 4;
+  int32 total_locked_documents = 5;
+}
+
+message GetVDRDocumentRequest {
+  string engagement_id = 1;
+  string document_id = 2;
+  string user_id = 3;
+}
+
+message DocumentWatermarkConfig {
+  string watermark_text = 1;
+  string ip_address_hash = 2;
+  string session_uuid = 3;
+  bool enable_steganographic_dots = 4;
+}
+
+message VDRDocumentResponse {
+  string document_id = 1;
+  string file_name = 2;
+  string mime_type = 3;
+  string download_signed_url = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  DocumentWatermarkConfig watermark = 6;
+  string canonical_json_payload = 7; // Present if JSON-first client rendering is active
+}
+
+enum IRLPriority {
+  IRL_PRIORITY_UNSPECIFIED = 0;
+  P1_CRITICAL = 1;
+  P2_HIGH = 2;
+  P3_ROUTINE = 3;
+}
+
+message IRLThreadTurn {
+  int32 turn_id = 1;
+  string sender_persona_id = 2;
+  string sender_display_name = 3;
+  google.protobuf.Timestamp sent_at = 4;
+  string message_text = 5;
+  repeated string attached_document_ids = 6;
+}
+
+message SubmitIRLInquiryRequest {
+  string engagement_id = 1;
+  string workstream_code = 2;
+  IRLPriority priority = 3;
+  string target_persona_id = 4;
+  string subject = 5;
+  string inquiry_body = 6;
+  repeated string cited_vdr_doc_ids = 7;
+}
+
+message IRLInquiryResponse {
+  string request_id = 1;
+  string status = 2;
+  int32 sim_day_submitted = 3;
+  double estimated_latency_hours = 4;
+  string pushback_tier_triggered = 5;
+  repeated IRLThreadTurn thread_history = 6;
+}
+
+message TabState {
+  string tab_id = 1;
+  string active_cell = 2;
+  int32 scroll_row = 3;
+  int32 scroll_col = 4;
+  bool check_bar_passed = 5;
+}
+
+message WorkspaceStateSyncRequest {
+  string engagement_id = 1;
+  string user_id = 2;
+  int32 active_tab_index = 3;
+  repeated TabState tab_states = 4;
+  string active_vdr_doc_id = 5;
+  string hmac_signature = 6;
+}
+
+message WorkspaceStateSyncResponse {
+  bool sync_acknowledged = 1;
+  google.protobuf.Timestamp server_timestamp = 2;
+  int32 server_sim_day = 3;
+  string check_bar_aggregate_status = 4;
+}
+
+message SubmitDeliverablePackageRequest {
+  string engagement_id = 1;
+  string user_id = 2;
+  string fdb_workbook_bytes_base64 = 3;
+  string qoe_report_memo_json = 4;
+  string spa_exhibit_b_schedule_json = 5;
+  string client_checksum_sha256 = 6;
+}
+
+message DeliverableCompilationResponse {
+  string submission_id = 1;
+  bool compilation_success = 2;
+  repeated string compilation_errors = 3;
+  google.protobuf.Timestamp submitted_at = 4;
+  string audit_eval_queue_job_id = 5;
+}
+
+service WorkspaceGatewayService {
+  rpc GetVDRTree (GetVDRTreeRequest) returns (VDRTreeResponse);
+  rpc GetVDRDocument (GetVDRDocumentRequest) returns (VDRDocumentResponse);
+  rpc SubmitIRLInquiry (SubmitIRLInquiryRequest) returns (IRLInquiryResponse);
+  rpc SyncWorkspaceState (WorkspaceStateSyncRequest) returns (WorkspaceStateSyncResponse);
+  rpc CompileDeliverables (SubmitDeliverablePackageRequest) returns (DeliverableCompilationResponse);
+}

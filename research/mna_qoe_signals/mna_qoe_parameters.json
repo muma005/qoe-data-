@@ -1,0 +1,253 @@
+{
+  "metadata": {
+    "source_documents": [
+      "SEC Form DEFM14A Definitive Merger Proxy Statement (Twitter, Inc. / Elon Musk, 2022)",
+      "Examiner Anton Valukas Report on Lehman Brothers Holdings Inc. (SDNY Bankruptcy, 2010)"
+    ],
+    "domain": "M&A Advisory, Adjusted EBITDA Bridges, Net Working Capital, and Window-Dressing Mechanics"
+  },
+  "prospective_ebitda_and_cash_flow_bridge": {
+    "projection_table": [
+      {
+        "year": "2022E",
+        "revenue": 5928,
+        "cash_opex": 4326,
+        "adj_ebitda": 1602,
+        "gaap_ebit": -47,
+        "cash_taxes": 0,
+        "amort_intangibles": 33,
+        "depreciation": 669,
+        "capex": 968,
+        "nwc_change": 11,
+        "sbc": 864,
+        "mgmt_ufcf": 561,
+        "banker_ufcf": -303,
+        "adj_ebitda_margin": 0.2702429149797571,
+        "gaap_ebit_margin": -0.007928475033738192,
+        "ebitda_to_ebit_spread": 1649,
+        "sbc_pct_revenue": 0.145748987854251,
+        "sbc_pct_adj_ebitda": 0.5393258426966292,
+        "capex_pct_revenue": 0.1632928475033738,
+        "ufcf_dilution_from_sbc": 864,
+        "banker_to_mgmt_ufcf_ratio": -0.5401069518716578
+      },
+      {
+        "year": "2023E",
+        "revenue": 7200,
+        "cash_opex": 4515,
+        "adj_ebitda": 2685,
+        "gaap_ebit": 917,
+        "cash_taxes": 165,
+        "amort_intangibles": 45,
+        "depreciation": 823,
+        "capex": 982,
+        "nwc_change": -259,
+        "sbc": 900,
+        "mgmt_ufcf": 1279,
+        "banker_ufcf": 379,
+        "adj_ebitda_margin": 0.3729166666666667,
+        "gaap_ebit_margin": 0.12736111111111112,
+        "ebitda_to_ebit_spread": 1768,
+        "sbc_pct_revenue": 0.125,
+        "sbc_pct_adj_ebitda": 0.33519553072625696,
+        "capex_pct_revenue": 0.1363888888888889,
+        "ufcf_dilution_from_sbc": 900,
+        "banker_to_mgmt_ufcf_ratio": 0.29632525410476934
+      },
+      {
+        "year": "2024E",
+        "revenue": 8481,
+        "cash_opex": 5238,
+        "adj_ebitda": 3243,
+        "gaap_ebit": 1192,
+        "cash_taxes": 215,
+        "amort_intangibles": 51,
+        "depreciation": 934,
+        "capex": 1018,
+        "nwc_change": -111,
+        "sbc": 1066,
+        "mgmt_ufcf": 1900,
+        "banker_ufcf": 834,
+        "adj_ebitda_margin": 0.38238415281216837,
+        "gaap_ebit_margin": 0.14054946350666195,
+        "ebitda_to_ebit_spread": 2051,
+        "sbc_pct_revenue": 0.1256927249145148,
+        "sbc_pct_adj_ebitda": 0.32870798643231575,
+        "capex_pct_revenue": 0.12003301497464922,
+        "ufcf_dilution_from_sbc": 1066,
+        "banker_to_mgmt_ufcf_ratio": 0.43894736842105264
+      },
+      {
+        "year": "2025E",
+        "revenue": 9793,
+        "cash_opex": 5947,
+        "adj_ebitda": 3846,
+        "gaap_ebit": 1517,
+        "cash_taxes": 273,
+        "amort_intangibles": 58,
+        "depreciation": 1033,
+        "capex": 1077,
+        "nwc_change": -125,
+        "sbc": 1238,
+        "mgmt_ufcf": 2371,
+        "banker_ufcf": 1133,
+        "adj_ebitda_margin": 0.3927295006637394,
+        "gaap_ebit_margin": 0.15490656591442867,
+        "ebitda_to_ebit_spread": 2329,
+        "sbc_pct_revenue": 0.1264168283467783,
+        "sbc_pct_adj_ebitda": 0.3218928757150286,
+        "capex_pct_revenue": 0.10997651383641377,
+        "ufcf_dilution_from_sbc": 1238,
+        "banker_to_mgmt_ufcf_ratio": 0.47785744411640657
+      },
+      {
+        "year": "2026E",
+        "revenue": 11264,
+        "cash_opex": 6706,
+        "adj_ebitda": 4558,
+        "gaap_ebit": 1932,
+        "cash_taxes": 348,
+        "amort_intangibles": 64,
+        "depreciation": 1132,
+        "capex": 1014,
+        "nwc_change": -150,
+        "sbc": 1430,
+        "mgmt_ufcf": 3046,
+        "banker_ufcf": 1616,
+        "adj_ebitda_margin": 0.40465198863636365,
+        "gaap_ebit_margin": 0.17151988636363635,
+        "ebitda_to_ebit_spread": 2626,
+        "sbc_pct_revenue": 0.126953125,
+        "sbc_pct_adj_ebitda": 0.3137340939008337,
+        "capex_pct_revenue": 0.09002130681818182,
+        "ufcf_dilution_from_sbc": 1430,
+        "banker_to_mgmt_ufcf_ratio": 0.5305318450426789
+      },
+      {
+        "year": "2027E",
+        "revenue": 12917,
+        "cash_opex": 7518,
+        "adj_ebitda": 5399,
+        "gaap_ebit": 2455,
+        "cash_taxes": 442,
+        "amort_intangibles": 71,
+        "depreciation": 1230,
+        "capex": 1033,
+        "nwc_change": -181,
+        "sbc": 1643,
+        "mgmt_ufcf": 3742,
+        "banker_ufcf": 2099,
+        "adj_ebitda_margin": 0.41797631028876675,
+        "gaap_ebit_margin": 0.19005961136486801,
+        "ebitda_to_ebit_spread": 2944,
+        "sbc_pct_revenue": 0.12719671750406442,
+        "sbc_pct_adj_ebitda": 0.30431561400259305,
+        "capex_pct_revenue": 0.07997212975149029,
+        "ufcf_dilution_from_sbc": 1643,
+        "banker_to_mgmt_ufcf_ratio": 0.5609299839657937
+      }
+    ],
+    "growth_rates": {
+      "revenue_cagr_2022_2027": 0.16855912999665357,
+      "adj_ebitda_cagr_2022_2027": 0.2750586537812816
+    },
+    "stock_based_compensation_dilution": {
+      "cumulative_6yr_sbc_millions": 7141,
+      "sbc_as_pct_of_cumulative_revenue": 0.12847453358041128,
+      "cumulative_mgmt_ufcf_millions": 12899,
+      "cumulative_banker_ufcf_millions": 5758,
+      "sbc_cash_flow_dilution_millions": 7141,
+      "sbc_dilution_percentage": 0.5536088068842546
+    },
+    "working_capital_drag": {
+      "cumulative_nwc_drain_millions": -815,
+      "peak_annual_nwc_drain_year": "2023E",
+      "peak_annual_nwc_drain_millions": -259
+    }
+  },
+  "historical_ebitda_normalizations": {
+    "fy21_reported_adj_ebitda_millions": 1448,
+    "one_time_litigation_addback_millions": 766,
+    "unadjusted_base_ebitda_millions": 682,
+    "addback_share_of_adj_ebitda": 0.5290055248618785,
+    "addback_share_of_unadjusted_ebitda": 1.1231671554252198,
+    "transaction_valuation_multiple_range": [
+      28.0,
+      36.0
+    ],
+    "implied_enterprise_value_swing_millions": [
+      21448.0,
+      27576.0
+    ]
+  },
+  "fairness_opinion_valuation_parameters": {
+    "goldman_sachs": {
+      "wacc_discount_rate_range": [
+        0.1,
+        0.12
+      ],
+      "cost_of_equity": 0.114,
+      "exit_terminal_ebitda_multiples": [
+        10.0,
+        15.0
+      ],
+      "implied_perpetuity_growth_rates": [
+        0.056,
+        0.09
+      ],
+      "ltm_ev_ebitda_peer_multiples": [
+        28.2,
+        35.7
+      ],
+      "discounting_convention": "mid-year"
+    },
+    "jp_morgan": {
+      "wacc_discount_rate_range": [
+        0.1025,
+        0.1125
+      ],
+      "terminal_perpetuity_growth_rates": [
+        0.06,
+        0.07
+      ],
+      "ltm_ev_ebitda_peer_multiples": [
+        28.0,
+        36.0
+      ],
+      "discounting_convention": "mid-year"
+    }
+  },
+  "forensic_window_dressing_repo105": {
+    "examiner_report": "Anton R. Valukas Report, Jenner & Block LLP, In re Lehman Brothers Holdings Inc.",
+    "accounting_standard_exploited": "SFAS 140 (Accounting for Transfers and Servicing of Financial Assets)",
+    "haircut_overcollateralization_rule": {
+      "equities_haircut_pct": 105.0,
+      "fixed_income_haircut_pct": 108.0,
+      "legal_fiction": "Surrender of control under English law true-sale opinion (Linklaters) despite operational intent to repurchase"
+    },
+    "quarterly_derecognition_scale_billions": {
+      "Q4_2007_Nov": 38.6,
+      "Q1_2008_Feb": 49.1,
+      "Q2_2008_May": 50.38
+    },
+    "timing_dynamics": {
+      "execution_lead_days_prior_to_quarter_end": [
+        2,
+        3
+      ],
+      "unwind_lag_days_after_quarter_start": [
+        2,
+        4
+      ],
+      "reversal_mechanism": "Cash returned plus repo interest to re-acquire securities into inventory"
+    },
+    "leverage_distortion_q2_2008": {
+      "reported_net_leverage": 10.2,
+      "actual_net_leverage_without_repo105": 12.1,
+      "net_leverage_suppression_pct": 0.15702479338842978,
+      "reported_gross_leverage": 12.1,
+      "actual_gross_leverage_without_repo105": 13.9,
+      "gross_leverage_suppression_pct": 0.1294964028776979
+    }
+  }
+}

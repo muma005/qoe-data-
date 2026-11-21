@@ -1,0 +1,7 @@
+Scenario_ID,Peg_Methodology,Formula_Basis,Target_Peg_Amount,Closing_Delivered_NWC,Purchase_Price_Adjustment,Sponsoring_Party,Commercial_Rationale
+PEG-01,12-Month LTM Average,Average of normalized monthly NWC from M13 to M24,4136000.00,4375000.00,239000.00,Seller Proposed,Seller argues 12-month average smooths out annual seasonality; generates 9k cash true-up for seller
+PEG-02,6-Month Average,Average of normalized monthly NWC from M19 to M24,4276000.00,4375000.00,99000.00,Compromise Middle,Reflects recent run-rate scale of business without penalizing buyer for historical low quarters
+PEG-03,3-Month Recent Quarter,Average of normalized monthly NWC from M22 to M24,4277000.00,4375000.00,98000.00,Alternative Run-Rate,Captures most recent operating scale and stabilized headcount
+PEG-04,Seasonal Historical Peg,Historical 2-year average of December month-ends (M12 and M24),4054000.00,4375000.00,321000.00,Extreme Seller Case,Uses December seasonal trough; heavily biased toward seller creating 1k windfall
+PEG-05,Percentage of Revenue Peg,17.5% of QoE Pro-Forma Run-Rate Revenue (.57M),4300000.00,4375000.00,75000.00,Buyer Recommended,Aligns working capital peg with underwritten run-rate top line (.57M); protects buyer liquidity
+PEG-06,Closing Target Baseline Peg,Equal to Normalized Delivered Closing NWC at Dec 31 2023,4375000.00,4375000.00,0.00,Buyer Maximum Case,Sets peg exactly at delivered level ensuring zero true-up deficit at closing

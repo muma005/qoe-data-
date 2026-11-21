@@ -1,0 +1,146 @@
+{
+  "total_transactions": 1056320,
+  "total_accounts": 4500,
+  "total_loans": 682,
+  "cash_flow_summary_czk": {
+    "total_inflow_volume": 3227472424.5,
+    "total_outflow_volume": 3030321135.7999997,
+    "net_cash_drift": 197151288.7000003,
+    "inflow_transaction_stats": {
+      "count": 405083,
+      "mean": 7967.43,
+      "median": 1600.0,
+      "std": 11835.61,
+      "min": 0.0,
+      "p25": 143.5,
+      "p75": 12087.5,
+      "p95": 35331.0,
+      "max": 74812.0
+    },
+    "outflow_transaction_stats": {
+      "count": 651237,
+      "mean": 4653.18,
+      "median": 2128.0,
+      "std": 7466.12,
+      "min": 0.0,
+      "p25": 95.0,
+      "p75": 5520.0,
+      "p95": 19187.0,
+      "max": 87400.0
+    },
+    "running_balance_stats": {
+      "count": 1056320,
+      "mean": 38518.33,
+      "median": 33143.4,
+      "std": 22117.87,
+      "min": -41125.7,
+      "p25": 22402.5,
+      "p75": 49603.62,
+      "p95": 82672.82,
+      "max": 209637.0
+    }
+  },
+  "working_capital_and_overdrafts": {
+    "total_accounts_analyzed": 4500,
+    "accounts_with_overdraft_count": 288,
+    "accounts_with_overdraft_pct": 6.4,
+    "severe_overdraft_accounts_count": 231,
+    "severe_overdraft_accounts_pct": 5.13,
+    "negative_balance_transactions_count": 2999,
+    "negative_balance_transactions_pct": 0.28,
+    "overdraft_exposure_depth_stats_czk": {
+      "count": 2999,
+      "mean": 4341.7,
+      "median": 2440.8,
+      "std": 5504.71,
+      "min": 1.6,
+      "p25": 1100.55,
+      "p75": 5455.7,
+      "p95": 14575.1,
+      "max": 41125.7
+    }
+  },
+  "standing_orders_commitments": {
+    "total_standing_orders": 6471,
+    "accounts_with_orders": 3758,
+    "accounts_with_orders_pct": 83.51,
+    "monthly_committed_per_account_czk": {
+      "count": 3758,
+      "mean": 5649.01,
+      "median": 4501.0,
+      "std": 3778.1,
+      "min": 312.0,
+      "p25": 2710.75,
+      "p75": 7603.23,
+      "p95": 13667.63,
+      "max": 22704.3
+    },
+    "order_type_distribution": {
+      "SIPO": 3502,
+      " ": 1379,
+      "UVER": 717,
+      "POJISTNE": 532,
+      "LEASING": 341
+    }
+  },
+  "credit_risk_and_loan_defaults": {
+    "total_loan_facilities": 682,
+    "total_principal_lent_czk": 103261740.0,
+    "status_distribution": {
+      "C": 403,
+      "A": 203,
+      "D": 45,
+      "B": 31
+    },
+    "duration_distribution": {
+      "60": 145,
+      "48": 138,
+      "24": 138,
+      "12": 131,
+      "36": 130
+    },
+    "overall_default_rate_pct": 11.14,
+    "closed_loan_default_rate_pct": 13.25,
+    "total_defaulted_loans_count": 76,
+    "capital_at_risk_czk": 103261740.0,
+    "capital_at_risk_pct": 15.09,
+    "loan_metrics_by_status": {
+      "A": {
+        "loan_count": 203,
+        "mean_loan_amount": 91641.45812807881,
+        "median_loan_amount": 79632.0,
+        "mean_acc_balance": 47295.53527203082,
+        "median_acc_balance": 45228.45,
+        "overdraft_incidence": 0.0,
+        "mean_monthly_payment": 4264.137931034483
+      },
+      "B": {
+        "loan_count": 31,
+        "mean_loan_amount": 140720.90322580645,
+        "median_loan_amount": 96396.0,
+        "mean_acc_balance": 35159.5881918764,
+        "median_acc_balance": 31301.6,
+        "overdraft_incidence": 100.0,
+        "mean_monthly_payment": 5396.258064516129
+      },
+      "C": {
+        "loan_count": 403,
+        "mean_loan_amount": 171410.3523573201,
+        "median_loan_amount": 153504.0,
+        "mean_acc_balance": 45588.57098466595,
+        "median_acc_balance": 43348.5,
+        "overdraft_incidence": 0.0,
+        "mean_monthly_payment": 3938.5359801488835
+      },
+      "D": {
+        "loan_count": 45,
+        "mean_loan_amount": 249284.53333333333,
+        "median_loan_amount": 260400.0,
+        "mean_acc_balance": 35170.943657856966,
+        "median_acc_balance": 29474.9,
+        "overdraft_incidence": 100.0,
+        "mean_monthly_payment": 5286.644444444444
+      }
+    }
+  }
+}

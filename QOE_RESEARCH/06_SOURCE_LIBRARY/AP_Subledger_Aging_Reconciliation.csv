@@ -1,0 +1,13 @@
+Vendor_ID,Vendor_Name,Current_Amount,Days_1_30,Days_31_60,Days_61_90,Days_91_120,Days_Over_120,Total_Subledger_Balance,Disputed_Status,Notes
+VEND-501,Midwest Raw Steel Co,185000.00,42000.00,0.00,0.00,0.00,0.00,227000.00,Clean,Major raw material supplier
+VEND-502,Precision Fasteners Inc,34200.00,12500.00,6800.00,0.00,0.00,0.00,53500.00,Clean,Hardware supplier
+VEND-503,Apex Freight & Logistics,62000.00,28000.00,14000.00,8500.00,0.00,0.00,112500.00,Clean,Inbound and outbound freight
+VEND-504,Global Packaging Solutions,21000.00,0.00,0.00,0.00,0.00,0.00,21000.00,Clean,Boxes and pallets
+VEND-505,Industrial Power & Utilities,18500.00,0.00,0.00,0.00,0.00,0.00,18500.00,Clean,Monthly facility power
+VEND-506,Highland Machine Tooling,45000.00,32000.00,19000.00,15000.00,12000.00,28000.00,151000.00,Disputed,Tooling failure claim;  withheld pending legal warranty review
+VEND-507,Tri-State Maintenance LLC,8500.00,4200.00,0.00,0.00,0.00,0.00,12700.00,Clean,Plant cleaning
+SUBTOTAL,Total AP Subledger Balance,374200.00,118700.00,39800.00,23500.00,12000.00,28000.00,596200.00,,Sum of vendor balances
+GRNI-ACC,Goods Received Not Invoiced (GRNI Accrual),,,,,,,68400.00,,Accrued purchases for inventory received at warehouse dock without vendor invoice
+TOTAL-AP,Total Trade Accounts Payable & Accrued Purchases,,,,,,,664600.00,,Subledger total plus GRNI accrual
+GL-CONTROL,General Ledger Control Account (2-1000 AP + 2-1050 GRNI),,,,,,,679600.00,,Ending balance per GL Trial Balance
+VARIANCE,Unreconciled AP Break (GL - Subledger),,,,,,,15000.00,BREAK,"GL is ,000 higher. Root cause: Month-end manual journal entry accruing estimated legal expense posted to Trade AP instead of Other Accrued Liabilities"
