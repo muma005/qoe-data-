@@ -17,6 +17,7 @@ import os
 import sys
 import tempfile
 import unittest
+from decimal import Decimal
 
 _COMPILER_DIR = os.path.dirname(os.path.abspath(__file__))
 if _COMPILER_DIR not in sys.path:
@@ -26,6 +27,7 @@ from build_scenario import SCENARIO_PROFILES, compile_scenario, parse_seed  # no
 from sector_models import (  # noqa: E402
     AccountingCore,
     ERPExporter,
+    _money,
     build_simulator,
 )
 from macro_volatility import IndustrySector  # noqa: E402
@@ -121,6 +123,42 @@ class TestLevel2Compiler(unittest.TestCase):
             text = ERPExporter.export(erp, core.entries)
             self.assertGreater(len(text), 0, erp)
             self.assertIn("\n", text, erp)
+
+    def test_expense_granularity_and_reconciliation(self):
+        """Expenses must be decomposed into hundreds of driver-based vendor invoices,
+        not a fixed 3-bucket split, and must reconcile exactly to Module 10's control total."""
+        core = AccountingCore("test", 42, 52_000_000, start_year=2021, start_month=1)
+        sim = build_simulator(core, IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION, [])
+        from macro_volatility import VolatilityEngine, VolatilityScenarioConfig
+        traj = VolatilityEngine().generate_trajectory(VolatilityScenarioConfig(
+            scenario_id="test", seed=42,
+            sector=IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION,
+            simulation_months=12, base_annual_revenue=52_000_000,
+        ))
+        for idx, t in enumerate(traj.monthly_trajectories, start=1):
+            sim.simulate_month(t, idx)
+
+        expense_entries = [e for e in core.entries
+                           if e.entry_type in ("EXPENSE", "PAYROLL", "DEPRECIATION", "AMORTIZATION")]
+
+        # Hundreds of expense line items over a year (not 1-2 per month)
+        self.assertGreater(len(expense_entries), 100)
+
+        # Many distinct expense accounts (granular taxonomy, not 3 buckets)
+        expense_accounts = {line.account_number for e in expense_entries for line in e.lines if line.debit > 0}
+        self.assertGreater(len(expense_accounts), 15)
+
+        # Many distinct vendors (not a single generic entity)
+        vendors = {e.entity_name for e in expense_entries if e.entry_type == "EXPENSE"}
+        self.assertGreater(len(vendors), 10)
+
+        # Exact reconciliation: bottom-up expense debits == top-down opex control total
+        total_expense_debit = sum((line.debit for e in expense_entries for line in e.lines), Decimal("0.0000"))
+        total_opex = sum((Decimal(str(t.opex_runrate)) for t in traj.monthly_trajectories), Decimal("0.0000"))
+        self.assertEqual(
+            total_expense_debit.quantize(Decimal("0.0001")),
+            _money(total_opex).quantize(Decimal("0.0001")),
+        )
 
 
 if __name__ == "__main__":

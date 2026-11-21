@@ -232,6 +232,9 @@ class AccountingCore:
     def __init__(self, scenario_id: str, seed: int, base_annual_revenue: float,
                  start_year: int = 2021, start_month: int = 1):
         self.scenario_id = scenario_id
+        self.seed = seed
+        self.base_annual_revenue = _money(base_annual_revenue)
+        self.base_monthly_revenue = _money(base_annual_revenue / 12.0)
         self.rng = random.Random((seed & 0x7FFFFFFF) ^ 0x5DEECE66D)
         self.engine = FinancialPhysicsEngine()
         self.entries: List[JournalEntry] = []
@@ -405,6 +408,11 @@ class BaseSectorSimulator:
         self.anomaly_ids = set(anomaly_ids)
         self._sku_units = 0  # physical units on hand (INV4)
 
+        # Lazy import avoids a circular dependency (expense_engine imports CoA
+        # from this module). Instantiated here so it shares the scenario seed.
+        from expense_engine import ExpenseEngine
+        self.expense_engine = ExpenseEngine(sector, core.seed)
+
     def simulate_month(self, traj: MonthlyTrajectoryVector, month_index: int) -> None:
         raise NotImplementedError
 
@@ -447,7 +455,6 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
         y, m = traj.calendar_year, traj.calendar_month
         rev = _money(traj.revenue_runrate)
         cogs = _money(traj.cogs_runrate)
-        opex = _money(traj.opex_runrate)
 
         # 1. Sales recognition -> AR / Product Sales
         core.post("INVOICE", y, m, 28, [dr(CoA.TRADE_AR, rev), cr(CoA.PRODUCT_SALES, rev)],
@@ -483,15 +490,8 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
             core.post("AP_PAYMENT", y, m, 25, [dr(CoA.TRADE_AP, paid), cr(CoA.OPERATING_CASH, paid)],
                       entity="Vendors", memo="Vendor payment disbursement", document_ref=f"AP-{y}{m:02d}")
 
-        # 7. OpEx split (payroll accrued / G&A cash / depreciation non-cash)
-        payroll = (opex * Decimal("0.55")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        ga = (opex * Decimal("0.30")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        depr = (opex * Decimal("0.15")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        core.post("OPEX", y, m, 28,
-                  [dr(CoA.SALES_SALARIES, payroll), cr(CoA.ACCRUED_PAYROLL, payroll),
-                   dr(CoA.G_A_EXPENSE, ga), cr(CoA.OPERATING_CASH, ga),
-                   dr(CoA.DEPRECIATION_EXPENSE, depr), cr(CoA.ACCUM_DEPRECIATION, depr)],
-                  entity="Operations", memo="Monthly operating expenses", document_ref=f"OEX-{y}{m:02d}")
+        # 7. OpEx: driver-based decomposition into granular vendor invoices / payroll
+        self.expense_engine.generate_month(core, traj, y, m)
         self._settle_payroll(y, m, 28)
 
         # 8. Vendor volume rebate (ASC 705-20) - annual fiscal-year-end event with SR-B01
@@ -586,15 +586,8 @@ class PrecisionManufacturingSimulator(BaseSectorSimulator):
             core.post("AP_PAYMENT", y, m, 25, [dr(CoA.TRADE_AP, paid), cr(CoA.OPERATING_CASH, paid)],
                       entity="Suppliers", memo="Supplier payment disbursement", document_ref=f"AP-{y}{m:02d}")
 
-        # 9. OpEx
-        payroll = (opex * Decimal("0.55")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        ga = (opex * Decimal("0.30")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        depr = (opex * Decimal("0.15")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        core.post("OPEX", y, m, 28,
-                  [dr(CoA.SALES_SALARIES, payroll), cr(CoA.ACCRUED_PAYROLL, payroll),
-                   dr(CoA.G_A_EXPENSE, ga), cr(CoA.OPERATING_CASH, ga),
-                   dr(CoA.DEPRECIATION_EXPENSE, depr), cr(CoA.ACCUM_DEPRECIATION, depr)],
-                  entity="Operations", memo="Monthly operating expenses", document_ref=f"OEX-{y}{m:02d}")
+        # 9. OpEx: driver-based decomposition into granular vendor invoices / payroll
+        self.expense_engine.generate_month(core, traj, y, m)
         self._settle_payroll(y, m, 28)
 
     def _idle_overhead(self, y: int, m: int, traj: MonthlyTrajectoryVector, opex: Decimal) -> None:
@@ -633,7 +626,6 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
         y, m = traj.calendar_year, traj.calendar_month
         recognized = _money(traj.revenue_runrate)
         cogs = _money(traj.cogs_runrate)
-        opex = _money(traj.opex_runrate)
 
         # 1. New bookings invoiced (billing > recognized to build deferred revenue)
         billings = (recognized * Decimal("1.12")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
@@ -653,16 +645,19 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
         core.post("HOSTING_COGS", y, m, 28, [dr(CoA.CLOUD_HOSTING, cogs), cr(CoA.TRADE_AP, cogs)],
                   entity="AWS", memo="Cloud infrastructure hosting costs", document_ref=f"AWS-{y}{m:02d}")
 
-        # 5. Software development capitalization (ASC 350-40) with SR-B14 anomaly
-        self._software_capitalization(y, m, opex)
+        # 5. OpEx: driver-based decomposition into granular vendor invoices / payroll
+        self.expense_engine.generate_month(core, traj, y, m)
 
-        # 6. Software amortization (ASC 350-40)
+        # 6. Software development capitalization (ASC 350-40) with SR-B14 anomaly
+        self._software_capitalization(y, m)
+
+        # 7. Software amortization (ASC 350-40)
         amort = (self.core.capitalized_software * Decimal("0.02")).quantize(_QUANT, rounding=ROUND_HALF_EVEN) if self.core.capitalized_software > 0 else _money(0)
         if amort > 0:
             core.post("SOFTWARE_AMORT", y, m, 28, [dr(CoA.AMORTIZATION_EXPENSE, amort), cr(CoA.ACCUM_AMORTIZATION, amort)],
                       entity="Engineering", memo="Capitalized software amortization", document_ref=f"AM-{y}{m:02d}")
 
-        # 7. Collections / AP payment
+        # 8. Collections / AP payment
         collected = (self.core.ar * self._collection_ratio()).quantize(_QUANT, rounding=ROUND_HALF_EVEN) if self.core.ar > 0 else _money(0)
         if collected > 0:
             core.post("COLLECTION", y, m, 15, [dr(CoA.OPERATING_CASH, collected), cr(CoA.TRADE_AR, collected)],
@@ -672,23 +667,20 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
             core.post("AP_PAYMENT", y, m, 25, [dr(CoA.TRADE_AP, paid), cr(CoA.OPERATING_CASH, paid)],
                       entity="AWS", memo="Vendor payment disbursement", document_ref=f"AP-{y}{m:02d}")
 
-        # 8. OpEx (S&M + R&D)
-        payroll = (opex * Decimal("0.60")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        ga = (opex * Decimal("0.40")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        core.post("OPEX", y, m, 28,
-                  [dr(CoA.SALES_SALARIES, payroll), cr(CoA.ACCRUED_PAYROLL, payroll),
-                   dr(CoA.G_A_EXPENSE, ga), cr(CoA.OPERATING_CASH, ga)],
-                  entity="Operations", memo="Monthly operating expenses", document_ref=f"OEX-{y}{m:02d}")
+        # 9. Settle payroll accrual
         self._settle_payroll(y, m, 28)
 
-    def _software_capitalization(self, y: int, m: int, opex: Decimal) -> None:
+    def _software_capitalization(self, y: int, m: int) -> None:
         """ASC 350-40: capitalize only Application-Development-Stage labor."""
-        dev_spend = (opex * Decimal("0.30")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
+        rnd_spend = self.expense_engine.last_month_rnd
+        if rnd_spend <= 0:
+            return
         if "SR-B14" in self.anomaly_ids:
             # Anomaly: capitalize maintenance labor (65% of sprint velocity) that must be expensed
-            capitalized = dev_spend
+            capitalized = rnd_spend
             self.core.post("SOFTWARE_CAPITALIZE", y, m, 20,
-                           [dr(CoA.CAPITALIZED_SOFTWARE, capitalized), cr(CoA.G_A_EXPENSE, capitalized)],
+                           [dr(CoA.CAPITALIZED_SOFTWARE, capitalized),
+                            cr("611000", capitalized)],
                            entity="Engineering", memo="Software development capitalized (ASC 350-40)", document_ref=f"CAP-{y}{m:02d}")
             over_capitalized = (capitalized * Decimal("0.65")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
             self.core.anomalies.append({
@@ -697,12 +689,13 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
                 "description": "Routine maintenance & bug-fix labor capitalized as internal-use software",
                 "amount": str(over_capitalized),
                 "ebitda_impact": str(over_capitalized),
-                "target_gl_accounts": [CoA.CAPITALIZED_SOFTWARE, CoA.G_A_EXPENSE],
+                "target_gl_accounts": [CoA.CAPITALIZED_SOFTWARE, "611000"],
             })
         else:
-            capitalized = (dev_spend * Decimal("0.35")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
+            capitalized = (rnd_spend * Decimal("0.35")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
             self.core.post("SOFTWARE_CAPITALIZE", y, m, 20,
-                           [dr(CoA.CAPITALIZED_SOFTWARE, capitalized), cr(CoA.G_A_EXPENSE, capitalized)],
+                           [dr(CoA.CAPITALIZED_SOFTWARE, capitalized),
+                            cr("611000", capitalized)],
                            entity="Engineering", memo="Capitalizable application development labor", document_ref=f"CAP-{y}{m:02d}")
 
     def _assert_inv5(self) -> None:
