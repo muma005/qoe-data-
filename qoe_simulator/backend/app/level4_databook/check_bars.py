@@ -49,15 +49,15 @@ class ModelingHygieneLinter:
         f = formula or ""
         if f.startswith("="):
             body = f[1:]
-            # ML01: embedded numeric constants (a digit not part of a cell ref like "A1")
-            if re.search(r"(?<![A-Za-z_])\d", body):
+            # ML01: embedded numeric constants (a digit not part of a cell ref like "A1"/"C28")
+            if re.search(r"(?<![A-Za-z0-9_])\d", body):
                 violations.append("ML01: embedded numeric constant in formula")
             # ML02: manual point-and-click aggregation (3+ direct refs summed)
             refs = re.findall(r"\b[A-Za-z]+\d+\b", body)
             if len(refs) >= 3:
                 violations.append("ML02: use dynamic aggregation (SUMIFS/XLOOKUP), not point-and-click")
-        # ML03: external workbook links
-        if re.search(r"\[.*\.(xlsx|xlsm|xls)\]\w*!|\b[A-Za-z]:\\", f, re.IGNORECASE):
+        # ML03: external workbook links (optionally apostrophe-quoted sheet names)
+        if re.search(r"\[.*\.(xlsx|xlsm|xls)\]\w*'?!|\b[A-Za-z]:\\", f, re.IGNORECASE):
             violations.append("ML03: external workbook link is prohibited")
         return violations
 

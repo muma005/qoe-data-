@@ -402,9 +402,9 @@ class Databook:
                                       negate=True)
         equity = self._cat_total(totals, ("EQUITY",), negate=True) + net_income
 
-        # Working capital drivers
+        # Working capital drivers (liabilities read as credit balances -> negate)
         ar = self._acct(totals, "111000")
-        ap = self._acct(totals, "201000")
+        ap = -self._acct(totals, "201000")
         inventory = self._acct(totals, "141000", "142000", "143000") - self._acct(totals, "144000")
         years = max(1, len(pnl_months) // 12)
         annual_revenue = revenue / Decimal(years)
@@ -427,7 +427,7 @@ class Databook:
         cash = self._acct(totals, "101000")
         stretched_ap = Decimal(str(subledgers["accounts_payable"].get(
             "stretched_payables_gt_90d", "0")))
-        accrued_payroll = self._acct(totals, "211000")
+        accrued_payroll = -self._acct(totals, "211000")  # positive liability
         debt_like = stretched_ap + accrued_payroll
         net_debt = debt_like - cash
 
