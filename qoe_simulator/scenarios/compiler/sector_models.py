@@ -46,6 +46,12 @@ from app.level0_physics.invariants import (  # noqa: E402
 
 from macro_volatility import IndustrySector, MonthlyTrajectoryVector  # noqa: E402
 
+from entities import (  # noqa: E402
+    MasterEntityLedger,
+    generate_customer_roster,
+    generate_vendor_roster,
+)
+
 # ---------------------------------------------------------------------------
 # Fixed-point money helpers
 # ---------------------------------------------------------------------------
@@ -414,6 +420,34 @@ class BaseSectorSimulator:
         from expense_engine import ExpenseEngine
         self.expense_engine = ExpenseEngine(sector, core.seed)
 
+        # Deterministic customer / vendor rosters (per-invoice attribution).
+        ledger = MasterEntityLedger(seed=core.seed)
+        self.customers = generate_customer_roster(20, ledger)
+        self.vendors = generate_vendor_roster(20, ledger)
+
+    def _split_amount(self, total: Decimal, n: int) -> List[Decimal]:
+        """Split a control total into n parts summing EXACTLY to `total` (4 dp)."""
+        total = _money(total)
+        if n <= 0:
+            return []
+        if n == 1:
+            return [total]
+        weights = [Decimal(str(self.core.rng.uniform(0.5, 1.5))) for _ in range(n)]
+        total_weight = sum(weights, Decimal("0.0000"))
+        shares = [(total * w / total_weight).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
+                  for w in weights]
+        diff = (total - sum(shares, Decimal("0.0000"))).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
+        unit = Decimal("0.0001")
+        steps = int((diff / unit).to_integral_value())
+        idx = 0
+        while steps != 0:
+            sign = 1 if steps > 0 else -1
+            shares[idx % n] = (shares[idx % n] + unit * sign).quantize(
+                _QUANT, rounding=ROUND_HALF_EVEN)
+            steps -= sign
+            idx += 1
+        return shares
+
     def simulate_month(self, traj: MonthlyTrajectoryVector, month_index: int) -> None:
         raise NotImplementedError
 
@@ -457,19 +491,29 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
         rev = _money(traj.revenue_runrate)
         cogs = _money(traj.cogs_runrate)
 
-        # 1. Sales recognition -> AR / Product Sales
-        core.post("INVOICE", y, m, 28, [dr(CoA.TRADE_AR, rev), cr(CoA.PRODUCT_SALES, rev)],
-                  entity="Customers", memo="Monthly distribution sales", document_ref=f"INV-{y}{m:02d}")
+        # 1. Sales recognition -> per-invoice AR (one invoice per shipping day)
+        n_invoices = max(1, traj.billable_shipping_days)
+        for idx, amt in enumerate(self._split_amount(rev, n_invoices)):
+            customer = self.customers[idx % len(self.customers)]
+            core.post("INVOICE", y, m, 28,
+                      [dr(CoA.TRADE_AR, amt), cr(CoA.PRODUCT_SALES, amt)],
+                      entity=customer.name, memo=f"Invoice to {customer.name}",
+                      document_ref=f"INV-{y}{m:02d}-{idx + 1:03d}")
 
         # 2. COGS (relieve finished goods)
         core.post("COGS_RELIEF", y, m, 28, [dr(CoA.COGS_MATERIALS, cogs), cr(CoA.FINISHED_GOODS, cogs)],
                   entity="Inventory", memo="COGS inventory relief", document_ref=f"CGS-{y}{m:02d}")
 
-        # 3. Restock purchases -> AP (bullwhip: order slightly ahead during drawdown)
+        # 3. Restock purchases -> per-vendor bills (bullwhip: order ahead during drawdown)
         restock_mult = Decimal("1.0") + Decimal(str(traj.expected_dio)) / Decimal("1000.0")
         purchases = (cogs * restock_mult).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        core.post("PURCHASE", y, m, 20, [dr(CoA.RAW_MATERIALS, purchases), cr(CoA.TRADE_AP, purchases)],
-                  entity="Vendors", memo="Inventory restock purchases", document_ref=f"PO-{y}{m:02d}")
+        n_bills = max(1, traj.billable_shipping_days // 2)
+        for idx, amt in enumerate(self._split_amount(purchases, n_bills)):
+            vendor = self.vendors[idx % len(self.vendors)]
+            core.post("PURCHASE", y, m, 20,
+                      [dr(CoA.RAW_MATERIALS, amt), cr(CoA.TRADE_AP, amt)],
+                      entity=vendor.name, memo=f"Purchase from {vendor.name}",
+                      document_ref=f"PO-{y}{m:02d}-{idx + 1:03d}")
 
         # 4. Inventory unit mass-balance (INV4)
         recv = self._inv4_units(purchases, self.UNIT_COST)
@@ -543,18 +587,28 @@ class PrecisionManufacturingSimulator(BaseSectorSimulator):
         opex = _money(traj.opex_runrate)
         scrap_rate = Decimal(str(traj.asc330_eo_reserve_rate)) if traj.asc330_eo_reserve_rate else Decimal("0.015")
 
-        # 1. Sales recognition
-        core.post("INVOICE", y, m, 28, [dr(CoA.TRADE_AR, rev), cr(CoA.PRODUCT_SALES, rev)],
-                  entity="OEM Customers", memo="Monthly precision machining sales", document_ref=f"INV-{y}{m:02d}")
+        # 1. Sales recognition -> per-invoice AR (one invoice per shipping day)
+        n_invoices = max(1, traj.billable_shipping_days)
+        for idx, amt in enumerate(self._split_amount(rev, n_invoices)):
+            customer = self.customers[idx % len(self.customers)]
+            core.post("INVOICE", y, m, 28,
+                      [dr(CoA.TRADE_AR, amt), cr(CoA.PRODUCT_SALES, amt)],
+                      entity=customer.name, memo=f"Invoice to {customer.name}",
+                      document_ref=f"INV-{y}{m:02d}-{idx + 1:03d}")
 
         # 2. COGS relief from finished goods
         core.post("COGS_RELIEF", y, m, 28, [dr(CoA.COGS_MATERIALS, cogs), cr(CoA.FINISHED_GOODS, cogs)],
                   entity="Inventory", memo="COGS inventory relief", document_ref=f"CGS-{y}{m:02d}")
 
-        # 3. Raw material purchases -> AP
+        # 3. Raw material purchases -> per-vendor bills
         purchases = (cogs * Decimal("1.05")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        core.post("PURCHASE", y, m, 18, [dr(CoA.RAW_MATERIALS, purchases), cr(CoA.TRADE_AP, purchases)],
-                  entity="Suppliers", memo="Raw material purchases", document_ref=f"PO-{y}{m:02d}")
+        n_bills = max(1, traj.billable_shipping_days // 2)
+        for idx, amt in enumerate(self._split_amount(purchases, n_bills)):
+            vendor = self.vendors[idx % len(self.vendors)]
+            core.post("PURCHASE", y, m, 18,
+                      [dr(CoA.RAW_MATERIALS, amt), cr(CoA.TRADE_AP, amt)],
+                      entity=vendor.name, memo=f"Purchase from {vendor.name}",
+                      document_ref=f"PO-{y}{m:02d}-{idx + 1:03d}")
 
         # 4. Production: convert raw -> finished goods (standard costing)
         core.post("PRODUCTION", y, m, 20, [dr(CoA.FINISHED_GOODS, cogs), cr(CoA.RAW_MATERIALS, cogs)],
@@ -628,11 +682,16 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
         recognized = _money(traj.revenue_runrate)
         cogs = _money(traj.cogs_runrate)
 
-        # 1. New bookings invoiced (billing > recognized to build deferred revenue)
+        # 1. New bookings invoiced -> per-contract bookings (builds deferred revenue)
         billings = (recognized * Decimal("1.12")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        core.post("BOOKING", y, m, 28, [dr(CoA.TRADE_AR, billings), cr(CoA.DEFERRED_REVENUE_CURRENT, billings)],
-                  entity="Enterprise Customers", memo="Annual subscription invoice (ASC 606)", document_ref=f"SUB-{y}{m:02d}")
-        core.total_contract_invoiced += billings
+        n_contracts = max(1, traj.billable_shipping_days // 4)
+        for idx, amt in enumerate(self._split_amount(billings, n_contracts)):
+            customer = self.customers[idx % len(self.customers)]
+            core.post("BOOKING", y, m, 28,
+                      [dr(CoA.TRADE_AR, amt), cr(CoA.DEFERRED_REVENUE_CURRENT, amt)],
+                      entity=customer.name, memo=f"Annual subscription invoice to {customer.name}",
+                      document_ref=f"SUB-{y}{m:02d}-{idx + 1:03d}")
+            core.total_contract_invoiced += amt
 
         # 2. Ratable recognition from deferred revenue (ASC 606 waterfall)
         core.post("REVENUE_RECOGNITION", y, m, 28, [dr(CoA.DEFERRED_REVENUE_CURRENT, recognized), cr(CoA.SUBSCRIPTION_REVENUE, recognized)],

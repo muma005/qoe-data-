@@ -245,3 +245,37 @@ class MasterEntityLedger:
                           for c in self.customers.values()],
             "lp15_compliant": self.validate_all()["compliant"],
         }
+
+
+# ---------------------------------------------------------------------------
+# Deterministic customer / vendor roster generator
+# ---------------------------------------------------------------------------
+CUSTOMER_NAME_POOL = (
+    "Grainger Industrial Supply", "Fastenal Company", "MSC Industrial Direct",
+    "W.W. Grainger Inc.", "HD Supply Holdings", "Wesco International",
+    "Applied Industrial Tech", "Motion Industries", "Kimball Electronics",
+    "Rockwell Automation", "Barnes Group", "Boeing Global Services",
+    "Lockheed Martin Supply", "General Dynamics", "Northrop Grumman",
+    "Honeywell Aerospace", "Textron Systems", "Parker Hannifin",
+    "Emerson Electric", "Eaton Corporation", "Cummins Inc.", "Caterpillar",
+    "Deere & Company", "PACCAR Inc.", "Illinois Tool Works", "Dover Corporation",
+)
+VENDOR_NAME_POOL = (
+    "Ryerson Metals", "Reliance Steel", "Thyssenkrupp Materials",
+    "WestRock Company", "International Paper", "Packaging Corp of America",
+    "FedEx Freight", "UPS Freight", "XPO Logistics", "Old Dominion Freight",
+    "Deloitte & Touche LLP", "PwC LLP", "Ernst & Young LLP", "KPMG LLP",
+    "Chubb Insurance", "The Hartford", "Travelers Companies",
+    "Pacific Gas & Electric", "Duke Energy", "AT&T Business", "Verizon Business",
+    "Microsoft Corporation", "Salesforce.com", "Adobe Inc.", "CrowdStrike Holdings",
+)
+
+
+def generate_customer_roster(n: int, ledger: MasterEntityLedger) -> List[Customer]:
+    return [ledger.register_customer(CUSTOMER_NAME_POOL[i % len(CUSTOMER_NAME_POOL)])
+            for i in range(n)]
+
+
+def generate_vendor_roster(n: int, ledger: MasterEntityLedger) -> List[Vendor]:
+    return [ledger.register_vendor(VENDOR_NAME_POOL[i % len(VENDOR_NAME_POOL)])
+            for i in range(n)]

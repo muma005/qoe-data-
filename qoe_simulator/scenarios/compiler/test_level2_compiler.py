@@ -346,6 +346,15 @@ class TestLevel2FillBuild(unittest.TestCase):
         self.assertEqual(batch["wave"], "wave_2_subledgers")
         self.assertGreater(batch["new_file_count"], 0)
 
+    def test_per_invoice_granularity(self):
+        """Revenue must be generated as per-invoice entries, not one monthly aggregate."""
+        core = self._compiled_core(months=12)
+        invoices = [e for e in core.entries if e.entry_type == "INVOICE"]
+        # ~19-23 invoices/month (one per shipping day), not 12 monthly aggregates
+        self.assertGreater(len(invoices), 200)
+        customers = {e.entity_name for e in invoices}
+        self.assertGreater(len(customers), 5)
+
 
 if __name__ == "__main__":
     unittest.main()
