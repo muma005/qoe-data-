@@ -9,8 +9,10 @@ Databook determinism + metrics, native .xlsx deep checks, and cross-engine agree
 (Python vs `formulas` vs HyperFormula).
 """
 
+import inspect
 import os
 import random
+import re
 import sys
 import tempfile
 import unittest
@@ -30,7 +32,7 @@ from app.level4_databook.formula_graph import (
     ReplacementCostEngine,
 )
 from app.level4_databook.check_bars import CheckBarEngine, ModelingHygieneLinter
-from app.level4_databook.sandbox_worker import SandboxWorker, XLSXSerializer
+from app.level4_databook.sandbox_worker import FdbCalculationService, SandboxWorker, XLSXSerializer
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +466,80 @@ class TestBrutalCrossEngine(unittest.TestCase):
                 proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 proc.kill()
+
+
+# ---------------------------------------------------------------------------
+# Proto contract — deep (all messages, request->param mapping, nested fields)
+# ---------------------------------------------------------------------------
+class TestBrutalProtoContract(unittest.TestCase):
+    """Brutal verification of Level 4 <-> fdb_calc.proto connectivity (no proto edits)."""
+
+    RPC_TO_METHOD = {
+        "RecalculateBatch": "recalculate_batch",
+        "ValidateAntiDoubleDipping": "validate_anti_double_dipping",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        proto_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "proto", "fdb_calc.proto")
+        with open(proto_path, encoding="utf-8") as f:
+            cls.proto = f.read()
+        cls.enum = {k: int(v) for k, v in re.findall(
+            r"(\w+)\s*=\s*(\d+)\s*;",
+            re.search(r"enum\s+CheckBarStatus\s*\{(.*?)\}", cls.proto, re.DOTALL).group(1))}
+        cls.rpcs = re.findall(
+            r"rpc\s+(\w+)\s*\(\s*(\w+)\s*\)\s*returns\s*\(\s*(\w+)\s*\)",
+            re.search(r"service\s+\w+\s*\{(.*?)\}", cls.proto, re.DOTALL).group(1))
+        cls.messages = {n: re.findall(r"(\w+)\s*=\s*\d+\s*;", b)
+                        for n, b in re.findall(r"message\s+(\w+)\s*\{(.*?)\}",
+                                               cls.proto, re.DOTALL)}
+
+    def test_all_seven_messages_parsed(self):
+        self.assertEqual(len(self.messages), 7)
+
+    def test_enum_exact_match(self):
+        py = {e.name: e.value for e in CheckBarStatus}
+        self.assertEqual(py, self.enum)
+
+    def test_two_rpcs(self):
+        self.assertEqual(len(self.rpcs), 2)
+
+    def test_request_fields_map_exactly_to_method_parameters(self):
+        svc = FdbCalculationService()
+        for rpc_name, req_msg, _resp in self.rpcs:
+            method = getattr(svc, self.RPC_TO_METHOD[rpc_name])
+            # inspect.signature on a bound method already excludes `self`.
+            params = list(inspect.signature(method).parameters)
+            req_fields = self.messages[req_msg]
+            self.assertEqual(params, req_fields,
+                             f"{rpc_name} params {params} != request fields {req_fields}")
+
+    def test_nested_recalculated_cell_fields(self):
+        svc = FdbCalculationService()
+        svc.graph.add_cell(Cell("01_Summary", "A1", "100"))
+        svc.graph.add_cell(Cell("01_Summary", "A2", "=A1+1",
+                                dependencies=[("01_Summary", "A1")]))
+        r = svc.recalculate_batch("sim1", [{"tab_id": "01_Summary",
+                                            "cell_coordinate": "A2",
+                                            "formula_or_value": "=A1+1"}], False)
+        self.assertTrue(r["success"])
+        self.assertTrue(r["dirty_cells"])
+        cell = r["dirty_cells"][0]
+        for field in self.messages["RecalculatedCell"]:
+            self.assertIn(field, cell, f"RecalculatedCell missing '{field}'")
+
+    def test_nested_check_bar_result_fields(self):
+        svc = FdbCalculationService()
+        svc.graph.add_cell(Cell("T", "A1", "=B1", dependencies=[("T", "B1")]))
+        svc.graph.add_cell(Cell("T", "B1", "=A1", dependencies=[("T", "A1")]))
+        r = svc.recalculate_batch("sim1", [], False)
+        self.assertFalse(r["success"])
+        self.assertTrue(r["check_bar_results"])
+        cr = r["check_bar_results"][0]
+        for field in self.messages["CheckBarResult"]:
+            self.assertIn(field, cr, f"CheckBarResult missing '{field}'")
 
 
 if __name__ == "__main__":
