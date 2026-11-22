@@ -300,11 +300,16 @@ class TestLevel2FillBuild(unittest.TestCase):
         self.assertGreater(sub.ap.total_open(), 0)
 
     def test_ar_aging_buckets(self):
-        core = self._compiled_core()
+        core = self._compiled_core(months=12)
         sub = SubledgerSet().build(core.entries)
-        buckets = sub.ar.aging(13)
+        from datetime import date
+        as_of = date(2022, 12, 31).toordinal()
+        buckets = sub.ar.aging(as_of)
         self.assertIn("current", buckets)
         self.assertIn("over_90", buckets)
+        # Daily aging: invoices are dated across distinct days, not all day-28
+        invoice_days = {e.entry_date for e in core.entries if e.entry_type == "INVOICE"}
+        self.assertGreater(len(invoice_days), 5)
 
     def test_entity_ledger_lp15(self):
         ledger = MasterEntityLedger(seed=7)

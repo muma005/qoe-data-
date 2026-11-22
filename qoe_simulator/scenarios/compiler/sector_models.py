@@ -555,11 +555,13 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
         rev = _money(traj.revenue_runrate)
         cogs = _money(traj.cogs_runrate)
 
-        # 1. Sales recognition -> per-invoice AR (one invoice per shipping day)
-        n_invoices = max(1, traj.billable_shipping_days)
+        # 1. Sales recognition -> per-invoice AR (one invoice per actual shipping day)
+        shipping_days = [d.day_of_month for d in traj.daily_vectors if d.is_shipping_day]
+        n_invoices = len(shipping_days) or 1
         for idx, amt in enumerate(self._split_amount(rev, n_invoices)):
+            day = shipping_days[idx] if idx < len(shipping_days) else 28
             customer = self.customers[idx % len(self.customers)]
-            core.post("INVOICE", y, m, 28,
+            core.post("INVOICE", y, m, day,
                       [dr(CoA.TRADE_AR, amt), cr(CoA.PRODUCT_SALES, amt)],
                       entity=customer.name, memo=f"Invoice to {customer.name}",
                       document_ref=f"INV-{y}{m:02d}-{idx + 1:03d}")
@@ -646,11 +648,13 @@ class PrecisionManufacturingSimulator(BaseSectorSimulator):
         opex = _money(traj.opex_runrate)
         scrap_rate = Decimal(str(traj.asc330_eo_reserve_rate)) if traj.asc330_eo_reserve_rate else Decimal("0.015")
 
-        # 1. Sales recognition -> per-invoice AR (one invoice per shipping day)
-        n_invoices = max(1, traj.billable_shipping_days)
+        # 1. Sales recognition -> per-invoice AR (one invoice per actual shipping day)
+        shipping_days = [d.day_of_month for d in traj.daily_vectors if d.is_shipping_day]
+        n_invoices = len(shipping_days) or 1
         for idx, amt in enumerate(self._split_amount(rev, n_invoices)):
+            day = shipping_days[idx] if idx < len(shipping_days) else 28
             customer = self.customers[idx % len(self.customers)]
-            core.post("INVOICE", y, m, 28,
+            core.post("INVOICE", y, m, day,
                       [dr(CoA.TRADE_AR, amt), cr(CoA.PRODUCT_SALES, amt)],
                       entity=customer.name, memo=f"Invoice to {customer.name}",
                       document_ref=f"INV-{y}{m:02d}-{idx + 1:03d}")
@@ -737,10 +741,12 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
 
         # 1. New bookings invoiced -> per-contract bookings (builds deferred revenue)
         billings = (recognized * Decimal("1.12")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
-        n_contracts = max(1, traj.billable_shipping_days // 4)
+        shipping_days = [d.day_of_month for d in traj.daily_vectors if d.is_shipping_day]
+        n_contracts = max(1, len(shipping_days) // 4)
         for idx, amt in enumerate(self._split_amount(billings, n_contracts)):
+            day = shipping_days[idx] if idx < len(shipping_days) else 28
             customer = self.customers[idx % len(self.customers)]
-            core.post("BOOKING", y, m, 28,
+            core.post("BOOKING", y, m, day,
                       [dr(CoA.TRADE_AR, amt), cr(CoA.DEFERRED_REVENUE_CURRENT, amt)],
                       entity=customer.name, memo=f"Annual subscription invoice to {customer.name}",
                       document_ref=f"SUB-{y}{m:02d}-{idx + 1:03d}")

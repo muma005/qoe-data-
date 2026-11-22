@@ -21,30 +21,36 @@ Each engine is a post-hoc read projection of the double-entry JournalEntry strea
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from sector_models import CoA, JournalEntry, _money  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# 1. Accounts Receivable Subledger
+# 1. Accounts Receivable Subledger (day-granular aging)
 # ---------------------------------------------------------------------------
 class ARSubledger:
-    """Tracks invoice batches, payment allocation, and aging buckets."""
+    """Tracks invoice batches, payment allocation, and day-granular aging buckets."""
 
     AGING_BUCKETS = ("current", "1_30", "31_60", "61_90", "over_90")
 
     def __init__(self):
-        self.invoices: List[Dict] = []   # {month, invoice_id, customer, amount}
-        self.payments: List[Dict] = []   # {month, payment_id, amount}
+        self.invoices: List[Dict] = []   # {ord, invoice_id, customer, amount, open}
+        self.payments: List[Dict] = []   # {ord, payment_id, amount}
         self.unapplied_cash = _money(0)
 
-    def record_invoice(self, month: int, year: int, invoice_id: str, customer: str, amount: Decimal):
-        self.invoices.append({"month": month, "year": year, "invoice_id": invoice_id,
+    @staticmethod
+    def _ord(year: int, month: int, day: int) -> int:
+        return date(year, month, day).toordinal()
+
+    def record_invoice(self, year: int, month: int, day: int, invoice_id: str,
+                       customer: str, amount: Decimal):
+        self.invoices.append({"ord": self._ord(year, month, day), "invoice_id": invoice_id,
                               "customer": customer, "amount": _money(amount), "open": _money(amount)})
 
-    def record_payment(self, month: int, year: int, payment_id: str, amount: Decimal):
-        self.payments.append({"month": month, "year": year, "payment_id": payment_id,
+    def record_payment(self, year: int, month: int, day: int, payment_id: str, amount: Decimal):
+        self.payments.append({"ord": self._ord(year, month, day), "payment_id": payment_id,
                               "amount": _money(amount)})
         self._allocate(amount)
 
@@ -64,51 +70,53 @@ class ARSubledger:
     def total_open(self) -> Decimal:
         return sum((i["open"] for i in self.invoices), _money(0))
 
-    def aging(self, as_of_month: int) -> Dict[str, Decimal]:
+    def aging(self, as_of_ordinal: int) -> Dict[str, Decimal]:
         buckets = {b: _money(0) for b in self.AGING_BUCKETS}
         for inv in self.invoices:
             if inv["open"] <= 0:
                 continue
-            age = as_of_month - inv["month"]
-            if age <= 0:
+            age_days = as_of_ordinal - inv["ord"]
+            if age_days <= 0:
                 buckets["current"] += inv["open"]
-            elif age == 1:
+            elif age_days <= 30:
                 buckets["1_30"] += inv["open"]
-            elif age == 2:
+            elif age_days <= 60:
                 buckets["31_60"] += inv["open"]
-            elif age == 3:
+            elif age_days <= 90:
                 buckets["61_90"] += inv["open"]
             else:
                 buckets["over_90"] += inv["open"]
         return buckets
 
     def to_dict(self) -> dict:
+        latest = max((i["ord"] for i in self.invoices), default=date(2021, 1, 1).toordinal())
         return {
             "open_ar": str(self.total_open()),
             "unapplied_cash": str(self.unapplied_cash),
             "invoice_count": len(self.invoices),
             "payment_count": len(self.payments),
-            "aging_buckets": {k: str(v) for k, v in self.aging(99).items()},
+            "aging_buckets": {k: str(v) for k, v in self.aging(latest).items()},
         }
 
 
 # ---------------------------------------------------------------------------
-# 2. Accounts Payable Subledger
+# 2. Accounts Payable Subledger (day-granular aging)
 # ---------------------------------------------------------------------------
 class APSubledger:
     """Tracks vendor bills, credit terms, and stretched payables > 90 days."""
 
     def __init__(self):
-        self.bills: List[Dict] = []       # {month, bill_id, vendor, amount, terms}
-        self.payments: List[Dict] = []    # {month, payment_id, amount}
+        self.bills: List[Dict] = []       # {ord, bill_id, vendor, amount, terms, open}
+        self.payments: List[Dict] = []    # {ord, payment_id, amount}
 
-    def record_bill(self, month: int, year: int, bill_id: str, vendor: str, amount: Decimal,
-                    terms: str = "NET_30"):
-        self.bills.append({"month": month, "year": year, "bill_id": bill_id, "vendor": vendor,
-                           "amount": _money(amount), "terms": terms, "open": _money(amount)})
+    def record_bill(self, year: int, month: int, day: int, bill_id: str, vendor: str,
+                    amount: Decimal, terms: str = "NET_30"):
+        self.bills.append({"ord": date(year, month, day).toordinal(), "bill_id": bill_id,
+                           "vendor": vendor, "amount": _money(amount), "terms": terms,
+                           "open": _money(amount)})
 
-    def record_payment(self, month: int, year: int, payment_id: str, amount: Decimal):
-        self.payments.append({"month": month, "year": year, "payment_id": payment_id,
+    def record_payment(self, year: int, month: int, day: int, payment_id: str, amount: Decimal):
+        self.payments.append({"ord": date(year, month, day).toordinal(), "payment_id": payment_id,
                               "amount": _money(amount)})
         self._allocate(amount)
 
@@ -126,15 +134,16 @@ class APSubledger:
     def total_open(self) -> Decimal:
         return sum((b["open"] for b in self.bills), _money(0))
 
-    def stretched_payables(self, as_of_month: int, threshold: int = 3) -> Decimal:
-        """Payables outstanding longer than `threshold` months (debt-like)."""
+    def stretched_payables(self, as_of_ordinal: int, threshold_days: int = 90) -> Decimal:
+        """Payables outstanding longer than `threshold_days` days (debt-like)."""
         return sum((b["open"] for b in self.bills if b["open"] > 0 and
-                    as_of_month - b["month"] > threshold), _money(0))
+                    as_of_ordinal - b["ord"] > threshold_days), _money(0))
 
     def to_dict(self) -> dict:
+        latest = max((b["ord"] for b in self.bills), default=date(2021, 1, 1).toordinal())
         return {
             "open_ap": str(self.total_open()),
-            "stretched_payables_gt_90d": str(self.stretched_payables(99)),
+            "stretched_payables_gt_90d": str(self.stretched_payables(latest)),
             "bill_count": len(self.bills),
             "payment_count": len(self.payments),
         }
@@ -295,22 +304,23 @@ class SubledgerSet:
     def _consume(self, entry: JournalEntry) -> None:
         month = entry.sim_month
         year = entry.sim_year
+        day = int(entry.entry_date.split("-")[2]) if entry.entry_date else 28
         for line in entry.lines:
             num = line.account_number
             amount = line.debit if line.debit > 0 else line.credit
             if entry.entry_type == "INVOICE" and num == CoA.TRADE_AR and line.debit > 0:
-                self.ar.record_invoice(month, year, entry.document_ref or entry.entry_id,
+                self.ar.record_invoice(year, month, day, entry.document_ref or entry.entry_id,
                                        entry.entity_name, amount)
             elif entry.entry_type == "COLLECTION" and num == CoA.TRADE_AR and line.credit > 0:
-                self.ar.record_payment(month, year, entry.document_ref or entry.entry_id, amount)
+                self.ar.record_payment(year, month, day, entry.document_ref or entry.entry_id, amount)
             elif num == CoA.UNAPPLIED_CASH_CLEARING and line.credit > 0:
                 self.ar.unapplied_cash += amount
             elif (entry.entry_type in ("PURCHASE", "EXPENSE", "HOSTING_COGS")
                   and num == CoA.TRADE_AP and line.credit > 0):
-                self.ap.record_bill(month, year, entry.document_ref or entry.entry_id,
+                self.ap.record_bill(year, month, day, entry.document_ref or entry.entry_id,
                                     entry.entity_name, amount)
             elif entry.entry_type == "AP_PAYMENT" and num == CoA.TRADE_AP and line.debit > 0:
-                self.ap.record_payment(month, year, entry.document_ref or entry.entry_id, amount)
+                self.ap.record_payment(year, month, day, entry.document_ref or entry.entry_id, amount)
             elif num in (CoA.RAW_MATERIALS, CoA.WIP, CoA.FINISHED_GOODS):
                 if line.debit > 0:
                     self.inventory.record_receipt(month, year, amount)
