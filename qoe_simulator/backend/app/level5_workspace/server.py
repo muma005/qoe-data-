@@ -24,6 +24,17 @@ def _load_databook(package_dir: str):
     return Databook().build(package_dir)
 
 
+def _jsonable(obj):
+    from decimal import Decimal
+    if isinstance(obj, Decimal):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: _jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_jsonable(v) for v in obj]
+    return obj
+
+
 # -- VDR -------------------------------------------------------------------
 @app.post("/api/v1/workspace/vdr/tree")
 def vdr_tree(req: dict):
@@ -89,3 +100,19 @@ def report_assemble(req: dict):
 def spa_exhibit_b(req: dict):
     databook = _load_databook(req["package_dir"])
     return SPAExhibitBBuilder().build(databook)
+
+
+# -- Databook tabs (feeds the center-pane grid) ----------------------------
+@app.post("/api/v1/workspace/databook/tabs")
+def databook_tabs(req: dict):
+    databook = _load_databook(req["package_dir"])
+    return {"tabs": list(databook.tabs.keys())}
+
+
+@app.post("/api/v1/workspace/databook/tab")
+def databook_tab(req: dict):
+    databook = _load_databook(req["package_dir"])
+    tab_id = req.get("tab_id")
+    if tab_id not in databook.tabs:
+        raise HTTPException(status_code=404, detail=f"unknown tab {tab_id}")
+    return {"tab_id": tab_id, "data": _jsonable(databook.tabs[tab_id])}

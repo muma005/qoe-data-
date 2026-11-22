@@ -68,4 +68,8 @@ export const workspaceClient = {
 
   compileDeliverables: (payload: object) =>
     post<object>('/deliverables/compile', payload),
+
+  getDatabookTab: (packageDir: string, tabId: string) =>
+    post<{ tab_id: string; data: Record<string, unknown> }>('/databook/tab',
+      { package_dir: packageDir, tab_id: tabId }),
 }

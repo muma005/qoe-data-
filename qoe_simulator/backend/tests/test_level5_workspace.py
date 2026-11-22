@@ -269,6 +269,27 @@ class TestGapClosure(unittest.TestCase):
         result = compile_scenario(SCENARIO_PROFILES["target_apex_supply"], 3, 42, tempfile.mkdtemp())
         return Databook().build(result["package_dir"])
 
+    def _package_dir(self):
+        import sys, os, tempfile
+        compiler = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "scenarios", "compiler")
+        if compiler not in sys.path:
+            sys.path.insert(0, compiler)
+        from build_scenario import SCENARIO_PROFILES, compile_scenario
+        return compile_scenario(SCENARIO_PROFILES["target_apex_supply"], 3, 42, tempfile.mkdtemp())["package_dir"]
+
+    def test_fastapi_databook_endpoint(self):
+        from fastapi.testclient import TestClient
+        from app.level5_workspace.server import app
+        pkg = self._package_dir()
+        client = TestClient(app)
+        r = client.post("/api/v1/workspace/databook/tab",
+                        json={"package_dir": pkg, "tab_id": "07_Working_Capital"})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("nwc", r.json()["data"])
+        self.assertIn("dso_days", r.json()["data"])
+
     def test_report_assembler_ten_sections(self):
         from app.level5_workspace.report import ReportAssembler
         databook = self._databook()
