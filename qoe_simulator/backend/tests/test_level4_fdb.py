@@ -18,6 +18,7 @@ from app.level4_databook.formula_graph import (
     Cell,
     Databook,
     DoubleDipChecker,
+    ExcelFormulaEvaluator,
     FormulaGraph,
     PVMProduct,
     PVMWaterfallEngine,
@@ -250,6 +251,44 @@ class TestDatabook(unittest.TestCase):
         monthly = databook.tabs["03_Income_Statement"]["monthly"]
         self.assertEqual(len(monthly), 36)  # 3 years
         self.assertTrue(all(m["ebitda"] == m["revenue"] - m["cogs"] - m["opex"] for m in monthly))
+
+
+class TestExcelLayer(unittest.TestCase):
+    """Verifies real Excel formulas (via `formulas`) and a native .xlsx (via openpyxl)."""
+
+    def test_excel_formula_evaluator_spec_check_bar(self):
+        import numpy as np
+        evaluator = ExcelFormulaEvaluator()
+        formula = ('=IF(MAX(ABS(C28:AN28 - (C52:AN52 + C68:AN68))) < 0.01, '
+                   '"OK: BALANCE SHEET BALANCED", "DISCREPANCY")')
+        cells = {
+            "C28:AN28": np.full((1, 39), 100.0),
+            "C52:AN52": np.full((1, 39), 60.0),
+            "C68:AN68": np.full((1, 39), 40.0),
+        }
+        result = evaluator.evaluate(formula, cells)
+        self.assertEqual(result, "OK: BALANCE SHEET BALANCED")
+
+    def test_xlsx_export_produces_native_workbook(self):
+        import openpyxl
+        compiler = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "scenarios", "compiler")
+        if compiler not in sys.path:
+            sys.path.insert(0, compiler)
+        from build_scenario import SCENARIO_PROFILES, compile_scenario
+        tmp = tempfile.mkdtemp()
+        result = compile_scenario(SCENARIO_PROFILES["target_apex_supply"], 3, 42, tmp)
+        databook = Databook().build(result["package_dir"])
+        xlsx_path = os.path.join(tmp, "fdb.xlsx")
+        XLSXSerializer().serialize(databook, xlsx_path)
+
+        wb = openpyxl.load_workbook(xlsx_path)
+        self.assertEqual(len(wb.sheetnames), 11)
+        # Row 1 check bar contains a live Excel formula
+        ws = wb["07_Working_Capital"]
+        self.assertTrue(str(ws["B1"].value).startswith("=IF("))
+        self.assertIn("BALANCE SHEET BALANCED", str(ws["B1"].value))
 
 
 # ---------------------------------------------------------------------------

@@ -558,3 +558,30 @@ class Databook:
 
     def to_dict(self) -> dict:
         return {tab_id: self.tabs.get(tab_id, {}) for tab_id in self.TAB_IDS}
+
+
+# ---------------------------------------------------------------------------
+# Excel formula evaluator (wraps the open-source `formulas` library)
+# ---------------------------------------------------------------------------
+class ExcelFormulaEvaluator:
+    """Evaluates real Excel formula strings via the public `formulas` library.
+
+    Supports IF/MAX/ABS/TEXT/SUM/SUMIFS/INDEX/MATCH/XLOOKUP/SUMPRODUCT, comparisons,
+    string concatenation, and array-range arithmetic (e.g. C28:AN28).
+    """
+
+    def __init__(self):
+        import formulas
+        self._formulas = formulas
+
+    def evaluate(self, formula: str, cells: Dict[str, object]) -> object:
+        """Evaluate an Excel formula with a dict of cell-address -> value inputs."""
+        if not (formula or "").strip().startswith("="):
+            return formula
+        compiled = self._formulas.Parser().ast(formula)[1].compile()
+        result = compiled(**cells)
+        if hasattr(result, "item"):
+            return result.item()
+        if hasattr(result, "tolist"):
+            return result.tolist()
+        return result

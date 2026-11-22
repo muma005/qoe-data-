@@ -14,6 +14,7 @@ from __future__ import annotations
 import copy
 import time
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Callable, Dict, List, Optional, Sequence
 
 from .formula_graph import (
@@ -97,27 +98,91 @@ class SandboxWorker:
 
 
 # ---------------------------------------------------------------------------
-# Audit-grade XLSX serializer (RGB font formatting)
+# Audit-grade XLSX serializer (native .xlsx with live formulas, RGB fonts,
+# and conditional formatting — spec Section 6)
 # ---------------------------------------------------------------------------
 class XLSXSerializer:
-    """Renders cells with structural RGB formatting (spec Section 6)."""
+    """Writes a native, cell-linked .xlsx workbook via openpyxl."""
+
+    # Row 1 check-bar formulas per tab (real Excel functions). Cell refs follow
+    # each tab dict's insertion order: first metric lands in B2, second in B3, etc.
+    CHECK_BAR_FORMULAS = {
+        "01_Summary": ("=IF(ABS(B5-'03_Income_Statement'!B7)<0.01,\"OK\",\"BRIDGE DISCREPANCY\")",
+                       ["normalized_ebitda", "net_debt", "recommended_nwc_peg", "net_income"]),
+        "02_EBITDA_Bridges": ("=IF(ABS(B2-'03_Income_Statement'!B6)<0.01,\"OK\",\"P&L MISMATCH\")",
+                              ["reported_ebitda"]),
+        "03_Income_Statement": ("=IF(ABS(B8)<0.01,\"OK\",\"TB UNMAPPED: \"&TEXT(B8,\"$#,##0\"))",
+                                ["total_revenue", "total_cogs", "total_opex", "ebitda", "net_income", "tb_net"]),
+        "05_Gross_Margin": ("=IF(ABS((B2+B3+B4)-B5)<0.01,\"OK\",\"COGS ABSORPTION DELTA\")",
+                            ["materials", "labor", "overhead", "total_cogs"]),
+        "07_Working_Capital": ("=IF(ABS(B2-(B3+B4))<0.01,\"OK: BALANCE SHEET BALANCED\","
+                               "\"DISCREPANCY: \"&TEXT(B2-(B3+B4),\"$#,##0\"))",
+                               ["assets", "liabilities", "equity"]),
+        "08_Net_Debt": ("=IF(ABS(B3-B4)<0.01,\"OK\",\"CASH CLEARING BREAK\")",
+                        ["operating_cash", "bank_cash", "cash"]),
+        "11_SPA_Exhibit_B": ("=IF(ABS(B2-B6)<0.01,\"OK\",\"SPA PEG VARIANCE\")",
+                             ["peg_inclusions", "peg_exclusions", "true_up_collar_pct", "escrow_pct", "target_nwc_peg"]),
+    }
 
     def __init__(self, linter: ModelingHygieneLinter = None):
         self.linter = linter or ModelingHygieneLinter()
 
-    def serialize(self, graph: FormulaGraph) -> List[dict]:
-        rows = []
-        for key, cell in graph.cells.items():
-            color = self.linter.font_color(cell.formula_or_value)
-            rows.append({
-                "tab_id": cell.tab_id,
-                "cell_coordinate": cell.coordinate,
-                "value": str(cell.evaluated_value) if cell.evaluated_value is not None else cell.error_flag,
-                "font_rgb": color,
-                "font_usage": RGB.get(color, ""),
-                "error_flag": cell.error_flag,
-            })
-        return rows
+    def serialize(self, databook, path: str) -> str:
+        """Write the 11-tab Databook to a native .xlsx and return the path."""
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill
+        from openpyxl.formatting.rule import CellIsRule
+
+        wb = Workbook()
+        wb.remove(wb.active)
+        for tab_id in databook.TAB_IDS:
+            ws = wb.create_sheet(tab_id)
+            self._write_sheet(ws, tab_id, databook.tabs.get(tab_id, {}))
+        wb.save(path)
+        return path
+
+    @staticmethod
+    def _cell_value(value):
+        import json
+        if isinstance(value, Decimal):
+            return float(value)
+        if isinstance(value, (dict, list, tuple)):
+            return json.dumps(value, default=str)
+        return value
+
+    @staticmethod
+    def _argb(hex_color: str) -> str:
+        """Convert 6-digit #RRGGBB to openpyxl's required 8-digit aRGB."""
+        return "FF" + hex_color.lstrip("#")
+
+    def _write_sheet(self, ws, tab_id: str, tab: dict) -> None:
+        from openpyxl.styles import Font, PatternFill
+        from openpyxl.formatting.rule import CellIsRule
+
+        blue = Font(color=self._argb(RGB["BLUE"]))
+        black = Font(color=self._argb(RGB["BLACK"]))
+
+        # Row 1 check bar formula + conditional formatting (green/red)
+        if tab_id in self.CHECK_BAR_FORMULAS:
+            formula, _ = self.CHECK_BAR_FORMULAS[tab_id]
+            c = ws["B1"]
+            c.value = formula
+            c.font = Font(color=self._argb(RGB["BLACK"]), bold=True)
+            c.fill = PatternFill(start_color=self._argb("E2EFDA"),
+                                 end_color=self._argb("E2EFDA"), fill_type="solid")
+            red_fill = PatternFill(start_color=self._argb("C00000"),
+                                   end_color=self._argb("C00000"), fill_type="solid")
+            white = Font(color="FFFFFFFF", bold=True)
+            for token in ("DISCREPANCY", "UNBALANCED", "MISMATCH"):
+                ws.conditional_formatting.add(
+                    "B1", CellIsRule(operator="containsText", formula=[f'"{token}"'],
+                                     fill=red_fill, font=white))
+
+        # Data rows: A = metric name, B = value (blue = hardcoded input)
+        for row, (key, value) in enumerate(tab.items(), start=2):
+            ws.cell(row=row, column=1, value=key).font = black
+            cell = ws.cell(row=row, column=2, value=self._cell_value(value))
+            cell.font = blue
 
 
 # ---------------------------------------------------------------------------
