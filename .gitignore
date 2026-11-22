@@ -30,6 +30,7 @@ node_modules/
 frontend/dist/
 npm-debug.log*
 yarn-debug.log*
+*.tsbuildinfo
 
 # Environment Variables & Keys
 .env
