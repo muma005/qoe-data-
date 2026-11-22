@@ -861,7 +861,6 @@ class ERPExporter:
         "AP_PAYMENT": ("Check", "KZ", "CHECK", "Vendor payment"),
         "PURCHASE": ("VendBill", "KR", "BILL", "Vendor invoice"),
         "COGS_RELIEF": ("Journal", "SA", "GENERAL JOURNAL", "General journal"),
-        "OPEX": ("Journal", "SA", "GENERAL JOURNAL", "General journal"),
         "PRODUCTION": ("Journal", "SA", "GENERAL JOURNAL", "General journal"),
         "SCRAP_WRITEOFF": ("Journal", "SA", "GENERAL JOURNAL", "General journal"),
         "IDLE_OVERHEAD": ("Journal", "SA", "GENERAL JOURNAL", "General journal"),

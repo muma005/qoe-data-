@@ -255,10 +255,6 @@ class FactCheckingValidator:
         """Register a dollar figure that exists in the scenario package (RAG grounding)."""
         self.registered_figures.add(self._normalize(dollar_figure))
 
-    def register_facts(self, figures) -> None:
-        for f in figures:
-            self.register_fact(f)
-
     @staticmethod
     def _normalize(value: str) -> str:
         return (value or "").replace("$", "").replace(",", "").strip()

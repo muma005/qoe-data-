@@ -39,7 +39,7 @@ from sector_models import (  # noqa: E402
     _money,
     build_simulator,
 )
-from subledgers import SubledgerSet  # noqa: E402
+from subledgers import FixedAssetSubledger, SubledgerSet  # noqa: E402
 from entities import MasterEntityLedger, generate_fein, valid_fein, valid_zip  # noqa: E402
 from macro_volatility import IndustrySector  # noqa: E402
 
@@ -374,6 +374,31 @@ class TestLevel2FillBuild(unittest.TestCase):
             sim.simulate_month(t, idx)
         self.assertEqual(len(sim._sku_units), 5)  # 5 SKUs tracked individually
         self.assertTrue(all(isinstance(v, int) for v in sim._sku_units.values()))
+
+    def test_fixed_asset_subledger_schedules(self):
+        """Fixed assets must compute real straight-line + MACRS schedules (not a stub)."""
+        core = self._compiled_core(months=12)
+        sub = SubledgerSet().build(core.entries)
+        fa = sub.fixed_assets
+        d = fa.to_dict()
+        # Opening PP&E is registered as a fixed asset
+        self.assertGreater(d["asset_count"], 0)
+        sl = Decimal(d["straight_line_accumulated"])
+        macrs = Decimal(d["macrs_accumulated"])
+        self.assertGreater(sl, 0)
+        self.assertGreater(macrs, 0)
+        # Straight-line and MACRS produce different schedules
+        self.assertNotEqual(sl, macrs)
+
+    def test_cip_transfer(self):
+        """Construction-in-progress must transfer to in-service and begin depreciating."""
+        fa = FixedAssetSubledger()
+        fa.add_cip("CIP-001", "MACHINERY", Decimal("500000"))
+        self.assertEqual(fa.to_dict()["cip_count"], 1)
+        fa.transfer_cip("CIP-001", in_service_month=12)
+        self.assertEqual(fa.to_dict()["cip_count"], 0)
+        self.assertEqual(fa.to_dict()["asset_count"], 1)
+        self.assertGreater(fa.accumulated_depreciation(24, "straight_line"), 0)
 
 
 if __name__ == "__main__":

@@ -194,9 +194,6 @@ class FatigueAccumulator:
     def typo_error_rate(self) -> float:
         return self.SEVERE_TYPO_RATE if self.is_severe() else self.NORMAL_TYPO_RATE
 
-    def response_style(self) -> str:
-        return "truncated" if self.is_severe() else "detailed"
-
     # -- spec Section 6.1 fatigue behavioral manifestations -----------------
     DEFENSIVE_REPLY = "This was already provided in VDR Folder 2.4; please review existing files."
 

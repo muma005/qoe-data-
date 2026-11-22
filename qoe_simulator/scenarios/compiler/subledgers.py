@@ -197,21 +197,31 @@ class FixedAssetSubledger:
     MACRS_5YR = (0.2000, 0.3200, 0.1920, 0.1152, 0.1152, 0.0576)
 
     def __init__(self):
-        self.assets: List[Dict] = []       # {asset_id, class, cost, in_service_month, life_months}
-        self.depreciation_log: List[Dict] = []
+        self.assets: List[Dict] = []       # {asset_id, classification, cost, in_service_month, life_months, macrs_class}
+        self.cip_assets: List[Dict] = []   # {cip_id, classification, cost}
+        self.depreciation_log: List[Dict] = []  # JE-based depreciation (reconciliation)
 
     def add_asset(self, asset_id: str, classification: str, cost: Decimal,
-                  in_service_month: int, life_months: int = 120):
+                  in_service_month: int, life_months: int = 120, macrs_class: str = "5YR"):
         self.assets.append({"asset_id": asset_id, "classification": classification,
                             "cost": _money(cost), "in_service_month": in_service_month,
-                            "life_months": life_months})
+                            "life_months": life_months, "macrs_class": macrs_class})
 
-    def straight_line_depreciation(self, asset: Dict, month: int) -> Decimal:
-        age = month - asset["in_service_month"]
-        if age < 0 or age >= asset["life_months"]:
-            return _money(0)
-        return (_money(asset["cost"]) / Decimal(asset["life_months"])).quantize(
-            Decimal("0.0001"), rounding=ROUND_HALF_UP)
+    def add_cip(self, cip_id: str, classification: str, cost: Decimal):
+        """Construction-in-progress: costs capitalized but not yet depreciable."""
+        self.cip_assets.append({"cip_id": cip_id, "classification": classification,
+                                "cost": _money(cost)})
+
+    def transfer_cip(self, cip_id: str, in_service_month: int, life_months: int = 120,
+                     macrs_class: str = "5YR") -> None:
+        """Place a CIP asset in service and begin depreciating it."""
+        for cip in list(self.cip_assets):
+            if cip["cip_id"] == cip_id:
+                self.add_asset(cip_id, cip["classification"], cip["cost"],
+                               in_service_month, life_months, macrs_class)
+                self.cip_assets.remove(cip)
+                return
+        raise ValueError(f"Unknown CIP asset {cip_id}")
 
     def macrs_rate(self, classification: str, year_index: int) -> Decimal:
         table = self.MACRS_5YR if classification in ("5YR", "MACHINERY") else self.MACRS_3YR
@@ -219,21 +229,50 @@ class FixedAssetSubledger:
             return Decimal(str(table[year_index]))
         return Decimal("0")
 
-    def accumulated_depreciation(self, as_of_month: int) -> Decimal:
-        total = _money(0)
-        for asset in self.assets:
-            total += self.straight_line_depreciation(asset, as_of_month) * 0  # placeholder
-        # Sum the actual logged depreciation entries instead (single source of truth)
-        return sum((d["amount"] for d in self.depreciation_log), _money(0))
+    def straight_line_accumulated(self, asset: Dict, as_of_month: int) -> Decimal:
+        age = as_of_month - asset["in_service_month"] + 1  # inclusive months in service
+        if age <= 0:
+            return _money(0)
+        age = min(age, asset["life_months"])
+        return (_money(asset["cost"]) * Decimal(age) / Decimal(asset["life_months"])).quantize(
+            Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-    def record_depreciation(self, month: int, year: int, amount: Decimal):
-        self.depreciation_log.append({"month": month, "year": year, "amount": _money(amount)})
+    def macrs_accumulated(self, asset: Dict, as_of_month: int) -> Decimal:
+        age_months = as_of_month - asset["in_service_month"] + 1
+        if age_months <= 0:
+            return _money(0)
+        total = _money(0)
+        months = age_months
+        year_index = 0
+        while months > 0:
+            rate = self.macrs_rate(asset["macrs_class"], year_index)
+            months_in_year = min(months, 12)
+            total += _money(asset["cost"]) * rate * (Decimal(months_in_year) / Decimal(12))
+            months -= 12
+            year_index += 1
+        return total.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+
+    def accumulated_depreciation(self, as_of_month: int, method: str = "straight_line") -> Decimal:
+        if method == "macrs":
+            return sum((self.macrs_accumulated(a, as_of_month) for a in self.assets), _money(0))
+        return sum((self.straight_line_accumulated(a, as_of_month) for a in self.assets), _money(0))
+
+    def record_depreciation(self, global_month: int, amount: Decimal):
+        self.depreciation_log.append({"month": global_month, "amount": _money(amount)})
 
     def to_dict(self) -> dict:
+        total_cost = sum((a["cost"] for a in self.assets), _money(0))
+        latest = max((d["month"] for d in self.depreciation_log), default=0)
+        sl = self.accumulated_depreciation(latest, "straight_line")
+        macrs = self.accumulated_depreciation(latest, "macrs")
+        je_log = sum((d["amount"] for d in self.depreciation_log), _money(0))
         return {
             "asset_count": len(self.assets),
-            "total_cost": str(sum((a["cost"] for a in self.assets), _money(0))),
-            "accumulated_depreciation": str(self.accumulated_depreciation(999)),
+            "cip_count": len(self.cip_assets),
+            "total_cost": str(total_cost),
+            "straight_line_accumulated": str(sl),
+            "macrs_accumulated": str(macrs),
+            "journal_depreciation": str(je_log),
             "depreciation_entries": len(self.depreciation_log),
         }
 
@@ -305,6 +344,7 @@ class SubledgerSet:
         month = entry.sim_month
         year = entry.sim_year
         day = int(entry.entry_date.split("-")[2]) if entry.entry_date else 28
+        global_month = entry.sim_year * 12 + entry.sim_month  # monotonic month index
         for line in entry.lines:
             num = line.account_number
             amount = line.debit if line.debit > 0 else line.credit
@@ -328,8 +368,13 @@ class SubledgerSet:
                     self.inventory.record_issue(month, year, amount)
             elif num == CoA.INVENTORY_RESERVE and line.credit > 0:
                 self.inventory.record_lcnrv_reserve(amount)
+            elif num == CoA.MACHINERY and line.debit > 0:
+                # Opening PP&E: register as a fixed asset in service since inception.
+                self.fixed_assets.add_asset(
+                    entry.document_ref or entry.entry_id, "MACHINERY", amount,
+                    in_service_month=global_month, life_months=120, macrs_class="5YR")
             elif entry.entry_type in ("DEPRECIATION",) and num == CoA.ACCUM_DEPRECIATION and line.credit > 0:
-                self.fixed_assets.record_depreciation(month, year, amount)
+                self.fixed_assets.record_depreciation(global_month, amount)
             elif entry.entry_type == "BOOKING" and num == CoA.DEFERRED_REVENUE_CURRENT and line.credit > 0:
                 self.deferred_revenue.record_billing(month, year, entry.document_ref or entry.entry_id, amount)
             elif entry.entry_type == "REVENUE_RECOGNITION" and num == CoA.DEFERRED_REVENUE_CURRENT and line.debit > 0:
