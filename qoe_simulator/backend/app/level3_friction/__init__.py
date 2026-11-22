@@ -18,11 +18,14 @@ from .pushback_fsm import (
 from .circuit_breaker import (
     CircuitState,
     CircuitBreaker,
+    FactCheckingValidator,
     HeuristicFallbackEngine,
+    PromptFirewall,
 )
 from .personas import (
     Persona,
     PERSONA_ROSTER,
+    CloudEventEmitter,
     VerbalSlipEngine,
     MockLLMBackend,
     InterviewSession,
@@ -42,9 +45,12 @@ __all__ = [
     "categorize_question",
     "CircuitState",
     "CircuitBreaker",
+    "FactCheckingValidator",
     "HeuristicFallbackEngine",
+    "PromptFirewall",
     "Persona",
     "PERSONA_ROSTER",
+    "CloudEventEmitter",
     "VerbalSlipEngine",
     "MockLLMBackend",
     "InterviewSession",

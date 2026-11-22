@@ -20,7 +20,12 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from .circuit_breaker import CircuitBreaker, HeuristicFallbackEngine
+from .circuit_breaker import (
+    CircuitBreaker,
+    FactCheckingValidator,
+    HeuristicFallbackEngine,
+    PromptFirewall,
+)
 from .pushback_fsm import (
     LATENCY_MULTIPLIER,
     PushbackTier,
@@ -73,7 +78,7 @@ class Persona:
     def to_dict(self) -> dict:
         """Serialize to the persona_state.json schema (spec Section 8.1)."""
         return {
-            "persona_id": self.persona_id,
+            "persona_id": f"{self.persona_id}_{self.role}",
             "name": self.name,
             "role": self.role,
             "cumulative_haircuts_faced": float(self.cumulative_haircuts_faced),
@@ -263,12 +268,15 @@ class InterviewSimulator:
     BANKER_INTERVENTION = "To clarify, the company handled all customer orders without disruption."
 
     def __init__(self, roster: Dict[str, Persona] = None, breaker: CircuitBreaker = None,
-                 banker_persona_id: str = "P12", seed: int = 0xABCDEF):
+                 banker_persona_id: str = "P12", seed: int = 0xABCDEF,
+                 firewall: PromptFirewall = None, validator: FactCheckingValidator = None):
         self.roster = roster or PERSONA_ROSTER
         self.banker_id = banker_persona_id
         self.slip_engine = VerbalSlipEngine(seed)
         self.latency = LatencyScheduler(seed)
         self._session_seq = 0
+        self.firewall = firewall or PromptFirewall()
+        self.validator = validator or FactCheckingValidator()
         self.breaker = breaker or CircuitBreaker(
             primary=MockLLMBackend(), fallback=HeuristicFallbackEngine())
 
@@ -290,17 +298,35 @@ class InterviewSimulator:
 
     def ask(self, session: InterviewSession, question: str,
             target_persona_id: str) -> dict:
+        # LP-03: semantic firewall blocks prompt-injection / jailbreak attempts
+        self.firewall.sanitize(question)
+
         persona = self.roster[target_persona_id]
         text, is_fallback = self.breaker.call(persona, question)
 
+        # LP-07: fact-checking validator rejects unregistered dollar figures
+        validation = self.validator.validate(text)
+        if not validation["valid"]:
+            text = (f"[LP-07 fact-check rejected unregistered figures: "
+                    f"{validation['unregistered_figures']}]")
+
+        # Section 6.1: severe fatigue -> response truncation + defensive irritation
+        fatigue = FatigueAccumulator(initial=persona.cognitive_fatigue_index)
+        if fatigue.is_severe():
+            text = fatigue.truncate(text)
+            if self.slip_engine.rng.random() < 0.5:
+                text = fatigue.defensive_reply(text)
+
         slip = self.slip_engine.maybe_slip(persona, question)
+        cited = (getattr(self.breaker.fallback, "cited_vdr_docs", lambda q: [])(question)
+                 if is_fallback else [])
 
         entry = {
             "speaker": target_persona_id,
             "response_transcript": text,
             "response_latency_seconds": self._latency_seconds(persona, question),
             "is_heuristic_fallback": is_fallback,
-            "cited_vdr_document_ids": [],
+            "cited_vdr_document_ids": cited,
             "verbal_slip": None,
         }
         session.transcript.append(entry)
@@ -325,6 +351,24 @@ class InterviewSimulator:
 
 
 # ---------------------------------------------------------------------------
+# Central Pub/Sub CloudEvents emitter (spec Section 10.2)
+# ---------------------------------------------------------------------------
+class CloudEventEmitter:
+    """Emits com.qoe.persona.{inquiry.received, response.delivered, pushback.escalated}."""
+
+    def __init__(self):
+        self.events: List[dict] = []
+
+    def emit(self, event_type: str, **payload) -> dict:
+        event = {"type": event_type, **payload}
+        self.events.append(event)
+        return event
+
+    def filter(self, event_type: str) -> List[dict]:
+        return [e for e in self.events if e["type"] == event_type]
+
+
+# ---------------------------------------------------------------------------
 # IRL Inquiry Queue (spec Section 8.2; LP-14 flood controls)
 # ---------------------------------------------------------------------------
 class InquiryQueue:
@@ -334,14 +378,20 @@ class InquiryQueue:
     FLOOD_PENALTY = 3.5
 
     def __init__(self, latency: LatencyScheduler = None, fatigue: FatigueAccumulator = None,
-                 seed: int = 0xBEEF):
+                 seed: int = 0xBEEF, firewall: PromptFirewall = None,
+                 emitter: CloudEventEmitter = None):
         self.latency = latency or LatencyScheduler(seed)
         self.fatigue = fatigue or FatigueAccumulator()
+        self.firewall = firewall or PromptFirewall()
+        self.emitter = emitter or CloudEventEmitter()
         self.pending: Dict[str, dict] = {}
 
     def submit(self, irl_item_id: str, persona: Persona, inquiry_text: str,
                current_sim_hour: int) -> dict:
-        """Schedule an IRL item; rejects when the active queue is full (LP-14)."""
+        """Schedule an IRL item; rejects blocked queries and queue floods."""
+        # LP-03: semantic firewall rejects prompt-injection attempts
+        self.firewall.sanitize(inquiry_text)
+
         if len(self.pending) >= self.MAX_ACTIVE:
             raise ValueError(
                 f"LP-14: Active IRL request cap ({self.MAX_ACTIVE}) reached. "
@@ -361,7 +411,24 @@ class InquiryQueue:
             "current_persona_tier": persona.active_pushback_tier.name,
         }
         self.pending[irl_item_id] = ticket
+
+        # CloudEvent: inquiry.received
+        self.emitter.emit("com.qoe.persona.inquiry.received",
+                          ticket_id=ticket["ticket_id"], persona=persona.persona_id,
+                          due_hour=ticket["scheduled_response_sim_hour"])
         return ticket
+
+    def deliver_tickets(self, current_sim_hour: int) -> List[dict]:
+        """Deliver due tickets and emit response.delivered CloudEvents."""
+        delivered = []
+        for item_id, ticket in list(self.pending.items()):
+            if ticket["scheduled_response_sim_hour"] <= current_sim_hour:
+                delivered.append(ticket)
+                self.emitter.emit("com.qoe.persona.response.delivered",
+                                  ticket_id=ticket["ticket_id"],
+                                  vdr_attachment_id=f"DOC_{ticket['persona_id']}")
+                del self.pending[item_id]
+        return delivered
 
     def status(self) -> List[dict]:
         return list(self.pending.values())
@@ -382,9 +449,14 @@ class HumanFrictionService:
         self.roster = roster or PERSONA_ROSTER
         self.wealth = WealthLossEngine()
         self.state_machine = PushbackStateMachine()
+        self.emitter = CloudEventEmitter()
         self.interview = InterviewSimulator(self.roster, breaker, seed=seed)
-        self.queue = InquiryQueue(seed=seed)
+        self.queue = InquiryQueue(seed=seed, emitter=self.emitter)
         self._sessions: Dict[str, InterviewSession] = {}
+
+    # REST GET /api/v1/personas/irl/queue-status (spec Section 8.2)
+    def queue_status(self) -> List[dict]:
+        return self.queue.status()
 
     # rpc SubmitInquiry (SubmitInquiryRequest) returns (SubmitInquiryResponse)
     def submit_inquiry(self, simulation_id: str, irl_item_id: str, target_persona_id: str,
@@ -428,9 +500,19 @@ class HumanFrictionService:
         # Both owners are impacted by a haircut (founder 65%, CFO 7.5% options).
         for persona_id in ("P05", "P06"):
             persona = self.roster[persona_id]
+            previous_tier = persona.active_pushback_tier
             persona.apply_haircut(ebitda_haircut_amount, self.wealth, self.state_machine)
             updated_tiers[persona_id] = persona.active_pushback_tier.name
             total_equity_lost += persona.personal_wealth_loss_dollars
+            # CloudEvent: pushback.escalated when crossing into Tier 3/4
+            if (persona.active_pushback_tier.value >= PushbackTier.TIER_3_COMMERCIAL_PRESSURE.value
+                    and persona.active_pushback_tier.value > previous_tier.value):
+                self.emitter.emit(
+                    "com.qoe.persona.pushback.escalated",
+                    persona=persona.persona_id,
+                    new_tier=persona.active_pushback_tier.name,
+                    wealth_lost=float(persona.personal_wealth_loss_dollars),
+                )
         return {
             "total_equity_value_lost": float(total_equity_lost),
             "updated_persona_tiers": updated_tiers,

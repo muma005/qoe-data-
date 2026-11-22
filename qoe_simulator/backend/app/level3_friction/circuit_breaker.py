@@ -212,3 +212,61 @@ class HeuristicFallbackEngine:
     def cited_vdr_docs(self, question: str) -> List[str]:
         category = categorize_question(question)
         return [self.CITED_VDR_DOCS.get(category, "DOC_GENERAL")]
+
+
+# ---------------------------------------------------------------------------
+# LP-03: Adversarial Prompt Injection / Semantic Firewall (spec Section 11)
+# ---------------------------------------------------------------------------
+class PromptFirewall:
+    """Multi-layer prompt isolation + semantic firewall against jailbreak attempts."""
+
+    BLOCKED_PATTERNS = (
+        "system override", "ignore previous", "ignore all instructions", "jailbreak",
+        "roleplay", "you are now", "pretend you are", "developer mode", "d an",
+        "solution manifest", "answer key", "list all fraud", "fraudulent entries",
+        "reveal the anomalies", "skip the persona",
+    )
+
+    def is_blocked(self, query: str) -> Tuple[bool, str]:
+        q = (query or "").lower()
+        for pattern in self.BLOCKED_PATTERNS:
+            if pattern in q:
+                return True, f"LP-03 semantic firewall: blocked prompt-injection pattern '{pattern}'"
+        return False, ""
+
+    def sanitize(self, query: str) -> str:
+        """Return the query if safe, else raise a rejection."""
+        blocked, reason = self.is_blocked(query)
+        if blocked:
+            raise ValueError(reason)
+        return query
+
+
+# ---------------------------------------------------------------------------
+# LP-07: RAG Context Grounding + Fact-Checking Validator (spec Section 11)
+# ---------------------------------------------------------------------------
+class FactCheckingValidator:
+    """Rejects persona responses that cite dollar figures absent from the scenario package."""
+
+    def __init__(self):
+        self.registered_figures: set = set()
+
+    def register_fact(self, dollar_figure: str) -> None:
+        """Register a dollar figure that exists in the scenario package (RAG grounding)."""
+        self.registered_figures.add(self._normalize(dollar_figure))
+
+    def register_facts(self, figures) -> None:
+        for f in figures:
+            self.register_fact(f)
+
+    @staticmethod
+    def _normalize(value: str) -> str:
+        return (value or "").replace("$", "").replace(",", "").strip()
+
+    def validate(self, response: str) -> Dict[str, object]:
+        """Return {valid, unregistered_figures} for any dollar figures in a response."""
+        import re
+        figures = re.findall(r"\$\s?([\d,]+(?:\.\d+)?)", response or "")
+        bad = [self._normalize(f) for f in figures
+               if self._normalize(f) not in self.registered_figures]
+        return {"valid": len(bad) == 0, "unregistered_figures": bad}

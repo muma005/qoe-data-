@@ -197,6 +197,22 @@ class FatigueAccumulator:
     def response_style(self) -> str:
         return "truncated" if self.is_severe() else "detailed"
 
+    # -- spec Section 6.1 fatigue behavioral manifestations -----------------
+    DEFENSIVE_REPLY = "This was already provided in VDR Folder 2.4; please review existing files."
+
+    def truncate(self, text: str) -> str:
+        """Severe fatigue collapses detailed paragraphs to a single-sentence bullet."""
+        if not self.is_severe() or not text:
+            return text
+        first = text.split(".")[0].strip()
+        return (first + ".") if first else text
+
+    def defensive_reply(self, base_text: str) -> str:
+        """Severe fatigue triggers defensive irritation instead of a substantive answer."""
+        if not self.is_severe():
+            return base_text
+        return self.DEFENSIVE_REPLY
+
 
 # ---------------------------------------------------------------------------
 # Log-Normal Inquiry Latency Scheduler (spec Section 6.2)
