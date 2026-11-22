@@ -1,13 +1,34 @@
 // Level 5 three-pane diligence cockpit layout (spec Section 2).
 
+import { useEffect } from 'react'
 import { useWorkspaceStore } from '../../state/workspace_store'
+import { snapshotState, restoreState } from '../../state/offline_cache'
 import { VDRTree } from '../vdr/VDRTree'
 import { IRLConsole } from '../irl/IRLConsole'
 import { DatabookGrid } from '../databook/DatabookGrid'
 import { ArtifactViewer } from '../viewer/ArtifactViewer'
 
+const CACHE_KEY = 'workspace-snapshot'
+const CACHE_SECRET = 'qoe-session-secret'
+
 export function CockpitLayout() {
   const { currentSimDay, checkBarStatus } = useWorkspaceStore()
+
+  // NFR-04: restore on mount, then snapshot every 500ms (event-sourced rehydration).
+  useEffect(() => {
+    restoreState(CACHE_KEY, CACHE_SECRET).then((state) => {
+      if (state) {
+        const s = state as { currentSimDay?: number; checkBarStatus?: string }
+        if (s.currentSimDay !== undefined) useWorkspaceStore.getState().setSimDay(s.currentSimDay)
+        if (s.checkBarStatus !== undefined) useWorkspaceStore.getState().setCheckBarStatus(s.checkBarStatus)
+      }
+    })
+    const interval = setInterval(() => {
+      const s = useWorkspaceStore.getState()
+      snapshotState(CACHE_KEY, { currentSimDay: s.currentSimDay, checkBarStatus: s.checkBarStatus }, CACHE_SECRET)
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif' }}>
