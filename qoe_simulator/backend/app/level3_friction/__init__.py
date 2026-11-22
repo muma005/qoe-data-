@@ -28,6 +28,7 @@ from .personas import (
     InterviewSession,
     InterviewSimulator,
     InquiryQueue,
+    HumanFrictionService,
 )
 
 __all__ = [
@@ -49,4 +50,5 @@ __all__ = [
     "InterviewSession",
     "InterviewSimulator",
     "InquiryQueue",
+    "HumanFrictionService",
 ]

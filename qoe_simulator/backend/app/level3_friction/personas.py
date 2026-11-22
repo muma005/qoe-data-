@@ -365,3 +365,73 @@ class InquiryQueue:
 
     def status(self) -> List[dict]:
         return list(self.pending.values())
+
+
+# ---------------------------------------------------------------------------
+# Proto-shaped service facade (mirrors human_friction.proto HumanFrictionService)
+# ---------------------------------------------------------------------------
+class HumanFrictionService:
+    """Thin facade mapping the four proto RPCs onto the Level 3 engines.
+
+    Method signatures and returned dicts mirror the request/response messages in
+    proto/human_friction.proto so the runtime and the wire contract stay aligned.
+    """
+
+    def __init__(self, roster: Dict[str, Persona] = None, breaker: CircuitBreaker = None,
+                 seed: int = 0xBEEF):
+        self.roster = roster or PERSONA_ROSTER
+        self.wealth = WealthLossEngine()
+        self.state_machine = PushbackStateMachine()
+        self.interview = InterviewSimulator(self.roster, breaker, seed=seed)
+        self.queue = InquiryQueue(seed=seed)
+        self._sessions: Dict[str, InterviewSession] = {}
+
+    # rpc SubmitInquiry (SubmitInquiryRequest) returns (SubmitInquiryResponse)
+    def submit_inquiry(self, simulation_id: str, irl_item_id: str, target_persona_id: str,
+                       inquiry_text: str, current_sim_hour: int) -> dict:
+        persona = self.roster[target_persona_id]
+        ticket = self.queue.submit(irl_item_id, persona, inquiry_text, current_sim_hour)
+        return {
+            "ticket_id": ticket["ticket_id"],
+            "scheduled_response_sim_hour": ticket["scheduled_response_sim_hour"],
+            "current_persona_tier": ticket["current_persona_tier"],
+        }
+
+    # rpc StartInterviewSession (StartInterviewSessionRequest) returns (StartInterviewSessionResponse)
+    def start_interview_session(self, simulation_id: str, attendee_persona_ids: Sequence[str],
+                                topic: str) -> dict:
+        session = self.interview.start_session(attendee_persona_ids, topic)
+        self._sessions[session.session_id] = session
+        return {
+            "session_id": session.session_id,
+            "banker_chaperone_present": session.banker_chaperone_present,
+            "opening_statement": session.transcript[0]["text"],
+        }
+
+    # rpc SendInterviewDialogue (InterviewDialogueRequest) returns (InterviewDialogueResponse)
+    def send_interview_dialogue(self, session_id: str, speaker_actor_id: str,
+                                target_persona_id: str, question_prompt: str) -> dict:
+        session = self._sessions[session_id]
+        entry = self.interview.ask(session, question_prompt, target_persona_id)
+        return {
+            "response_transcript": entry["response_transcript"],
+            "response_latency_seconds": entry["response_latency_seconds"],
+            "is_heuristic_fallback": entry["is_heuristic_fallback"],
+            "cited_vdr_document_ids": entry["cited_vdr_document_ids"],
+        }
+
+    # rpc NotifyHaircutImpact (NotifyHaircutImpactRequest) returns (NotifyHaircutImpactResponse)
+    def notify_haircut_impact(self, simulation_id: str, adjustment_id: str,
+                              ebitda_haircut_amount: float, related_accounting_issue: str) -> dict:
+        updated_tiers: Dict[str, str] = {}
+        total_equity_lost = Decimal("0")
+        # Both owners are impacted by a haircut (founder 65%, CFO 7.5% options).
+        for persona_id in ("P05", "P06"):
+            persona = self.roster[persona_id]
+            persona.apply_haircut(ebitda_haircut_amount, self.wealth, self.state_machine)
+            updated_tiers[persona_id] = persona.active_pushback_tier.name
+            total_equity_lost += persona.personal_wealth_loss_dollars
+        return {
+            "total_equity_value_lost": float(total_equity_lost),
+            "updated_persona_tiers": updated_tiers,
+        }

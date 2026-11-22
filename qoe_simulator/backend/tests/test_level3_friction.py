@@ -6,6 +6,8 @@ models, 13-persona roster, interview simulator (verbal slips + banker interventi
 and the Nygard circuit breaker with heuristic fallback.
 """
 
+import os
+import re
 import unittest
 from dataclasses import replace
 from decimal import Decimal
@@ -21,6 +23,7 @@ from app.level3_friction.pushback_fsm import (
 )
 from app.level3_friction.personas import (
     PERSONA_ROSTER,
+    HumanFrictionService,
     InquiryQueue,
     InterviewSimulator,
     Persona,
@@ -203,6 +206,88 @@ class TestInquiryQueue(unittest.TestCase):
             q.submit(f"ITEM-{i}", persona, "routine voucher question", 100)
         with self.assertRaises(ValueError):
             q.submit("ITEM-OVER", persona, "another question", 100)
+
+
+# ---------------------------------------------------------------------------
+# Proto-contract helpers (parse human_friction.proto text; no proto edits)
+# ---------------------------------------------------------------------------
+def _proto_path() -> str:
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "proto", "human_friction.proto")
+
+
+def _read_proto() -> str:
+    with open(_proto_path(), encoding="utf-8") as f:
+        return f.read()
+
+
+def _parse_enum(text: str, enum_name: str) -> dict:
+    m = re.search(r"enum\s+" + enum_name + r"\s*\{(.*?)\}", text, re.DOTALL)
+    body = m.group(1)
+    return {k: int(v) for k, v in re.findall(r"(\w+)\s*=\s*(\d+)\s*;", body)}
+
+
+def _parse_service_rpcs(text: str) -> list:
+    m = re.search(r"service\s+\w+\s*\{(.*?)\}", text, re.DOTALL)
+    body = m.group(1)
+    return re.findall(r"rpc\s+(\w+)\s*\(\s*(\w+)\s*\)\s*returns\s*\(\s*(\w+)\s*\)", body)
+
+
+def _parse_message_fields(text: str) -> dict:
+    messages = {}
+    for name, body in re.findall(r"message\s+(\w+)\s*\{(.*?)\}", text, re.DOTALL):
+        messages[name] = [f for f in re.findall(r"(\w+)\s*=\s*\d+\s*;", body)]
+    return messages
+
+
+class TestProtoContract(unittest.TestCase):
+    """Confirms Level 3 is wired to proto/human_friction.proto without editing the proto."""
+
+    RPC_TO_METHOD = {
+        "SubmitInquiry": "submit_inquiry",
+        "StartInterviewSession": "start_interview_session",
+        "SendInterviewDialogue": "send_interview_dialogue",
+        "NotifyHaircutImpact": "notify_haircut_impact",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.proto = _read_proto()
+        cls.proto_enum = _parse_enum(cls.proto, "PushbackTier")
+        cls.rpcs = _parse_service_rpcs(cls.proto)
+        cls.messages = _parse_message_fields(cls.proto)
+
+    def test_pushback_tier_enum_matches_proto(self):
+        py_enum = {e.name: e.value for e in PushbackTier}
+        self.assertEqual(py_enum, self.proto_enum)
+
+    def test_service_rpcs_have_python_methods(self):
+        svc = HumanFrictionService()
+        for rpc_name, _req, _resp in self.rpcs:
+            self.assertTrue(hasattr(svc, self.RPC_TO_METHOD[rpc_name]), rpc_name)
+
+    def test_response_fields_align_with_proto(self):
+        svc = HumanFrictionService()
+        for rpc_name, _req, resp_msg in self.rpcs:
+            method = self.RPC_TO_METHOD[rpc_name]
+            result = self._call(svc, method)
+            expected_fields = self.messages[resp_msg]
+            self.assertTrue(expected_fields, f"no fields parsed for {resp_msg}")
+            for field in expected_fields:
+                self.assertIn(field, result, f"{rpc_name} response missing field '{field}'")
+
+    def _call(self, svc, method):
+        if method == "submit_inquiry":
+            return svc.submit_inquiry("sim_1", "IRL-1", "P06", "inventory reserve question", 100)
+        if method == "start_interview_session":
+            return svc.start_interview_session("sim_1", ["P06", "P12"], "Revenue Recognition")
+        if method == "send_interview_dialogue":
+            s = svc.start_interview_session("sim_1", ["P06"], "Revenue Recognition")
+            return svc.send_interview_dialogue(s["session_id"], "P01", "P06", "Explain ASC 606")
+        if method == "notify_haircut_impact":
+            return svc.notify_haircut_impact("sim_1", "ADJ-1", 500000.0, "vendor rebate")
+        raise AssertionError(f"unknown method {method}")
 
 
 if __name__ == "__main__":
