@@ -597,6 +597,14 @@ class HyperFormulaSidecarClient:
     def __init__(self, base_url: str = "http://127.0.0.1:4417"):
         self.base_url = base_url.rstrip("/")
 
+    def _post(self, endpoint: str, payload: dict) -> dict:
+        import json
+        import urllib.request
+        req = urllib.request.Request(self.base_url + endpoint, data=json.dumps(payload).encode("utf-8"),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            return json.loads(r.read().decode("utf-8"))
+
     def health(self) -> bool:
         import urllib.request
         try:
@@ -606,10 +614,68 @@ class HyperFormulaSidecarClient:
             return False
 
     def evaluate(self, formula: str, cells: Dict[str, object]) -> object:
-        import json
-        import urllib.request
-        payload = json.dumps({"formula": formula, "cells": cells}).encode("utf-8")
-        req = urllib.request.Request(self.base_url + "/evaluate", data=payload,
-                                     headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=10) as r:
-            return json.loads(r.read().decode("utf-8")).get("result")
+        return self._post("/evaluate", {"formula": formula, "cells": cells}).get("result")
+
+    def build(self, sheets: Dict[str, list]) -> list:
+        """Build a full multi-sheet workbook; returns the sheet names."""
+        return self._post("/build", {"sheets": sheets}).get("sheetNames", [])
+
+    def get_cell(self, sheet, row: int, col: int) -> object:
+        return self._post("/get-cell", {"sheet": sheet, "row": row, "col": col}).get("value")
+
+    def get_sheet(self, sheet) -> list:
+        return self._post("/get-sheet", {"sheet": sheet}).get("values", [])
+
+
+# Row 1 check-bar formulas (real Excel functions), keyed by tab. Cell refs follow
+# each tab dict's insertion order: first metric -> B2, second -> B3, etc.
+CHECK_BAR_FORMULAS = {
+    "01_Summary": "=IF(ABS(B5-'03_Income_Statement'!B7)<0.01,\"OK\",\"BRIDGE DISCREPANCY\")",
+    "02_EBITDA_Bridges": "=IF(ABS(B2-'03_Income_Statement'!B6)<0.01,\"OK\",\"P&L MISMATCH\")",
+    "03_Income_Statement": "=IF(ABS(B8)<0.01,\"OK\",\"TB UNMAPPED: \"&TEXT(B8,\"$#,##0\"))",
+    "05_Gross_Margin": "=IF(ABS((B2+B3+B4)-B5)<0.01,\"OK\",\"COGS ABSORPTION DELTA\")",
+    "07_Working_Capital": ("=IF(ABS(B2-(B3+B4))<0.01,\"OK: BALANCE SHEET BALANCED\","
+                           "\"DISCREPANCY: \"&TEXT(B2-(B3+B4),\"$#,##0\"))"),
+    "08_Net_Debt": "=IF(ABS(B3-B4)<0.01,\"OK\",\"CASH CLEARING BREAK\")",
+    "11_SPA_Exhibit_B": "=IF(ABS(B2-B6)<0.01,\"OK\",\"SPA PEG VARIANCE\")",
+}
+
+
+def _databook_to_sheets(databook: "Databook") -> Dict[str, list]:
+    """Convert the 11-tab Databook into HyperFormula-ready 2D sheets."""
+    import json as _json
+    sheets: Dict[str, list] = {}
+    for tab_id in databook.TAB_IDS:
+        tab = databook.tabs.get(tab_id, {})
+        grid = []
+        # Row 1 (index 0): check-bar formula in column B.
+        grid.append([None, CHECK_BAR_FORMULAS.get(tab_id)])
+        for key, value in tab.items():
+            if isinstance(value, Decimal):
+                cell = float(value)
+            elif isinstance(value, (dict, list, tuple)):
+                cell = _json.dumps(value, default=str)
+            else:
+                cell = value
+            grid.append([key, cell])
+        sheets[tab_id] = grid
+    return sheets
+
+
+class HyperFormulaBackend:
+    """Runs the 11-tab Databook through HyperFormula as the primary calc engine."""
+
+    def __init__(self, client: HyperFormulaSidecarClient):
+        self.client = client
+
+    def build(self, databook: "Databook") -> Dict[str, list]:
+        return _databook_to_sheets(databook)
+
+    def check_bar_values(self, databook: "Databook") -> Dict[str, str]:
+        """Build the databook in HyperFormula and read back each check-bar cell (B1)."""
+        sheets = _databook_to_sheets(databook)
+        self.client.build(sheets)
+        results = {}
+        for tab_id, _formula in CHECK_BAR_FORMULAS.items():
+            results[tab_id] = self.client.get_cell(tab_id, 0, 1)
+        return results

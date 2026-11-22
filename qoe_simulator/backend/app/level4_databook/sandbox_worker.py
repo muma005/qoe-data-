@@ -18,6 +18,7 @@ from decimal import Decimal
 from typing import Callable, Dict, List, Optional, Sequence
 
 from .formula_graph import (
+    CHECK_BAR_FORMULAS,
     CheckBarStatus,
     DoubleDipChecker,
     FormulaGraph,
@@ -104,26 +105,6 @@ class SandboxWorker:
 class XLSXSerializer:
     """Writes a native, cell-linked .xlsx workbook via openpyxl."""
 
-    # Row 1 check-bar formulas per tab (real Excel functions). Cell refs follow
-    # each tab dict's insertion order: first metric lands in B2, second in B3, etc.
-    CHECK_BAR_FORMULAS = {
-        "01_Summary": ("=IF(ABS(B5-'03_Income_Statement'!B7)<0.01,\"OK\",\"BRIDGE DISCREPANCY\")",
-                       ["normalized_ebitda", "net_debt", "recommended_nwc_peg", "net_income"]),
-        "02_EBITDA_Bridges": ("=IF(ABS(B2-'03_Income_Statement'!B6)<0.01,\"OK\",\"P&L MISMATCH\")",
-                              ["reported_ebitda"]),
-        "03_Income_Statement": ("=IF(ABS(B8)<0.01,\"OK\",\"TB UNMAPPED: \"&TEXT(B8,\"$#,##0\"))",
-                                ["total_revenue", "total_cogs", "total_opex", "ebitda", "net_income", "tb_net"]),
-        "05_Gross_Margin": ("=IF(ABS((B2+B3+B4)-B5)<0.01,\"OK\",\"COGS ABSORPTION DELTA\")",
-                            ["materials", "labor", "overhead", "total_cogs"]),
-        "07_Working_Capital": ("=IF(ABS(B2-(B3+B4))<0.01,\"OK: BALANCE SHEET BALANCED\","
-                               "\"DISCREPANCY: \"&TEXT(B2-(B3+B4),\"$#,##0\"))",
-                               ["assets", "liabilities", "equity"]),
-        "08_Net_Debt": ("=IF(ABS(B3-B4)<0.01,\"OK\",\"CASH CLEARING BREAK\")",
-                        ["operating_cash", "bank_cash", "cash"]),
-        "11_SPA_Exhibit_B": ("=IF(ABS(B2-B6)<0.01,\"OK\",\"SPA PEG VARIANCE\")",
-                             ["peg_inclusions", "peg_exclusions", "true_up_collar_pct", "escrow_pct", "target_nwc_peg"]),
-    }
-
     def __init__(self, linter: ModelingHygieneLinter = None):
         self.linter = linter or ModelingHygieneLinter()
 
@@ -163,8 +144,8 @@ class XLSXSerializer:
         black = Font(color=self._argb(RGB["BLACK"]))
 
         # Row 1 check bar formula + conditional formatting (green/red)
-        if tab_id in self.CHECK_BAR_FORMULAS:
-            formula, _ = self.CHECK_BAR_FORMULAS[tab_id]
+        if tab_id in CHECK_BAR_FORMULAS:
+            formula = CHECK_BAR_FORMULAS[tab_id]
             c = ws["B1"]
             c.value = formula
             c.font = Font(color=self._argb(RGB["BLACK"]), bold=True)

@@ -7,6 +7,7 @@ proto-shaped FdbCalculationService facade.
 """
 
 from .formula_graph import (
+    CHECK_BAR_FORMULAS,
     CheckBarStatus,
     Cell,
     CycleDetectedError,
@@ -14,6 +15,7 @@ from .formula_graph import (
     DoubleDipChecker,
     ExcelFormulaEvaluator,
     FormulaGraph,
+    HyperFormulaBackend,
     HyperFormulaSidecarClient,
     PVMProduct,
     PVMWaterfallEngine,
@@ -33,6 +35,7 @@ from .sandbox_worker import (
 )
 
 __all__ = [
+    "CHECK_BAR_FORMULAS",
     "CheckBarStatus",
     "Cell",
     "CycleDetectedError",
@@ -40,6 +43,7 @@ __all__ = [
     "DoubleDipChecker",
     "ExcelFormulaEvaluator",
     "FormulaGraph",
+    "HyperFormulaBackend",
     "HyperFormulaSidecarClient",
     "PVMProduct",
     "PVMWaterfallEngine",
