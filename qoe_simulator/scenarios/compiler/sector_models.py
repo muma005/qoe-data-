@@ -404,6 +404,28 @@ class AccountingCore:
 
 
 # ---------------------------------------------------------------------------
+# Per-SKU inventory catalog (spec Section 3.1 "15k-50k SKUs" abstraction)
+# ---------------------------------------------------------------------------
+SKU_CATALOG = {
+    IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION: [
+        ("SKU-FAST", "Fastener Kit", Decimal("25.00")),
+        ("SKU-GLOV", "Safety Gloves", Decimal("12.00")),
+        ("SKU-TOOL", "Hand Tool Set", Decimal("48.00")),
+        ("SKU-PWR", "Power Tool", Decimal("180.00")),
+        ("SKU-ADH", "Adhesive Supplies", Decimal("15.00")),
+    ],
+    IndustrySector.SECTOR_PRECISION_MANUFACTURING: [
+        ("PN-1001", "Machined Bracket", Decimal("120.00")),
+        ("PN-1002", "CNC Housing", Decimal("320.00")),
+        ("PN-1003", "Precision Shaft", Decimal("85.00")),
+        ("PN-1004", "Stamped Cover", Decimal("45.00")),
+        ("PN-1005", "Welded Assembly", Decimal("210.00")),
+    ],
+    IndustrySector.SECTOR_B2B_ENTERPRISE_SAAS: [],
+}
+
+
+# ---------------------------------------------------------------------------
 # Base sector simulator
 # ---------------------------------------------------------------------------
 class BaseSectorSimulator:
@@ -413,7 +435,14 @@ class BaseSectorSimulator:
         self.core = core
         self.sector = sector
         self.anomaly_ids = set(anomaly_ids)
-        self._sku_units = 0  # physical units on hand (INV4)
+
+        # Per-SKU physical units on hand (INV4 at SKU level)
+        self.skus = SKU_CATALOG.get(sector, [])
+        self._sku_units: Dict[str, int] = {sku_id: 0 for sku_id, _, _ in self.skus}
+        self._sku_weights = {sku_id: self.core.rng.uniform(0.5, 1.5)
+                             for sku_id, _, _ in self.skus}
+        self.avg_unit_cost = (sum((cost for _, _, cost in self.skus), Decimal("0"))
+                              / Decimal(len(self.skus))) if self.skus else Decimal("1")
 
         # Lazy import avoids a circular dependency (expense_engine imports CoA
         # from this module). Instantiated here so it shares the scenario seed.
@@ -473,6 +502,41 @@ class BaseSectorSimulator:
             return 0
         return int((money_flow / unit_cost).quantize(Decimal("1"), rounding=ROUND_HALF_EVEN))
 
+    def _distribute_units(self, total_units: int) -> Dict[str, int]:
+        """Distribute integer units across SKUs by deterministic weights (largest remainder)."""
+        if not self.skus or total_units <= 0:
+            return {}
+        n = len(self.skus)
+        weights = [self._sku_weights[sku_id] for sku_id, _, _ in self.skus]
+        total_weight = sum(weights)
+        shares = [int(total_units * w / total_weight) for w in weights]
+        remainder = total_units - sum(shares)
+        idx = 0
+        while remainder > 0:
+            shares[idx % n] += 1
+            remainder -= 1
+            idx += 1
+        return {sku_id: shares[i] for i, (sku_id, _, _) in enumerate(self.skus)}
+
+    def _roll_inventory(self, purchases: Decimal, cogs: Decimal, scrap_cost: Decimal) -> None:
+        """Per-SKU unit roll-forward: Beg + Received - Shipped - Scrap = End (INV4)."""
+        if not self.skus:
+            return
+        recv_total = self._inv4_units(purchases, self.avg_unit_cost)
+        ship_total = self._inv4_units(cogs, self.avg_unit_cost)
+        scrap_total = self._inv4_units(scrap_cost, self.avg_unit_cost)
+        recv = self._distribute_units(recv_total)
+        ship = self._distribute_units(ship_total)
+        scrap = self._distribute_units(scrap_total)
+        for sku_id in self._sku_units:
+            beg = self._sku_units[sku_id]
+            r = recv.get(sku_id, 0)
+            s = ship.get(sku_id, 0)
+            sc = scrap.get(sku_id, 0)
+            end = beg + r - s - sc
+            self._assert_inv4(beg, end, r, s, sc)
+            self._sku_units[sku_id] = end
+
     def _assert_inv4(self, beg: int, end: int, recv: int, ship: int, scrap: int) -> None:
         FinancialPhysicsEngine.assert_inv4_sku_mass_balance(beg, end, recv, ship, scrap)
 
@@ -515,13 +579,8 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
                       entity=vendor.name, memo=f"Purchase from {vendor.name}",
                       document_ref=f"PO-{y}{m:02d}-{idx + 1:03d}")
 
-        # 4. Inventory unit mass-balance (INV4)
-        recv = self._inv4_units(purchases, self.UNIT_COST)
-        ship = self._inv4_units(cogs, self.UNIT_COST)
-        beg = self._sku_units
-        end = beg + recv - ship
-        self._assert_inv4(beg, end, recv, ship, 0)
-        self._sku_units = end
+        # 4. Per-SKU inventory unit mass-balance (INV4)
+        self._roll_inventory(purchases, cogs, _money(0))
 
         # 5. Cash collections
         collected = (self.core.ar * self._collection_ratio()).quantize(_QUANT, rounding=ROUND_HALF_EVEN) if self.core.ar > 0 else _money(0)
@@ -622,14 +681,8 @@ class PrecisionManufacturingSimulator(BaseSectorSimulator):
         # 6. Idle plant overhead (ASC 330-10-30) with SR-B06 anomaly
         self._idle_overhead(y, m, traj, opex)
 
-        # 7. Inventory SKU mass-balance (INV4)
-        recv = self._inv4_units(purchases, self.UNIT_COST)
-        ship = self._inv4_units(cogs, self.UNIT_COST)
-        scrap = self._inv4_units(scrap_cost, self.UNIT_COST)
-        beg = self._sku_units
-        end = beg + recv - ship - scrap
-        self._assert_inv4(beg, end, recv, ship, scrap)
-        self._sku_units = end
+        # 7. Per-SKU inventory unit mass-balance (INV4)
+        self._roll_inventory(purchases, cogs, scrap_cost)
 
         # 8. Collections / AP payment
         collected = (self.core.ar * self._collection_ratio()).quantize(_QUANT, rounding=ROUND_HALF_EVEN) if self.core.ar > 0 else _money(0)

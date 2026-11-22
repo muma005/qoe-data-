@@ -219,6 +219,10 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
     for idx, traj in enumerate(trajectory.monthly_trajectories, start=1):
         simulator.simulate_month(traj, idx)
 
+    # Per-SKU physical inventory snapshot (spec Section 3.1 SKU catalog)
+    write_json(os.path.join(pkg_dir, "sku_inventory.json"),
+               {"sku_units": simulator._sku_units})
+
     # --- Stage 4: Level 0.5 Invariant Gate ------------------------------------
     # INV1 is gated per-entry inside core.post(); INV4/INV5 gated in the simulators.
     # Assert global INV2 (balance sheet conservation) and global double-entry.

@@ -355,6 +355,21 @@ class TestLevel2FillBuild(unittest.TestCase):
         customers = {e.entity_name for e in invoices}
         self.assertGreater(len(customers), 5)
 
+    def test_per_sku_inventory(self):
+        """Physical inventory must be tracked per-SKU, not as one aggregate unit count."""
+        core = AccountingCore("test", 42, 52_000_000, start_year=2021, start_month=1)
+        sim = build_simulator(core, IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION, [])
+        from macro_volatility import VolatilityEngine, VolatilityScenarioConfig
+        traj = VolatilityEngine().generate_trajectory(VolatilityScenarioConfig(
+            scenario_id="test", seed=42,
+            sector=IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION,
+            simulation_months=3, base_annual_revenue=52_000_000,
+        ))
+        for idx, t in enumerate(traj.monthly_trajectories, start=1):
+            sim.simulate_month(t, idx)
+        self.assertEqual(len(sim._sku_units), 5)  # 5 SKUs tracked individually
+        self.assertTrue(all(isinstance(v, int) for v in sim._sku_units.values()))
+
 
 if __name__ == "__main__":
     unittest.main()
