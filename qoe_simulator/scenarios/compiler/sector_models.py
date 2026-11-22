@@ -901,6 +901,55 @@ class DegradationEngine:
              "recommended_action": "Scope limitation + $500,000 specific indemnity escrow"},
         ]
 
+    # -- 7-tier documentary provenance hierarchy (spec Section 6.1) ----------
+    PROVENANCE_TIERS = {
+        "T1": ("External Statutory / Tax Authority Records", 1.00),
+        "T2": ("Third-Party Direct Evidence", 0.95),
+        "T3": ("Immutable ERP System Dumps", 0.90),
+        "T4": ("Operational Telemetry Logs (NFM)", 0.85),
+        "T5": ("Management Manual Schedules", 0.50),
+        "T6": ("Unreconciled Internal Records", 0.30),
+        "T7": ("Verbal Management Assertion", 0.00),
+    }
+
+    def render_provenance_manifest(self) -> dict:
+        return {
+            "tiers": [
+                {"tier": t, "name": name, "evidentiary_weight": weight}
+                for t, (name, weight) in self.PROVENANCE_TIERS.items()
+            ],
+        }
+
+    # -- 4th defect: month-end stub-period cutoff timing break (spec 6.2 #3) --
+    def render_cutoff_break(self, shipment_amount: Decimal) -> Tuple[str, List[dict]]:
+        """A shipment leaves Dec 31 but is invoiced Jan 3, splitting revenue/COGS periods."""
+        self.defects.append({
+            "defect_type": "STUB_PERIOD_CUTOFF",
+            "description": (f"${shipment_amount:.2f} shipment left warehouse Dec 31 (BOL signed Dec 31) "
+                            "but was invoiced Jan 3; revenue in FY+1 while COGS relieved in FY"),
+            "amount": str(shipment_amount),
+            "recommended_action": "Normalize revenue and COGS to the same period",
+        })
+        rows = [
+            ["Shipment Date (BOL)", "Invoice Date", "Amount (USD)", "Period Mismatch"],
+            ["2023-12-31", "2024-01-03", f"{shipment_amount:.2f}", "REVENUE FY24 / COGS FY23"],
+        ]
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerows(rows)
+        return buf.getvalue(), self.defects
+
+    # -- LP-10: synthetic PDF metadata overwrite (spec Section 10) -----------
+    @staticmethod
+    def pdf_metadata(virtual_transaction_date: str) -> dict:
+        """Overwrite PDF metadata timestamps to match the virtual transaction date."""
+        return {
+            "CreationDate": virtual_transaction_date,
+            "ModDate": virtual_transaction_date,
+            "Producer": "Acrobat Distiller 22.0",  # non-generative tag
+            "generative_software_tag_stripped": True,
+        }
+
 
 # ---------------------------------------------------------------------------
 # Sector simulator factory

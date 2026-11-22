@@ -32,12 +32,15 @@ from build_scenario import (  # noqa: E402
 )
 from sector_models import (  # noqa: E402
     AccountingCore,
+    DegradationEngine,
     ERPExporter,
     ERPSchemaType,
     ERP_TYPE_TO_EXPORTER,
     _money,
     build_simulator,
 )
+from subledgers import SubledgerSet  # noqa: E402
+from entities import MasterEntityLedger, generate_fein, valid_fein, valid_zip  # noqa: E402
 from macro_volatility import IndustrySector  # noqa: E402
 
 
@@ -267,6 +270,81 @@ class TestBizGenProtoContract(unittest.TestCase):
                 end_date="2023-12-31",
             )
         raise AssertionError(f"unknown method {method}")
+
+
+class TestLevel2FillBuild(unittest.TestCase):
+    """Covers the spec subsections added in the full fill-build: subledgers, entities,
+    cutoff defect, provenance, LP-10, and the REST-facing facade methods."""
+
+    def _compiled_core(self, scenario_id="target_apex_supply", months=12):
+        core = AccountingCore("test", 42, 52_000_000, start_year=2021, start_month=1)
+        sim = build_simulator(core, IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION, ["SR-B01"])
+        from macro_volatility import VolatilityEngine, VolatilityScenarioConfig
+        traj = VolatilityEngine().generate_trajectory(VolatilityScenarioConfig(
+            scenario_id=scenario_id, seed=42,
+            sector=IndustrySector.SECTOR_WHOLESALE_DISTRIBUTION,
+            simulation_months=months, base_annual_revenue=52_000_000,
+        ))
+        for idx, t in enumerate(traj.monthly_trajectories, start=1):
+            sim.simulate_month(t, idx)
+        return core
+
+    def test_subledger_set_builds_all_five(self):
+        core = self._compiled_core()
+        sub = SubledgerSet().build(core.entries)
+        d = sub.to_dict()
+        for key in ("accounts_receivable", "accounts_payable", "inventory",
+                    "fixed_assets", "deferred_revenue"):
+            self.assertIn(key, d)
+        self.assertGreater(sub.ar.total_open(), 0)
+        self.assertGreater(sub.ap.total_open(), 0)
+
+    def test_ar_aging_buckets(self):
+        core = self._compiled_core()
+        sub = SubledgerSet().build(core.entries)
+        buckets = sub.ar.aging(13)
+        self.assertIn("current", buckets)
+        self.assertIn("over_90", buckets)
+
+    def test_entity_ledger_lp15(self):
+        ledger = MasterEntityLedger(seed=7)
+        v = ledger.register_vendor("Deloitte & Touche LLP")
+        c = ledger.register_customer("Grainger Supply")
+        self.assertTrue(valid_fein(v.fein))
+        self.assertTrue(valid_fein(c.fein))
+        self.assertTrue(valid_zip(v.zip_code))
+        self.assertTrue(valid_zip(c.zip_code))
+        self.assertTrue(ledger.validate_all()["compliant"])
+
+    def test_generate_fein_format(self):
+        self.assertTrue(valid_fein(generate_fein("Acme Corp", 1)))
+        self.assertFalse(valid_fein("123"))
+
+    def test_cutoff_defect(self):
+        deg = DegradationEngine(42)
+        text, defects = deg.render_cutoff_break(Decimal("125000"))
+        self.assertTrue(any(d["defect_type"] == "STUB_PERIOD_CUTOFF" for d in defects))
+        self.assertIn("2023-12-31", text)
+
+    def test_provenance_manifest_seven_tiers(self):
+        deg = DegradationEngine(42)
+        manifest = deg.render_provenance_manifest()
+        self.assertEqual(len(manifest["tiers"]), 7)
+
+    def test_lp10_pdf_metadata(self):
+        meta = DegradationEngine.pdf_metadata("2023-12-31")
+        self.assertEqual(meta["CreationDate"], "2023-12-31")
+        self.assertTrue(meta["generative_software_tag_stripped"])
+
+    def test_facade_subledgers_and_vdr_batch(self):
+        svc = DataGenerationService()
+        svc.compile_scenario_package("target_apex_supply", 42, "4238", 52_000_000.0, 36,
+                                     ERPSchemaType.ERP_ORACLE_NETSUITE, ["SR-B01"])
+        ar_view = svc.subledgers("aged_ar")
+        self.assertIn("aging_buckets", ar_view)
+        batch = svc.render_vdr_batch("wave_2_subledgers")
+        self.assertEqual(batch["wave"], "wave_2_subledgers")
+        self.assertGreater(batch["new_file_count"], 0)
 
 
 if __name__ == "__main__":

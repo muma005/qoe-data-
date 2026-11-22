@@ -52,8 +52,11 @@ from sector_models import (  # noqa: E402
     ERPExporter,
     ERPSchemaType,
     ERP_TYPE_TO_EXPORTER,
+    _money,
     build_simulator,
 )
+from subledgers import SubledgerSet  # noqa: E402
+from entities import MasterEntityLedger  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Scenario registry: maps workflow scenario IDs to Level 2 compilation configs
@@ -178,6 +181,12 @@ def write_json(path: str, obj: object) -> None:
         json.dump(obj, f, indent=2, sort_keys=True)
 
 
+def _money_cutoff(core: AccountingCore) -> "object":
+    """Deterministic month-end cutoff shipment amount (~5% of one month's revenue)."""
+    from decimal import Decimal
+    return _money(core.base_monthly_revenue * Decimal("0.05"))
+
+
 def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir: str) -> dict:
     """Run the full Level 2 pipeline and seal a .csp package."""
 
@@ -219,10 +228,12 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
         raise SystemExit(f"FATAL: Global INV1 violation: debits {total_debits} != credits {total_credits}")
     core.assert_inv2_balance_sheet()
 
-    # --- Stage 5: Materialize ground_truth.duckdb -----------------------------
+    # --- Stage 5: Materialize ground_truth.duckdb (chunked flush, spec 8.1.3) -
     ledger_path = os.path.join(pkg_dir, "ground_truth.duckdb")
     db = ReadProjectionsDB(ledger_path)
+    CHUNK_SIZE = 1000  # flush batches to disk immediately, bounded RAM
     rows = []
+    gl_line_count = 0
     for entry in core.entries:
         for i, line in enumerate(entry.lines):
             rows.append((
@@ -240,7 +251,12 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
                 entry.memo,
                 entry.document_ref,
             ))
-    db.insert_transaction_batch(rows)
+            gl_line_count += 1
+            if len(rows) >= CHUNK_SIZE:
+                db.insert_transaction_batch(rows)
+                rows = []
+    if rows:
+        db.insert_transaction_batch(rows)
     db.close()
 
     # --- Stage 6: ERP exports + documentary degradation -----------------------
@@ -257,18 +273,40 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
     degradation = DegradationEngine(seed)
     wc_schedule, _ = degradation.render_working_capital_schedule(core)
     ar_schedule, _ = degradation.render_aged_ar_schedule(core)
+    cutoff_schedule, _ = degradation.render_cutoff_break(_money_cutoff(core))
     with open(os.path.join(vdr_dir, "working_capital_schedule.csv"), "w", encoding="utf-8") as f:
         f.write(wc_schedule)
     with open(os.path.join(vdr_dir, "aged_ar_schedule.csv"), "w", encoding="utf-8") as f:
         f.write(ar_schedule)
+    with open(os.path.join(vdr_dir, "cutoff_break_schedule.csv"), "w", encoding="utf-8") as f:
+        f.write(cutoff_schedule)
+
+    # --- Five specialized subledger engines (spec Section 4.1) ---------------
+    subledgers = SubledgerSet().build(core.entries)
+    write_json(os.path.join(pkg_dir, "subledgers.json"), subledgers.to_dict())
+
+    # --- Verified master entity ledger (LP-15 FEIN/ZIP validation) -----------
+    entity_ledger = MasterEntityLedger(seed=seed)
+    for entry in core.entries:
+        name = (entry.entity_name or "").strip()
+        if not name or name in ("Opening Balance", "Payroll", "Customers", "Vendors",
+                                "Inventory", "Operations", "Plant", "Fixed Assets",
+                                "AWS", "Suppliers", "Engineering"):
+            continue
+        if entry.entry_type in ("INVOICE", "COLLECTION"):
+            entity_ledger.register_customer(name)
+        else:
+            entity_ledger.register_vendor(name)
+    write_json(os.path.join(pkg_dir, "entity_ledger.json"), entity_ledger.to_dict())
 
     # --- Provenance hierarchy + missing records ------------------------------
     canonical_documents = {
-        "provenance_hierarchy": ["T1", "T2", "T3", "T4", "T5", "T6", "T7"],
+        "provenance_hierarchy": degradation.render_provenance_manifest()["tiers"],
         "artifacts": [
             {"tier": "T3", "path": f"erp_exports/{erp_exporter_map[profile.target_erp]}", "type": "ERP_GL_EXPORT"},
             {"tier": "T5", "path": "working_capital_schedule.csv", "type": "MANAGEMENT_EXCEL"},
             {"tier": "T5", "path": "aged_ar_schedule.csv", "type": "MANAGEMENT_EXCEL"},
+            {"tier": "T5", "path": "cutoff_break_schedule.csv", "type": "MANAGEMENT_EXCEL"},
         ],
         "missing_records": degradation.missing_records(),
         "defects": degradation.defects,
@@ -320,7 +358,7 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
         "tar_path": tar_path,
         "checksum_path": checksum_path,
         "total_journal_entries": len(core.entries),
-        "total_gl_lines": len(rows),
+        "total_gl_lines": gl_line_count,
         "total_vdr_documents": vdr_file_count,
         "invariant_check_passed": True,
         "net_income": str(core.net_income()),
@@ -403,6 +441,34 @@ class DataGenerationService:
             "file_content": text.encode("utf-8"),
             "mime_type": self._MIME_TYPES[exporter_key],
             "row_count": text.count("\n"),
+        }
+
+    # REST /api/v1/datagen/subledgers/{type} (spec Section 7.2)
+    def subledgers(self, subledger_type: str) -> dict:
+        if self._entries is None:
+            raise ValueError("Compile a scenario package before requesting subledgers")
+        subledgers = SubledgerSet().build(self._entries)
+        views = {
+            "aged_ar": subledgers.ar.to_dict(),
+            "ap_aging": subledgers.ap.to_dict(),
+            "inventory_roll": subledgers.inventory.to_dict(),
+            "fixed_assets": subledgers.fixed_assets.to_dict(),
+            "deferred_revenue": subledgers.deferred_revenue.to_dict(),
+        }
+        return views.get(subledger_type, subledgers.to_dict())
+
+    # REST /api/v1/datagen/render-vdr-batch/{wave} (spec Section 7.2 / 8.1.4)
+    def render_vdr_batch(self, wave: str) -> dict:
+        wave_artifacts = {
+            "wave_1_initial": ["erp_exports/", "canonical_documents.json"],
+            "wave_2_subledgers": ["subledgers.json", "aged_ar_schedule.csv"],
+            "wave_3_friday_dump": ["working_capital_schedule.csv", "cutoff_break_schedule.csv"],
+            "wave_4_drip_feed": ["entity_ledger.json"],
+        }
+        return {
+            "wave": wave,
+            "new_file_count": len(wave_artifacts.get(wave, [])),
+            "files": wave_artifacts.get(wave, []),
         }
 
 
