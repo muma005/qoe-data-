@@ -50,6 +50,8 @@ from sector_models import (  # noqa: E402
     AccountingCore,
     DegradationEngine,
     ERPExporter,
+    ERPSchemaType,
+    ERP_TYPE_TO_EXPORTER,
     build_simulator,
 )
 
@@ -311,15 +313,97 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
     with tarfile.open(tar_path, "w:gz") as tar:
         tar.add(pkg_dir, arcname=profile.scenario_id)
 
+    vdr_file_count = sum(len(files) for _, _, files in os.walk(vdr_dir))
+
     return {
         "package_dir": pkg_dir,
         "tar_path": tar_path,
         "checksum_path": checksum_path,
         "total_journal_entries": len(core.entries),
         "total_gl_lines": len(rows),
+        "total_vdr_documents": vdr_file_count,
         "invariant_check_passed": True,
         "net_income": str(core.net_income()),
+        "entries": core.entries,
     }
+
+
+# ---------------------------------------------------------------------------
+# Proto-shaped service facade (mirrors biz_gen.proto DataGenerationService)
+# ---------------------------------------------------------------------------
+class DataGenerationService:
+    """Maps the two proto RPCs onto the Level 2 compiler and exporter.
+
+    Method signatures and returned dicts mirror the request/response messages in
+    proto/biz_gen.proto so the offline compiler and the wire contract stay aligned.
+    """
+
+    _EXPORT_FILENAMES = {
+        "NETSUITE": "GL_Dump_NetSuite.csv",
+        "SAP_S4HANA": "ACDOCA_Extract_FY.txt",
+        "QUICKBOOKS": "QuickBooks.iif",
+        "DYNAMICS365": "Dynamics365.csv",
+    }
+    _MIME_TYPES = {
+        "NETSUITE": "text/csv",
+        "SAP_S4HANA": "text/tab-separated-values",
+        "QUICKBOOKS": "text/csv",
+        "DYNAMICS365": "text/csv",
+    }
+
+    def __init__(self, output_dir: str = None):
+        import tempfile
+        self.output_dir = output_dir or tempfile.mkdtemp()
+        self._entries = None
+        self._scenario_id = None
+
+    # rpc CompileScenarioPackage (CompileScenarioPackageRequest) returns (CompileScenarioPackageResponse)
+    def compile_scenario_package(self, scenario_id: str, random_seed: int, sector_naics: str,
+                                 base_annual_revenue: float, historical_months: int,
+                                 target_erp: ERPSchemaType, active_anomaly_ids: Sequence[str]) -> dict:
+        profile = SCENARIO_PROFILES[scenario_id]
+        effective = ScenarioProfile(
+            scenario_id=profile.scenario_id,
+            company_name=profile.company_name,
+            sector=profile.sector,
+            naics=sector_naics or profile.naics,
+            target_erp=ERP_TYPE_TO_EXPORTER.get(target_erp, profile.target_erp),
+            anomaly_ids=list(active_anomaly_ids) if active_anomaly_ids else profile.anomaly_ids,
+            base_annual_revenue=base_annual_revenue or profile.base_annual_revenue,
+            base_gross_margin=profile.base_gross_margin,
+            base_ebit_margin=profile.base_ebit_margin,
+            macro_archetype=profile.macro_archetype,
+        )
+        years = historical_months // 12
+        result = compile_scenario(effective, years, random_seed, self.output_dir)
+        self._entries = result["entries"]
+        self._scenario_id = scenario_id
+        return {
+            "package_path": result["package_dir"],
+            "sha256_checksum": sha256_file(result["tar_path"]),
+            "total_journal_entries": result["total_journal_entries"],
+            "total_vdr_documents": result["total_vdr_documents"],
+            "invariant_check_passed": result["invariant_check_passed"],
+        }
+
+    # rpc ExportERPDataset (ExportERPDatasetRequest) returns (ExportERPDatasetResponse)
+    def export_erp_dataset(self, scenario_id: str, erp_type: ERPSchemaType,
+                           start_date: str, end_date: str) -> dict:
+        if self._entries is None or scenario_id != self._scenario_id:
+            profile = SCENARIO_PROFILES[scenario_id]
+            result = compile_scenario(profile, 3, 42, self.output_dir)
+            self._entries = result["entries"]
+            self._scenario_id = scenario_id
+        exporter_key = ERP_TYPE_TO_EXPORTER.get(erp_type)
+        if exporter_key is None:
+            exporter_key = SCENARIO_PROFILES[scenario_id].target_erp
+        text = ERPExporter.export(exporter_key, self._entries)
+        return {
+            "export_filename": self._EXPORT_FILENAMES[exporter_key],
+            "file_content": text.encode("utf-8"),
+            "mime_type": self._MIME_TYPES[exporter_key],
+            "row_count": text.count("\n"),
+        }
 
 
 def main() -> int:

@@ -14,6 +14,7 @@ Run directly from the repo root:
 """
 
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -23,10 +24,17 @@ _COMPILER_DIR = os.path.dirname(os.path.abspath(__file__))
 if _COMPILER_DIR not in sys.path:
     sys.path.insert(0, _COMPILER_DIR)
 
-from build_scenario import SCENARIO_PROFILES, compile_scenario, parse_seed  # noqa: E402
+from build_scenario import (  # noqa: E402
+    DataGenerationService,
+    SCENARIO_PROFILES,
+    compile_scenario,
+    parse_seed,
+)
 from sector_models import (  # noqa: E402
     AccountingCore,
     ERPExporter,
+    ERPSchemaType,
+    ERP_TYPE_TO_EXPORTER,
     _money,
     build_simulator,
 )
@@ -159,6 +167,106 @@ class TestLevel2Compiler(unittest.TestCase):
             total_expense_debit.quantize(Decimal("0.0001")),
             _money(total_opex).quantize(Decimal("0.0001")),
         )
+
+
+# ---------------------------------------------------------------------------
+# Proto-contract helpers (parse biz_gen.proto text; no proto edits)
+# ---------------------------------------------------------------------------
+def _proto_path() -> str:
+    return os.path.join(os.path.dirname(os.path.dirname(_COMPILER_DIR)), "proto", "biz_gen.proto")
+
+
+def _read_proto() -> str:
+    with open(_proto_path(), encoding="utf-8") as f:
+        return f.read()
+
+
+def _parse_enum(text: str, enum_name: str) -> dict:
+    m = re.search(r"enum\s+" + enum_name + r"\s*\{(.*?)\}", text, re.DOTALL)
+    body = m.group(1)
+    return {k: int(v) for k, v in re.findall(r"(\w+)\s*=\s*(\d+)\s*;", body)}
+
+
+def _parse_service_rpcs(text: str) -> list:
+    m = re.search(r"service\s+\w+\s*\{(.*?)\}", text, re.DOTALL)
+    body = m.group(1)
+    return re.findall(r"rpc\s+(\w+)\s*\(\s*(\w+)\s*\)\s*returns\s*\(\s*(\w+)\s*\)", body)
+
+
+def _parse_message_fields(text: str) -> dict:
+    messages = {}
+    for name, body in re.findall(r"message\s+(\w+)\s*\{(.*?)\}", text, re.DOTALL):
+        messages[name] = [f for f in re.findall(r"(\w+)\s*=\s*\d+\s*;", body)]
+    return messages
+
+
+class TestBizGenProtoContract(unittest.TestCase):
+    """Confirms Level 2 is wired to proto/biz_gen.proto without editing the proto."""
+
+    RPC_TO_METHOD = {
+        "CompileScenarioPackage": "compile_scenario_package",
+        "ExportERPDataset": "export_erp_dataset",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.proto = _read_proto()
+        cls.proto_enum = _parse_enum(cls.proto, "ERPSchemaType")
+        cls.rpcs = _parse_service_rpcs(cls.proto)
+        cls.messages = _parse_message_fields(cls.proto)
+
+    def test_erp_schema_enum_matches_proto(self):
+        py_enum = {e.name: e.value for e in ERPSchemaType}
+        self.assertEqual(py_enum, self.proto_enum)
+
+    def test_erp_enum_maps_to_all_exporters(self):
+        for erp_enum in (ERPSchemaType.ERP_ORACLE_NETSUITE, ERPSchemaType.ERP_SAP_S4HANA,
+                         ERPSchemaType.ERP_QUICKBOOKS_DESKTOP, ERPSchemaType.ERP_MICROSOFT_DYNAMICS_365):
+            self.assertIn(erp_enum, ERP_TYPE_TO_EXPORTER)
+
+    def test_service_rpcs_have_python_methods(self):
+        svc = DataGenerationService()
+        for rpc_name, _req, _resp in self.rpcs:
+            self.assertTrue(hasattr(svc, self.RPC_TO_METHOD[rpc_name]), rpc_name)
+
+    def test_response_fields_align_with_proto(self):
+        svc = DataGenerationService()
+        for rpc_name, _req, resp_msg in self.rpcs:
+            method = self.RPC_TO_METHOD[rpc_name]
+            result = self._call(svc, method)
+            expected_fields = self.messages[resp_msg]
+            self.assertTrue(expected_fields, f"no fields parsed for {resp_msg}")
+            for field in expected_fields:
+                self.assertIn(field, result, f"{rpc_name} response missing field '{field}'")
+
+    def _call(self, svc, method):
+        if method == "compile_scenario_package":
+            return svc.compile_scenario_package(
+                scenario_id="target_apex_supply",
+                random_seed=42,
+                sector_naics="4238",
+                base_annual_revenue=52_000_000.0,
+                historical_months=36,
+                target_erp=ERPSchemaType.ERP_ORACLE_NETSUITE,
+                active_anomaly_ids=["SR-B01"],
+            )
+        if method == "export_erp_dataset":
+            svc.compile_scenario_package(
+                scenario_id="target_apex_supply",
+                random_seed=42,
+                sector_naics="4238",
+                base_annual_revenue=52_000_000.0,
+                historical_months=36,
+                target_erp=ERPSchemaType.ERP_ORACLE_NETSUITE,
+                active_anomaly_ids=["SR-B01"],
+            )
+            return svc.export_erp_dataset(
+                scenario_id="target_apex_supply",
+                erp_type=ERPSchemaType.ERP_SAP_S4HANA,
+                start_date="2021-01-01",
+                end_date="2023-12-31",
+            )
+        raise AssertionError(f"unknown method {method}")
 
 
 if __name__ == "__main__":

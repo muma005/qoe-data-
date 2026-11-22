@@ -25,6 +25,7 @@ import random
 import sys
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_EVEN
+from enum import Enum
 from typing import Dict, List, Optional, Sequence, Tuple
 
 # ---------------------------------------------------------------------------
@@ -709,6 +710,24 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
 # ---------------------------------------------------------------------------
 # Multi-ERP Native Exporters
 # ---------------------------------------------------------------------------
+class ERPSchemaType(Enum):
+    """Mirrors proto/biz_gen.proto enum ERPSchemaType (source of truth)."""
+    ERP_UNSPECIFIED = 0
+    ERP_ORACLE_NETSUITE = 1
+    ERP_SAP_S4HANA = 2
+    ERP_QUICKBOOKS_DESKTOP = 3
+    ERP_MICROSOFT_DYNAMICS_365 = 4
+
+
+# Maps the proto enum to the exporter's string keys.
+ERP_TYPE_TO_EXPORTER: Dict[ERPSchemaType, str] = {
+    ERPSchemaType.ERP_ORACLE_NETSUITE: "NETSUITE",
+    ERPSchemaType.ERP_SAP_S4HANA: "SAP_S4HANA",
+    ERPSchemaType.ERP_QUICKBOOKS_DESKTOP: "QUICKBOOKS",
+    ERPSchemaType.ERP_MICROSOFT_DYNAMICS_365: "DYNAMICS365",
+}
+
+
 class ERPExporter:
     """Renders the GL into the four native ERP schemas (spec Section 5)."""
 
