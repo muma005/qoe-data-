@@ -7,6 +7,7 @@ deliverable compiler (LP-04 DDE sanitizer + checksum), HMAC state guard, CloudEv
 and the proto contract for workspace_gateway.proto.
 """
 
+import inspect
 import os
 import re
 import unittest
@@ -187,6 +188,17 @@ def _proto_path():
 
 
 class TestWorkspaceProtoContract(unittest.TestCase):
+    """Complete proto contract: enums, RPCs, request->param mapping, response fields,
+    and nested message fields (VDRNode, IRLThreadTurn, DocumentWatermarkConfig)."""
+
+    RPC_TO_METHOD = {
+        "GetVDRTree": "get_vdr_tree",
+        "GetVDRDocument": "get_vdr_document",
+        "SubmitIRLInquiry": "submit_irl_inquiry",
+        "SyncWorkspaceState": "sync_workspace_state",
+        "CompileDeliverables": "compile_deliverables",
+    }
+
     @classmethod
     def setUpClass(cls):
         with open(_proto_path(), encoding="utf-8") as f:
@@ -196,6 +208,12 @@ class TestWorkspaceProtoContract(unittest.TestCase):
             cls.enums[name] = {k: int(v) for k, v in re.findall(r"(\w+)\s*=\s*(\d+)\s*;", body)}
         cls.rpcs = re.findall(r"rpc\s+(\w+)\s*\(\s*(\w+)\s*\)\s*returns\s*\(\s*(\w+)\s*\)",
                               re.search(r"service\s+\w+\s*\{(.*?)\}", cls.proto, re.DOTALL).group(1))
+        cls.messages = {}
+        for name, body in re.findall(r"message\s+(\w+)\s*\{(.*?)\}", cls.proto, re.DOTALL):
+            cls.messages[name] = re.findall(r"(\w+)\s*=\s*\d+\s*;", body)
+
+    def test_all_fourteen_messages_parsed(self):
+        self.assertEqual(len(self.messages), 14)
 
     def test_enums_match_python(self):
         self.assertEqual(self.enums["VDRNodeType"], {e.name: e.value for e in VDRNodeType})
@@ -204,6 +222,61 @@ class TestWorkspaceProtoContract(unittest.TestCase):
 
     def test_five_rpcs(self):
         self.assertEqual(len(self.rpcs), 5)
+
+    def test_request_fields_map_to_method_parameters(self):
+        svc = WorkspaceGatewayService()
+        for rpc_name, req_msg, _resp in self.rpcs:
+            method = getattr(svc, self.RPC_TO_METHOD[rpc_name])
+            params = list(inspect.signature(method).parameters)
+            req_fields = self.messages[req_msg]
+            self.assertEqual(params, req_fields,
+                             f"{rpc_name} params {params} != request fields {req_fields}")
+
+    def test_response_fields_align(self):
+        svc = WorkspaceGatewayService()
+        for rpc_name, _req, resp_msg in self.rpcs:
+            result = self._call(svc, rpc_name)
+            for field in self.messages[resp_msg]:
+                self.assertIn(field, result, f"{rpc_name} response missing '{field}'")
+
+    def test_nested_vdr_node_fields(self):
+        svc = WorkspaceGatewayService()
+        svc.current_sim_day = 20
+        tree = svc.get_vdr_tree("sim1", "U", 20)
+        node = tree["root_nodes"][0]
+        for field in self.messages["VDRNode"]:
+            self.assertIn(field, node, f"VDRNode missing '{field}'")
+
+    def test_nested_irl_thread_turn_fields(self):
+        svc = WorkspaceGatewayService()
+        t = svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P07", "s", "body", [])
+        turn = t["thread_history"][0]
+        for field in self.messages["IRLThreadTurn"]:
+            self.assertIn(field, turn, f"IRLThreadTurn missing '{field}'")
+
+    def test_nested_watermark_config_fields(self):
+        svc = WorkspaceGatewayService()
+        svc.current_sim_day = 20
+        doc = svc.get_vdr_document("sim1", "VDR_NODE_002", "U")
+        for field in self.messages["DocumentWatermarkConfig"]:
+            self.assertIn(field, doc["watermark"], f"DocumentWatermarkConfig missing '{field}'")
+
+    def _call(self, svc, rpc_name):
+        if rpc_name == "GetVDRTree":
+            svc.current_sim_day = 20
+            return svc.get_vdr_tree("sim1", "U", 20)
+        if rpc_name == "GetVDRDocument":
+            svc.current_sim_day = 20
+            return svc.get_vdr_document("sim1", "VDR_NODE_002", "U")
+        if rpc_name == "SubmitIRLInquiry":
+            return svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P07", "s", "body", [])
+        if rpc_name == "SyncWorkspaceState":
+            return svc.sync_workspace_state("sim1", "U", 0, [], "", svc.sign_state("sim1", "U"))
+        if rpc_name == "CompileDeliverables":
+            import hashlib
+            return svc.compile_deliverables("sim1", "U", "wb", "{}", "{}",
+                                            hashlib.sha256(b"wb").hexdigest())
+        raise AssertionError(f"unknown rpc {rpc_name}")
 
 
 class TestGapClosure(unittest.TestCase):
