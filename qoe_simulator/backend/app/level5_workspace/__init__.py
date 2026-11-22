@@ -19,6 +19,8 @@ from .report import ReportAssembler, SPAExhibitBBuilder
 from .gateway import (
     DdeSanitizer,
     CloudEventEmitter,
+    EventBus,
+    CircuitBreaker,
     WorkspaceGatewayService,
 )
 
@@ -36,5 +38,7 @@ __all__ = [
     "SPAExhibitBBuilder",
     "DdeSanitizer",
     "CloudEventEmitter",
+    "EventBus",
+    "CircuitBreaker",
     "WorkspaceGatewayService",
 ]

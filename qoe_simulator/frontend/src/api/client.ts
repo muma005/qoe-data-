@@ -72,4 +72,13 @@ export const workspaceClient = {
   getDatabookTab: (packageDir: string, tabId: string) =>
     post<{ tab_id: string; data: Record<string, unknown> }>('/databook/tab',
       { package_dir: packageDir, tab_id: tabId }),
+
+  searchVDR: (query: string) =>
+    post<{ results: Array<Record<string, unknown>> }>('/vdr/search', { query }),
+
+  getSPA: (packageDir: string) =>
+    post<Record<string, unknown>>('/spa/exhibit-b', { package_dir: packageDir }),
+
+  getReport: (packageDir: string) =>
+    post<{ sections: Record<string, unknown> }>('/report/assemble', { package_dir: packageDir }),
 }

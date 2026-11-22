@@ -5,8 +5,10 @@ import { useWorkspaceStore } from '../../state/workspace_store'
 import { snapshotState, restoreState } from '../../state/offline_cache'
 import { VDRTree } from '../vdr/VDRTree'
 import { IRLConsole } from '../irl/IRLConsole'
+import { PersonaInbox } from '../irl/PersonaInbox'
 import { DatabookGrid } from '../databook/DatabookGrid'
 import { ArtifactViewer } from '../viewer/ArtifactViewer'
+import { EscrowBuilder } from '../viewer/EscrowBuilder'
 
 const CACHE_KEY = 'workspace-snapshot'
 const CACHE_SECRET = 'qoe-session-secret'
@@ -46,12 +48,14 @@ export function CockpitLayout() {
         <section style={{ borderRight: '1px solid #ccc', overflowY: 'auto', padding: 8 }}>
           <VDRTree />
           <IRLConsole />
+          <PersonaInbox />
         </section>
         <section style={{ overflow: 'auto', padding: 8 }}>
           <DatabookGrid />
         </section>
         <section style={{ borderLeft: '1px solid #ccc', overflowY: 'auto', padding: 8 }}>
           <ArtifactViewer />
+          <EscrowBuilder />
         </section>
       </main>
     </div>

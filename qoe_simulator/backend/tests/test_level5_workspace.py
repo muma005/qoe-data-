@@ -290,6 +290,62 @@ class TestGapClosure(unittest.TestCase):
         self.assertIn("nwc", r.json()["data"])
         self.assertIn("dso_days", r.json()["data"])
 
+
+class TestBackendGaps(unittest.TestCase):
+    """Circuit breaker, event bus, and Level 3 latency integration."""
+
+    def _package_dir(self):
+        import sys, os, tempfile
+        compiler = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "scenarios", "compiler")
+        if compiler not in sys.path:
+            sys.path.insert(0, compiler)
+        from build_scenario import SCENARIO_PROFILES, compile_scenario
+        return compile_scenario(SCENARIO_PROFILES["target_apex_supply"], 3, 42, tempfile.mkdtemp())["package_dir"]
+
+    def _databook(self):
+        from app.level4_databook.formula_graph import Databook
+        return Databook().build(self._package_dir())
+
+    def test_circuit_breaker_opens_after_failures(self):
+        from app.level5_workspace.gateway import CircuitBreaker
+        cb = CircuitBreaker(failure_threshold=3, recovery_timeout=60)
+
+        def fail():
+            raise RuntimeError("boom")
+
+        for _ in range(3):
+            with self.assertRaises(RuntimeError):
+                cb.call(fail)
+        self.assertEqual(cb.state, "OPEN")
+        with self.assertRaises(PermissionError):
+            cb.call(fail)
+
+    def test_event_bus_publish_subscribe(self):
+        from app.level5_workspace.gateway import EventBus
+        bus = EventBus()
+        seen = []
+        bus.subscribe("qoe.sim.clock.ticked.v1", lambda **kw: seen.append(kw))
+        bus.publish("qoe.sim.clock.ticked.v1", current_day=14)
+        self.assertEqual(seen, [{"current_day": 14}])
+
+    def test_gateway_bus_wires_consumed_events(self):
+        svc = WorkspaceGatewayService()
+        svc.bus.publish("qoe.sim.clock.ticked.v1", engagement_id="s", current_day=20,
+                        hours_remaining=1.0, milestone="M")
+        self.assertEqual(svc.current_sim_day, 20)
+        svc.bus.publish("qoe.fdb.recalculated.v1", engagement_id="s",
+                        check_bars_status="BAD", break_count=2, break_amount=5000.0)
+        self.assertIn("DISCREPANCY", svc.check_bar_status)
+
+    def test_irl_latency_from_level3(self):
+        svc = WorkspaceGatewayService()
+        # vague inquiry -> Tier 4 -> highest latency multiplier
+        t = svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P06", "fishing",
+                                   "send all contracts", [])
+        self.assertGreater(t["estimated_latency_hours"], 0.0)
+
     def test_report_assembler_ten_sections(self):
         from app.level5_workspace.report import ReportAssembler
         databook = self._databook()

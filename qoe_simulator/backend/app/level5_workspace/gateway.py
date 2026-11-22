@@ -63,6 +63,50 @@ class CloudEventEmitter:
         return [e for e in self.events if e["type"] == event_type]
 
 
+class EventBus:
+    """Minimal pub/sub so Levels 1/3/4 can push consumed CloudEvents into Level 5."""
+
+    def __init__(self):
+        self._subscribers: Dict[str, List] = {}
+
+    def subscribe(self, event_type: str, handler) -> None:
+        self._subscribers.setdefault(event_type, []).append(handler)
+
+    def publish(self, event_type: str, **payload) -> None:
+        for handler in self._subscribers.get(event_type, []):
+            handler(**payload)
+
+
+class CircuitBreaker:
+    """Nygard breaker for the gateway's VDR stream (spec Section 9)."""
+
+    def __init__(self, failure_threshold: int = 3, recovery_timeout: float = 60.0):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failures = 0
+        self.state = "CLOSED"
+        self.opened_at: Optional[float] = None
+
+    def call(self, fn, *args, **kwargs):
+        if self.state == "OPEN":
+            if time.time() - self.opened_at >= self.recovery_timeout:
+                self.state = "HALF_OPEN"
+            else:
+                raise PermissionError("Circuit breaker OPEN (VDR stream unavailable)")
+        try:
+            result = fn(*args, **kwargs)
+            if self.state == "HALF_OPEN":
+                self.state = "CLOSED"
+                self.failures = 0
+            return result
+        except Exception:
+            self.failures += 1
+            if self.failures >= self.failure_threshold:
+                self.state = "OPEN"
+                self.opened_at = time.time()
+            raise
+
+
 class WorkspaceGatewayService:
     """Proto-shaped facade mirroring proto/workspace_gateway.proto."""
 
@@ -77,9 +121,15 @@ class WorkspaceGatewayService:
         self.events = CloudEventEmitter()
         self._submissions: Dict[str, dict] = {}
         self._seq = 0
+        self.circuit_breaker = CircuitBreaker()
         # Simulation clock state (consumed from qoe.sim.clock.ticked.v1).
         self.current_sim_day = 1
         self.check_bar_status = "OK (0 Breaks across 11 Tabs)"
+        # Live event bus: subscribe to the 3 consumed CloudEvents.
+        self.bus = EventBus()
+        self.bus.subscribe("qoe.sim.clock.ticked.v1", self.handle_sim_clock_ticked)
+        self.bus.subscribe("qoe.friction.inquiry.answered.v1", self.handle_friction_inquiry_answered)
+        self.bus.subscribe("qoe.fdb.recalculated.v1", self.handle_fdb_recalculated)
 
     # rpc GetVDRTree (GetVDRTreeRequest) returns (VDRTreeResponse)
     def get_vdr_tree(self, engagement_id: str, user_id: str,
@@ -137,6 +187,23 @@ class WorkspaceGatewayService:
         builder.build()
         return builder.search(query)
 
+    def _compute_latency(self, pushback_tier_str: str) -> float:
+        """Route latency through the Level 3 LatencyScheduler + PushbackTier."""
+        from app.level3_friction.pushback_fsm import (
+            LATENCY_MULTIPLIER,
+            PushbackTier,
+            LatencyScheduler,
+        )
+        tier = PushbackTier.TIER_1_PROFESSIONAL_COOPERATION
+        if pushback_tier_str.startswith("TIER_4"):
+            tier = PushbackTier.TIER_4_AGGRESSIVE_OBFUSCATION
+        elif pushback_tier_str.startswith("TIER_3"):
+            tier = PushbackTier.TIER_3_COMMERCIAL_PRESSURE
+        elif pushback_tier_str.startswith("TIER_2"):
+            tier = PushbackTier.TIER_2_PROCRASTINATION_DELAY
+        psi = LATENCY_MULTIPLIER[tier]
+        return LatencyScheduler(seed=42).schedule_delay_hours("routine", 0.0, psi)
+
     # rpc SubmitIRLInquiry (SubmitIRLInquiryRequest) returns (IRLInquiryResponse)
     def submit_irl_inquiry(self, engagement_id: str, workstream_code: str,
                            priority: IRLPriority, target_persona_id: str,
@@ -146,7 +213,10 @@ class WorkspaceGatewayService:
             raise PermissionError("Rate limit exceeded (max 5 req/sec)")
         ticket = self.irl.submit(engagement_id, workstream_code, priority,
                                  target_persona_id, subject, inquiry_body,
-                                 list(cited_vdr_doc_ids), sim_day=8, latency_hours=0.0)
+                                 list(cited_vdr_doc_ids), sim_day=self.current_sim_day,
+                                 latency_hours=0.0)
+        ticket["estimated_latency_hours"] = self._compute_latency(
+            ticket["pushback_tier_triggered"])
         self.events.emit("qoe.workspace.irl.submitted.v1",
                          engagement_id=engagement_id, request_id=ticket["request_id"],
                          persona_id=target_persona_id, priority=priority.value,
