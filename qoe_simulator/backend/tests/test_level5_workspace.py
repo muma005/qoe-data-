@@ -206,5 +206,93 @@ class TestWorkspaceProtoContract(unittest.TestCase):
         self.assertEqual(len(self.rpcs), 5)
 
 
+class TestGapClosure(unittest.TestCase):
+    """Covers the remaining manifest gaps: search, 403 gating, consumed CloudEvents,
+    report + SPA assembly, and the FastAPI server."""
+
+    def test_vdr_search(self):
+        svc = WorkspaceGatewayService()
+        results = svc.search_vdr("Rebate")
+        self.assertTrue(any("Rebate" in r["title"] for r in results))
+
+    def test_403_gating_on_locked_document(self):
+        svc = WorkspaceGatewayService()
+        svc.current_sim_day = 1
+        # Find a Wave 3 document (unlock day 14) and try to open it on day 1.
+        builder = svc.search_vdr("")  # no-op; find a wave-3 doc
+        # Build tree to locate a wave-3 doc id.
+        from app.level5_workspace.vdr import VDRTreeBuilder, ReleaseWave, VDRNodeType
+        b = VDRTreeBuilder(".")
+        b.build()
+        wave3_doc = next(n for n in b.nodes.values()
+                         if n["release_wave"] == ReleaseWave.WAVE_3_FRIDAY_DUMP.value
+                         and n["node_type"] != VDRNodeType.FOLDER.value)
+        with self.assertRaises(PermissionError):
+            svc.get_vdr_document("sim1", wave3_doc["node_id"], "USR_1")
+
+    def test_sim_clock_ticked_unlocks_document(self):
+        svc = WorkspaceGatewayService()
+        svc.handle_sim_clock_ticked("sim1", 14, 5.5, "MS04")
+        self.assertEqual(svc.current_sim_day, 14)
+        from app.level5_workspace.vdr import VDRTreeBuilder, ReleaseWave, VDRNodeType
+        b = VDRTreeBuilder(".")
+        b.build()
+        wave3_doc = next(n for n in b.nodes.values()
+                         if n["release_wave"] == ReleaseWave.WAVE_3_FRIDAY_DUMP.value
+                         and n["node_type"] != VDRNodeType.FOLDER.value)
+        # Now unlocked (day 14), should not raise.
+        svc.get_vdr_document("sim1", wave3_doc["node_id"], "USR_1")
+
+    def test_friction_inquiry_answered_appends_turn(self):
+        svc = WorkspaceGatewayService()
+        t = svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P07", "s", "body", [])
+        svc.handle_friction_inquiry_answered("sim1", t["request_id"], "Here is the file", ["DOC_1"])
+        req = svc.irl.get(t["request_id"])
+        self.assertEqual(len(req["thread_history"]), 2)
+
+    def test_fdb_recalculated_updates_status(self):
+        svc = WorkspaceGatewayService()
+        svc.handle_fdb_recalculated("sim1", "DISCREPANCY", 1, 310000.0)
+        self.assertIn("DISCREPANCY", svc.check_bar_status)
+        svc.handle_fdb_recalculated("sim1", "OK", 0, 0.0)
+        self.assertIn("OK", svc.check_bar_status)
+
+    def _databook(self):
+        import sys, os, tempfile
+        compiler = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "scenarios", "compiler")
+        if compiler not in sys.path:
+            sys.path.insert(0, compiler)
+        from build_scenario import SCENARIO_PROFILES, compile_scenario
+        from app.level4_databook.formula_graph import Databook
+        result = compile_scenario(SCENARIO_PROFILES["target_apex_supply"], 3, 42, tempfile.mkdtemp())
+        return Databook().build(result["package_dir"])
+
+    def test_report_assembler_ten_sections(self):
+        from app.level5_workspace.report import ReportAssembler
+        databook = self._databook()
+        report = ReportAssembler().build(databook)
+        self.assertEqual(len(report["sections"]), 10)
+        self.assertIn("normalized_ebitda", report["sections"]["01_Executive_Summary"])
+
+    def test_spa_exhibit_b(self):
+        from app.level5_workspace.report import SPAExhibitBBuilder
+        databook = self._databook()
+        spa = SPAExhibitBBuilder().build(databook)
+        self.assertIn("1_target_peg", spa)
+        self.assertGreater(len(spa["2_inclusions"]), 0)
+        self.assertGreater(len(spa["3_exclusions_debt_like"]), 0)
+        self.assertIn("escrow", spa["4_indemnity_escrow"]["purpose"].lower()
+                      or "Escrow" in spa["4_indemnity_escrow"]["purpose"])
+
+    def test_fastapi_server_routes(self):
+        from app.level5_workspace.server import app as fastapi_app
+        paths = {r.path for r in fastapi_app.routes}
+        for expected in ("/api/v1/workspace/vdr/tree", "/api/v1/workspace/irl/submit",
+                         "/api/v1/workspace/deliverables/compile", "/api/v1/workspace/report/assemble"):
+            self.assertIn(expected, paths)
+
+
 if __name__ == "__main__":
     unittest.main()

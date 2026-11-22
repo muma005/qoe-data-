@@ -77,6 +77,9 @@ class WorkspaceGatewayService:
         self.events = CloudEventEmitter()
         self._submissions: Dict[str, dict] = {}
         self._seq = 0
+        # Simulation clock state (consumed from qoe.sim.clock.ticked.v1).
+        self.current_sim_day = 1
+        self.check_bar_status = "OK (0 Breaks across 11 Tabs)"
 
     # rpc GetVDRTree (GetVDRTreeRequest) returns (VDRTreeResponse)
     def get_vdr_tree(self, engagement_id: str, user_id: str,
@@ -102,9 +105,13 @@ class WorkspaceGatewayService:
         if node is None:
             raise KeyError(f"Unknown document {document_id}")
 
-        # LP-11: capability token + sim-day gating (403 if locked).
-        sim_day = 14  # placeholder: real clock injects this
-        signed = self.tokens.generate(user_id, document_id, sim_day, ttl_seconds=60)
+        # LP-11: enforce sim-day gating -> 403 FORBIDDEN if not yet unlocked.
+        if self.current_sim_day < node["unlock_sim_day"]:
+            raise PermissionError(
+                f"403 FORBIDDEN: {document_id} unlocks on sim day {node['unlock_sim_day']} "
+                f"(current day {self.current_sim_day})")
+
+        signed = self.tokens.generate(user_id, document_id, self.current_sim_day, ttl_seconds=60)
         session_id = f"VDR_{engagement_id}_{int(time.time())}"
         watermark = self.watermark.config("APOLLO PRIVATE EQUITY DEAL TEAM", user_id,
                                           session_id, "2024-10-18T11:32:05Z")
@@ -112,7 +119,7 @@ class WorkspaceGatewayService:
         # Emit vdr.opened CloudEvent
         self.events.emit("qoe.workspace.vdr.opened.v1",
                          engagement_id=engagement_id, user_id=user_id,
-                         document_id=document_id, sim_day=sim_day, latency_ms=0.0)
+                         document_id=document_id, sim_day=self.current_sim_day, latency_ms=0.0)
 
         return {
             "document_id": document_id,
@@ -123,6 +130,12 @@ class WorkspaceGatewayService:
             "watermark": watermark,
             "canonical_json_payload": json.dumps({"node_id": document_id, "title": node["title"]}),
         }
+
+    # VDR search (spec Section 3)
+    def search_vdr(self, query: str) -> List[dict]:
+        builder = VDRTreeBuilder(self.package_dir) if self.package_dir else VDRTreeBuilder(".")
+        builder.build()
+        return builder.search(query)
 
     # rpc SubmitIRLInquiry (SubmitIRLInquiryRequest) returns (IRLInquiryResponse)
     def submit_irl_inquiry(self, engagement_id: str, workstream_code: str,
@@ -198,3 +211,24 @@ class WorkspaceGatewayService:
         expected = self.sign_state(engagement_id, user_id)
         if not hmac.compare_digest(expected, signature):
             raise PermissionError("HMAC-SHA256 state signature verification failed")
+
+    # -- Consumed CloudEvents (spec Section 10.2) ----------------------------
+    def handle_sim_clock_ticked(self, engagement_id: str, current_day: int,
+                                hours_remaining: float, milestone: str) -> None:
+        """qoe.sim.clock.ticked.v1: advance the sim day, unlocking release waves."""
+        self.current_sim_day = current_day
+
+    def handle_friction_inquiry_answered(self, engagement_id: str, request_id: str,
+                                         answer_text: str,
+                                         documents_attached: Sequence[str]) -> None:
+        """qoe.friction.inquiry.answered.v1: inject a persona answer into the IRL thread."""
+        self.irl.append_turn(request_id, "TARGET_CFO", "Target CFO", answer_text,
+                             list(documents_attached))
+
+    def handle_fdb_recalculated(self, engagement_id: str, check_bars_status: str,
+                                break_count: int, break_amount: float) -> None:
+        """qoe.fdb.recalculated.v1: pin the green/red check-bar status."""
+        if break_count > 0:
+            self.check_bar_status = f"DISCREPANCY: ${break_amount:,.0f} ({break_count} breaks)"
+        else:
+            self.check_bar_status = check_bars_status or "OK (0 Breaks across 11 Tabs)"

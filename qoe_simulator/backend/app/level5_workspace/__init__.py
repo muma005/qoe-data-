@@ -15,6 +15,7 @@ from .vdr import (
     RateLimiter,
 )
 from .irl import IRLPriority, IRLConsole
+from .report import ReportAssembler, SPAExhibitBBuilder
 from .gateway import (
     DdeSanitizer,
     CloudEventEmitter,
@@ -31,6 +32,8 @@ __all__ = [
     "RateLimiter",
     "IRLPriority",
     "IRLConsole",
+    "ReportAssembler",
+    "SPAExhibitBBuilder",
     "DdeSanitizer",
     "CloudEventEmitter",
     "WorkspaceGatewayService",

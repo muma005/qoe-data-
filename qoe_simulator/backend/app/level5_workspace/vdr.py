@@ -272,6 +272,13 @@ class VDRTreeBuilder:
                 return node
         return None
 
+    def search(self, query: str) -> List[dict]:
+        """Case-insensitive substring search over node titles."""
+        q = (query or "").lower()
+        if not q:
+            return []
+        return [n for n in self.nodes.values() if q in n["title"].lower()]
+
 
 # ---------------------------------------------------------------------------
 # LP-05 / NFR-03: zero-knowledge filter + rate limiter
