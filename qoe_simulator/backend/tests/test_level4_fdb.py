@@ -290,6 +290,38 @@ class TestExcelLayer(unittest.TestCase):
         self.assertTrue(str(ws["B1"].value).startswith("=IF("))
         self.assertIn("BALANCE SHEET BALANCED", str(ws["B1"].value))
 
+    def test_hyperformula_sidecar(self):
+        import shutil
+        import subprocess
+        import time
+        if shutil.which("node") is None:
+            self.skipTest("Node.js not installed")
+        from app.level4_databook.formula_graph import HyperFormulaSidecarClient
+
+        node_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "node_sidecar")
+        env = dict(os.environ, HF_PORT="4418")
+        proc = subprocess.Popen(["node", "hyperformula_server.js"], cwd=node_dir, env=env,
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            client = HyperFormulaSidecarClient("http://127.0.0.1:4418")
+            for _ in range(50):
+                if client.health():
+                    break
+                time.sleep(0.1)
+            self.assertTrue(client.health(), "sidecar did not become healthy")
+            result = client.evaluate(
+                '=IF(ABS(B2-(B3+B4))<0.01,"OK: BALANCE SHEET BALANCED","DISCREPANCY")',
+                {"B2": 15000000, "B3": 6000000, "B4": 9000000})
+            self.assertEqual(result, "OK: BALANCE SHEET BALANCED")
+        finally:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
 
 # ---------------------------------------------------------------------------
 # Proto-contract helpers (parse fdb_calc.proto text; no proto edits)

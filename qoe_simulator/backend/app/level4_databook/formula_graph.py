@@ -564,20 +564,24 @@ class Databook:
 # Excel formula evaluator (wraps the open-source `formulas` library)
 # ---------------------------------------------------------------------------
 class ExcelFormulaEvaluator:
-    """Evaluates real Excel formula strings via the public `formulas` library.
+    """Evaluates real Excel formula strings.
 
-    Supports IF/MAX/ABS/TEXT/SUM/SUMIFS/INDEX/MATCH/XLOOKUP/SUMPRODUCT, comparisons,
-    string concatenation, and array-range arithmetic (e.g. C28:AN28).
+    Default backend is the Python `formulas` library (LGPL). An optional
+    HyperFormula Node.js sidecar (GPL-3.0) can be supplied and, when healthy,
+    is used instead for canonical ~380-function coverage.
     """
 
-    def __init__(self):
+    def __init__(self, sidecar=None):
         import formulas
         self._formulas = formulas
+        self.sidecar = sidecar
 
     def evaluate(self, formula: str, cells: Dict[str, object]) -> object:
         """Evaluate an Excel formula with a dict of cell-address -> value inputs."""
         if not (formula or "").strip().startswith("="):
             return formula
+        if self.sidecar is not None and self.sidecar.health():
+            return self.sidecar.evaluate(formula, cells)
         compiled = self._formulas.Parser().ast(formula)[1].compile()
         result = compiled(**cells)
         if hasattr(result, "item"):
@@ -585,3 +589,27 @@ class ExcelFormulaEvaluator:
         if hasattr(result, "tolist"):
             return result.tolist()
         return result
+
+
+class HyperFormulaSidecarClient:
+    """HTTP client for the HyperFormula Node.js sidecar (GPL-3.0 engine)."""
+
+    def __init__(self, base_url: str = "http://127.0.0.1:4417"):
+        self.base_url = base_url.rstrip("/")
+
+    def health(self) -> bool:
+        import urllib.request
+        try:
+            with urllib.request.urlopen(self.base_url + "/health", timeout=2) as r:
+                return r.status == 200
+        except Exception:
+            return False
+
+    def evaluate(self, formula: str, cells: Dict[str, object]) -> object:
+        import json
+        import urllib.request
+        payload = json.dumps({"formula": formula, "cells": cells}).encode("utf-8")
+        req = urllib.request.Request(self.base_url + "/evaluate", data=payload,
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return json.loads(r.read().decode("utf-8")).get("result")

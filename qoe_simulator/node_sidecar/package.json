@@ -1,0 +1,14 @@
+{
+  "name": "qoe-hyperformula-sidecar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HyperFormula Node.js sidecar for the QoE simulator's Excel formula evaluation (GPL-3.0-only).",
+  "type": "commonjs",
+  "main": "hyperformula_server.js",
+  "scripts": {
+    "start": "node hyperformula_server.js"
+  },
+  "dependencies": {
+    "hyperformula": "^3.5.0"
+  }
+}
