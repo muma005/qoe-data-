@@ -73,6 +73,10 @@ export const workspaceClient = {
     post<{ tab_id: string; data: Record<string, unknown> }>('/databook/tab',
       { package_dir: packageDir, tab_id: tabId }),
 
+  getTrace: (tabId: string, metric: string) =>
+    post<{ source_accounts: string[]; source_je_id: string; vdr_document_id: string; vdr_file_hash: string }>(
+      '/databook/trace', { tab_id: tabId, metric }),
+
   searchVDR: (query: string) =>
     post<{ results: Array<Record<string, unknown>> }>('/vdr/search', { query }),
 

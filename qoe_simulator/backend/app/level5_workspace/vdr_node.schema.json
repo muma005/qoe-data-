@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VDR Node Hierarchy (vdr_node.json)",
+  "type": "object",
+  "required": ["node_id", "parent_node_id", "title", "node_type", "release_wave",
+               "unlock_sim_day", "is_locked"],
+  "properties": {
+    "node_id": { "type": "string" },
+    "parent_node_id": { "type": "string" },
+    "folder_name": { "type": "string" },
+    "title": { "type": "string" },
+    "node_type": { "enum": ["FOLDER", "DOCUMENT_PDF", "DOCUMENT_XLSX", "DOCUMENT_CSV"] },
+    "release_wave": { "enum": ["WAVE_1_INITIAL", "WAVE_2_SUBLEDGERS", "WAVE_3_FRIDAY_DUMP", "WAVE_4_DRIP_FEED"] },
+    "access_phase": { "enum": ["PHASE_I", "PHASE_II"] },
+    "unlock_sim_day": { "type": "integer" },
+    "is_locked": { "type": "boolean" },
+    "file_size_bytes": { "type": "integer" },
+    "sha256_checksum": { "type": "string" },
+    "canonical_json_ref": { "type": "string" },
+    "watermark_text": { "type": "string" },
+    "children": { "type": "array", "items": { "$ref": "#" } }
+  }
+}

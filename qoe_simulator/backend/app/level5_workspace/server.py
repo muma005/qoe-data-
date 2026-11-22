@@ -116,3 +116,8 @@ def databook_tab(req: dict):
     if tab_id not in databook.tabs:
         raise HTTPException(status_code=404, detail=f"unknown tab {tab_id}")
     return {"tab_id": tab_id, "data": _jsonable(databook.tabs[tab_id])}
+
+
+@app.post("/api/v1/workspace/databook/trace")
+def databook_trace(req: dict):
+    return svc.trace_metric(req.get("tab_id", ""), req.get("metric", ""))

@@ -26,6 +26,27 @@ from .vdr import (
 from .irl import IRLConsole, IRLPriority
 
 
+# Databook metric -> source GL account numbers (for the formula tracer).
+METRIC_ACCOUNT_MAP = {
+    "revenue": ["401000", "402000"],
+    "total_revenue": ["401000", "402000"],
+    "cogs": ["501000", "502000", "503000", "504000"],
+    "total_cogs": ["501000", "502000", "503000", "504000"],
+    "opex": ["601000", "604000", "605000"],
+    "total_opex": ["601000", "604000", "605000"],
+    "ebitda": ["401000", "402000", "501000", "601000"],
+    "normalized_ebitda": ["401000", "402000", "501000", "601000"],
+    "ar": ["111000"],
+    "ap": ["201000"],
+    "inventory": ["141000", "142000", "143000", "144000"],
+    "nwc": ["111000", "141000", "201000"],
+    "materials": ["501000"],
+    "labor": ["502000"],
+    "overhead": ["503000", "504000"],
+    "net_debt": ["101000", "201000", "211000"],
+}
+
+
 class DdeSanitizer:
     """LP-04: neutralizes formula/DDE command-injection in deliverable strings."""
 
@@ -125,6 +146,7 @@ class WorkspaceGatewayService:
         # Simulation clock state (consumed from qoe.sim.clock.ticked.v1).
         self.current_sim_day = 1
         self.check_bar_status = "OK (0 Breaks across 11 Tabs)"
+        self.vague_inquiry_count = 0  # LP-15 Investigative-Rigor penalty counter
         # Live event bus: subscribe to the 3 consumed CloudEvents.
         self.bus = EventBus()
         self.bus.subscribe("qoe.sim.clock.ticked.v1", self.handle_sim_clock_ticked)
@@ -217,11 +239,29 @@ class WorkspaceGatewayService:
                                  latency_hours=0.0)
         ticket["estimated_latency_hours"] = self._compute_latency(
             ticket["pushback_tier_triggered"])
+        # LP-15: unfocused/vague inquiries deduct from Investigative Rigor.
+        if ticket["pushback_tier_triggered"].startswith("TIER_4"):
+            self.vague_inquiry_count += 1
         self.events.emit("qoe.workspace.irl.submitted.v1",
                          engagement_id=engagement_id, request_id=ticket["request_id"],
                          persona_id=target_persona_id, priority=priority.value,
                          length=len(inquiry_body))
         return ticket
+
+    # Evidentiary formula tracer (spec Section 5.2): metric -> source GL + VDR hash.
+    def trace_metric(self, tab_id: str, metric: str) -> dict:
+        builder = VDRTreeBuilder(self.package_dir) if self.package_dir else VDRTreeBuilder(".")
+        builder.build()
+        gl_node = next((n for n in builder.nodes.values()
+                        if "General_Ledger" in n["title"]), None)
+        return {
+            "tab_id": tab_id,
+            "metric": metric,
+            "source_accounts": METRIC_ACCOUNT_MAP.get(metric, ["100000"]),
+            "source_je_id": f"JE-{hashlib.sha256(f'{tab_id}:{metric}'.encode()).hexdigest()[:12]}",
+            "vdr_document_id": gl_node["node_id"] if gl_node else "",
+            "vdr_file_hash": gl_node["sha256_checksum"] if gl_node else "",
+        }
 
     # rpc SyncWorkspaceState (WorkspaceStateSyncRequest) returns (WorkspaceStateSyncResponse)
     def sync_workspace_state(self, engagement_id: str, user_id: str, active_tab_index: int,
@@ -259,6 +299,7 @@ class WorkspaceGatewayService:
         self._submissions[submission_id] = {
             "submission_id": submission_id, "success": success, "errors": errors,
             "memo": memo, "spa": spa, "audit_job": audit_job,
+            "investigative_rigor_penalty": self.vague_inquiry_count,
         }
         self.events.emit("qoe.workspace.deliverable.compiled.v1",
                          engagement_id=engagement_id, submission_id=submission_id,
@@ -270,6 +311,7 @@ class WorkspaceGatewayService:
             "compilation_errors": errors,
             "submitted_at": int(time.time()),
             "audit_eval_queue_job_id": audit_job,
+            "investigative_rigor_penalty": self.vague_inquiry_count,
         }
 
     # -- HMAC state guard (NFR-04) -------------------------------------------

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IRL Request Item (irl_item.json)",
+  "type": "object",
+  "required": ["request_id", "engagement_id", "workstream_code", "priority",
+               "target_persona_id", "subject", "inquiry_body", "status"],
+  "properties": {
+    "request_id": { "type": "string" },
+    "engagement_id": { "type": "string" },
+    "workstream_code": { "type": "string" },
+    "priority": { "enum": ["P1_CRITICAL", "P2_HIGH", "P3_ROUTINE"] },
+    "target_persona_id": { "type": "string" },
+    "assigned_persona_name": { "type": "string" },
+    "subject": { "type": "string" },
+    "inquiry_body": { "type": "string" },
+    "status": { "type": "string" },
+    "created_at_sim_day": { "type": "integer" },
+    "created_at_timestamp": { "type": "string", "format": "date-time" },
+    "due_at_timestamp": { "type": "string", "format": "date-time" },
+    "latency_hours_remaining": { "type": "number" },
+    "pushback_tier_active": { "type": "string" },
+    "attached_vdr_document_ids": { "type": "array", "items": { "type": "string" } },
+    "query_thread_turns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["turn_id", "sender", "message_text"],
+        "properties": {
+          "turn_id": { "type": "integer" },
+          "sender": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "message_text": { "type": "string" },
+          "attached_document_ids": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

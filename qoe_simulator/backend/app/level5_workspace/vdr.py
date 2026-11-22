@@ -125,13 +125,15 @@ class VDRTreeBuilder:
               file_size: int = 0, checksum: str = "", json_ref: str = "") -> dict:
         self._seq += 1
         node_id = f"VDR_NODE_{self._seq:03d}"
+        unlock = unlock_day if unlock_day is not None else WAVE_UNLOCK_DAY[wave]
         node = {
             "node_id": node_id,
             "parent_node_id": parent or "",
             "title": title,
             "node_type": node_type.value,
             "release_wave": wave.value,
-            "unlock_sim_day": unlock_day if unlock_day is not None else WAVE_UNLOCK_DAY[wave],
+            "unlock_sim_day": unlock,
+            "access_phase": "PHASE_I" if unlock <= 13 else "PHASE_II",
             "is_locked": True,
             "file_size_bytes": file_size,
             "sha256_checksum": checksum,

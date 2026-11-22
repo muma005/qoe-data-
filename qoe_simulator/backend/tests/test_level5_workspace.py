@@ -346,6 +346,28 @@ class TestBackendGaps(unittest.TestCase):
                                    "send all contracts", [])
         self.assertGreater(t["estimated_latency_hours"], 0.0)
 
+    def test_vdr_nodes_have_access_phase(self):
+        from app.level5_workspace.vdr import VDRTreeBuilder
+        b = VDRTreeBuilder(".")
+        b.build()
+        phases = {n["access_phase"] for n in b.nodes.values()}
+        self.assertEqual(phases, {"PHASE_I", "PHASE_II"})
+
+    def test_trace_metric(self):
+        svc = WorkspaceGatewayService()
+        trace = svc.trace_metric("07_Working_Capital", "nwc")
+        self.assertTrue(trace["source_je_id"].startswith("JE-"))
+        self.assertIn("111000", trace["source_accounts"])
+
+    def test_vague_inquiry_penalty(self):
+        svc = WorkspaceGatewayService()
+        svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P06", "fishing",
+                               "send all contracts and everything", [])
+        self.assertEqual(svc.vague_inquiry_count, 1)
+        r = svc.compile_deliverables("sim1", "U", "wb", "{}", "{}",
+                                     __import__("hashlib").sha256(b"wb").hexdigest())
+        self.assertEqual(r["investigative_rigor_penalty"], 1)
+
     def test_report_assembler_ten_sections(self):
         from app.level5_workspace.report import ReportAssembler
         databook = self._databook()
