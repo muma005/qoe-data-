@@ -8,12 +8,15 @@ hygiene linter, sandboxed worker, and the proto-contract for fdb_calc.proto.
 
 import os
 import re
+import sys
+import tempfile
 import unittest
 from decimal import Decimal
 
 from app.level4_databook.formula_graph import (
     CheckBarStatus,
     Cell,
+    Databook,
     DoubleDipChecker,
     FormulaGraph,
     PVMProduct,
@@ -197,6 +200,56 @@ class TestFdbCalculationService(unittest.TestCase):
         self.assertFalse(r1["is_double_dipping"])
         r2 = svc.validate_anti_double_dipping("sim1", "HC_INV_01", "201000", 250000, "EBITDA_HAIRCUT")
         self.assertTrue(r2["is_double_dipping"])
+
+
+class TestDatabook(unittest.TestCase):
+    """Builds the 11-tab Databook from a real Level 2 .csp package and validates check bars."""
+
+    @classmethod
+    def _compiler_dir(cls) -> str:
+        return os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "scenarios", "compiler")
+
+    def _build_package(self) -> str:
+        compiler = self._compiler_dir()
+        if compiler not in sys.path:
+            sys.path.insert(0, compiler)
+        from build_scenario import SCENARIO_PROFILES, compile_scenario
+        tmp = tempfile.mkdtemp()
+        profile = SCENARIO_PROFILES["target_apex_supply"]
+        result = compile_scenario(profile, 3, 42, tmp)
+        return result["package_dir"]
+
+    def test_databook_builds_all_eleven_tabs(self):
+        pkg = self._build_package()
+        databook = Databook().build(pkg)
+        for tab_id in Databook.TAB_IDS:
+            self.assertIn(tab_id, databook.tabs, tab_id)
+
+    def test_databook_check_bars_all_pass(self):
+        pkg = self._build_package()
+        databook = Databook().build(pkg)
+        engine = CheckBarEngine()
+        results = engine.evaluate(databook.check_bar_input())
+        failing = [r.tab_id for r in results if r.status != CheckBarStatus.CHECK_PASS]
+        self.assertEqual(failing, [], f"check bars failed: {failing}")
+
+    def test_databook_ebitda_bridge_normalizes(self):
+        pkg = self._build_package()
+        databook = Databook().build(pkg)
+        bridge = databook.tabs["02_EBITDA_Bridges"]
+        reported = bridge["reported_ebitda"]
+        normalized = bridge["normalized_ebitda"]
+        # SR-B01 anomaly is a haircut, so normalized EBITDA < reported EBITDA
+        self.assertLess(normalized, reported)
+
+    def test_databook_income_statement_monthly(self):
+        pkg = self._build_package()
+        databook = Databook().build(pkg)
+        monthly = databook.tabs["03_Income_Statement"]["monthly"]
+        self.assertEqual(len(monthly), 36)  # 3 years
+        self.assertTrue(all(m["ebitda"] == m["revenue"] - m["cogs"] - m["opex"] for m in monthly))
 
 
 # ---------------------------------------------------------------------------

@@ -117,7 +117,7 @@ class CoA:
     COGS_OVERHEAD = "503000"
     # SG&A Operating Expenses (600000-699999)
     SALES_SALARIES = "601000"
-    CLOUD_HOSTING = "602000"
+    CLOUD_HOSTING = "504000"
     DEPRECIATION_EXPENSE = "603000"
     G_A_EXPENSE = "604000"
     AMORTIZATION_EXPENSE = "605000"
@@ -156,7 +156,7 @@ class CoA:
         COGS_LABOR: "Cost of Goods Sold - Labor",
         COGS_OVERHEAD: "Cost of Goods Sold - Overhead",
         SALES_SALARIES: "Sales Salaries & Wages",
-        CLOUD_HOSTING: "Cloud AWS Hosting",
+        CLOUD_HOSTING: "Cloud AWS Hosting (Cost of Revenue)",
         DEPRECIATION_EXPENSE: "Depreciation Expense",
         G_A_EXPENSE: "General & Administrative Expense",
         AMORTIZATION_EXPENSE: "Amortization Expense - Software",

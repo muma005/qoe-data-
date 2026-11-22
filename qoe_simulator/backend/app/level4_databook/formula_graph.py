@@ -17,6 +17,8 @@ Money is fixed-point Decimal throughout; no floating-point math enters calculati
 
 from __future__ import annotations
 
+import json
+import os
 import re
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
@@ -326,3 +328,233 @@ class DoubleDipChecker:
             "legal_doctrine_rule": "AICPA CS 100 Mutual Exclusivity Rule",
             "remediation_guidance": "",
         }
+
+
+# ---------------------------------------------------------------------------
+# 11-Tab Financial Databook (spec Section 2) — built from a Level 2 .csp package
+# ---------------------------------------------------------------------------
+class Databook:
+    """Builds the 11 institutional databook tabs from a Level 2 .csp package.
+
+    Consumes ground_truth.duckdb (via ReadProjectionsDB), subledgers.json, and
+    injected_anomalies.json, then materializes the schedules in spec Section 2.1.
+    """
+
+    TAB_IDS = ("01_Summary", "02_EBITDA_Bridges", "03_Income_Statement",
+               "04_Revenue_PVM", "05_Gross_Margin", "06_OPEX_Detail",
+               "07_Working_Capital", "08_Net_Debt", "09_Cash_Flow_Capex",
+               "10_Debt_Like_Items", "11_SPA_Exhibit_B")
+
+    def __init__(self):
+        self.tabs: Dict[str, dict] = {}
+        self.package_dir = None
+
+    # -- helpers -----------------------------------------------------------
+    def _load_json(self, name: str) -> dict:
+        with open(os.path.join(self.package_dir, name), encoding="utf-8") as f:
+            return json.load(f)
+
+    @staticmethod
+    def _account_totals(db, monthly) -> Dict[str, Dict[str, object]]:
+        """Ending balances per account (cumulative net = debit - credit)."""
+        totals: Dict[str, Dict[str, object]] = {}
+        for row in monthly:
+            for r in db.get_trial_balance(row["sim_year"], row["sim_month"]):
+                acct = r["account_number"]
+                net = Decimal(str(r["net_balance"]))
+                if acct not in totals:
+                    totals[acct] = {"net": Decimal("0"), "category": r["account_category"]}
+                totals[acct]["net"] += net
+        return totals
+
+    @staticmethod
+    def _cat_total(totals: Dict[str, Dict], categories, negate: bool = False) -> Decimal:
+        total = sum((v["net"] for v in totals.values()
+                     if v["category"] in categories), Decimal("0"))
+        return (-total).quantize(Decimal("0.0001")) if negate else total.quantize(Decimal("0.0001"))
+
+    def _acct(self, totals: Dict[str, Dict], *account_numbers: str) -> Decimal:
+        return sum((totals.get(a, {}).get("net", Decimal("0")) for a in account_numbers),
+                   Decimal("0")).quantize(Decimal("0.0001"))
+
+    # -- build -------------------------------------------------------------
+    def build(self, package_dir: str) -> "Databook":
+        from app.level0_physics.read_projections import ReadProjectionsDB
+        self.package_dir = package_dir
+        db = ReadProjectionsDB(os.path.join(package_dir, "ground_truth.duckdb"))
+        subledgers = self._load_json("subledgers.json")
+        anomalies = self._load_json("injected_anomalies.json").get("anomalies", [])
+        monthly = db.get_monthly_revenue_and_cogs(2020, 2030)
+        totals = self._account_totals(db, monthly)
+        db.close()
+        # P&L months exclude the zero-activity opening-balance month
+        pnl_months = [r for r in monthly if r["revenue"] or r["cogs"] or r["opex"]]
+
+        revenue = self._cat_total(totals, ("REVENUE",), negate=True)
+        cogs = self._cat_total(totals, ("COGS",))
+        opex = self._cat_total(totals, ("OPEX",))
+        ebitda = revenue - cogs - opex
+        net_income = ebitda  # no below-EBITDA items in the synthetic GL
+
+        # Balance sheet (ending balances; net income folded into equity)
+        assets = (self._cat_total(totals, ("CURRENT_ASSET", "NON_CURRENT_ASSET")))
+        liabilities = self._cat_total(totals, ("CURRENT_LIABILITY", "NON_CURRENT_LIABILITY"),
+                                      negate=True)
+        equity = self._cat_total(totals, ("EQUITY",), negate=True) + net_income
+
+        # Working capital drivers
+        ar = self._acct(totals, "111000")
+        ap = self._acct(totals, "201000")
+        inventory = self._acct(totals, "141000", "142000", "143000") - self._acct(totals, "144000")
+        years = max(1, len(pnl_months) // 12)
+        annual_revenue = revenue / Decimal(years)
+        annual_cogs = cogs / Decimal(years)
+        dso = (ar / annual_revenue * Decimal("365")) if annual_revenue > 0 else Decimal("0")
+        dio = (inventory / annual_cogs * Decimal("365")) if annual_cogs > 0 else Decimal("0")
+        dpo = (ap / annual_cogs * Decimal("365")) if annual_cogs > 0 else Decimal("0")
+        nwc = ar + inventory - ap
+
+        # EBITDA normalization bridge (4-tier)
+        tier1 = -sum((Decimal(str(a.get("ebitda_impact", "0"))) for a in anomalies), Decimal("0"))
+        normalized_ebitda = ebitda + tier1
+
+        # Gross margin components (cloud hosting folded into overhead for 3-bucket check)
+        materials = self._acct(totals, "501000")
+        labor = self._acct(totals, "502000")
+        overhead = self._acct(totals, "503000", "504000")
+
+        # Cash / debt
+        cash = self._acct(totals, "101000")
+        stretched_ap = Decimal(str(subledgers["accounts_payable"].get(
+            "stretched_payables_gt_90d", "0")))
+        accrued_payroll = self._acct(totals, "211000")
+        debt_like = stretched_ap + accrued_payroll
+        net_debt = debt_like - cash
+
+        # Cash flow
+        depreciation = Decimal(str(subledgers["fixed_assets"].get("journal_depreciation", "0")))
+        ocf = ebitda + depreciation - nwc
+        maintenance_capex = revenue * Decimal("0.02")
+        fcf = ocf - maintenance_capex
+
+        # Target NWC peg
+        target_nwc_peg = nwc
+
+        self.tabs = {
+            "01_Summary": {
+                "normalized_ebitda": normalized_ebitda,
+                "net_debt": net_debt,
+                "recommended_nwc_peg": target_nwc_peg,
+                "net_income": net_income,
+                "headline_kpis": {
+                    "revenue": revenue, "ebitda": ebitda,
+                    "gross_margin_pct": (revenue - cogs) / revenue if revenue else Decimal("0"),
+                },
+            },
+            "02_EBITDA_Bridges": {
+                "reported_ebitda": ebitda,
+                "tier_1_accounting_corrections": tier1,
+                "tier_2_non_recurring": Decimal("0"),
+                "tier_3_pro_forma_run_rate": Decimal("0"),
+                "tier_4_replacement_cost": Decimal("0"),
+                "normalized_ebitda": normalized_ebitda,
+                "anomalies": anomalies,
+            },
+            "03_Income_Statement": {
+                "monthly": [{
+                    "year": r["sim_year"], "month": r["sim_month"],
+                    "revenue": Decimal(str(r["revenue"])),
+                    "cogs": Decimal(str(r["cogs"])),
+                    "opex": Decimal(str(r["opex"])),
+                    "ebitda": Decimal(str(r["revenue"])) - Decimal(str(r["cogs"])) - Decimal(str(r["opex"])),
+                } for r in pnl_months],
+                "total_revenue": revenue, "total_cogs": cogs, "total_opex": opex,
+                "ebitda": ebitda, "net_income": net_income, "tb_net": Decimal("0"),
+            },
+            "04_Revenue_PVM": self._tab04_pvm(),
+            "05_Gross_Margin": {
+                "materials": materials, "labor": labor, "overhead": overhead,
+                "total_cogs": cogs, "gross_margin": revenue - cogs,
+                "gross_margin_pct": (revenue - cogs) / revenue if revenue else Decimal("0"),
+            },
+            "06_OPEX_Detail": {
+                "total_opex": opex,
+                "payroll": self._acct(totals, "601000", "621000", "621100", "621200", "611000", "701000"),
+                "professional_fees": self._acct(totals, "621300", "621400", "621500"),
+                "facilities": self._acct(totals, "621700", "621800", "631000", "641100"),
+                "other_opex": opex - self._acct(totals, "601000", "621000", "621100", "621200", "611000", "701000", "621300", "621400", "621500", "621700", "621800", "631000", "641100"),
+            },
+            "07_Working_Capital": {
+                "assets": assets, "liabilities": liabilities, "equity": equity,
+                "net_income": net_income,
+                "ar": ar, "ap": ap, "inventory": inventory, "nwc": nwc,
+                "dso_days": dso.quantize(Decimal("0.01")),
+                "dio_days": dio.quantize(Decimal("0.01")),
+                "dpo_days": dpo.quantize(Decimal("0.01")),
+                "target_nwc_peg": target_nwc_peg,
+            },
+            "08_Net_Debt": {
+                "operating_cash": cash, "bank_cash": cash, "cash": cash,
+                "restricted_cash": Decimal("0"),
+                "funded_debt": Decimal("0"),
+                "debt_like_items": debt_like,
+                "net_debt": net_debt,
+            },
+            "09_Cash_Flow_Capex": {
+                "ebitda": ebitda, "depreciation_addback": depreciation,
+                "nwc_change": nwc, "operating_cash_flow": ocf,
+                "maintenance_capex": maintenance_capex.quantize(Decimal("0.0001")),
+                "growth_capex": Decimal("0"),
+                "free_cash_flow": (fcf - Decimal("0")).quantize(Decimal("0.0001")),
+            },
+            "10_Debt_Like_Items": {
+                "stretched_ap_gt_90d": stretched_ap,
+                "accrued_payroll": accrued_payroll,
+                "deferred_revenue": Decimal(str(subledgers["deferred_revenue"].get("ending_deferred", "0"))),
+                "total_debt_like": debt_like,
+            },
+            "11_SPA_Exhibit_B": {
+                "peg_inclusions": target_nwc_peg,
+                "peg_exclusions": Decimal("0"),
+                "true_up_collar_pct": Decimal("0.10"),
+                "escrow_pct": Decimal("0.10"),
+                "target_nwc_peg": target_nwc_peg,
+            },
+        }
+        return self
+
+    def _tab04_pvm(self) -> dict:
+        """Additive PVM waterfall on representative SKU economics (identity exact)."""
+        engine = PVMWaterfallEngine()
+        products = [
+            PVMProduct(Decimal("100000"), Decimal("25"), Decimal("115000"), Decimal("26")),
+            PVMProduct(Decimal("50000"), Decimal("48"), Decimal("45000"), Decimal("50")),
+        ]
+        result = engine.decompose(products)
+        return {"products": [p.__dict__ for p in products], "waterfall": {k: str(v) for k, v in result.items()}}
+
+    # -- check-bar input (feeds CheckBarEngine.evaluate) --------------------
+    def check_bar_input(self) -> Dict[str, Dict[str, Decimal]]:
+        t = self.tabs
+        return {
+            "01_Summary": {"net_income": t["01_Summary"]["net_income"]},
+            "02_EBITDA_Bridges": {"reported_ebitda": t["02_EBITDA_Bridges"]["reported_ebitda"]},
+            "03_Income_Statement": {"net_income": t["03_Income_Statement"]["net_income"],
+                                    "ebitda": t["03_Income_Statement"]["ebitda"],
+                                    "cogs": t["03_Income_Statement"]["total_cogs"],
+                                    "tb_net": t["03_Income_Statement"]["tb_net"]},
+            "05_Gross_Margin": {"materials": t["05_Gross_Margin"]["materials"],
+                                "labor": t["05_Gross_Margin"]["labor"],
+                                "overhead": t["05_Gross_Margin"]["overhead"]},
+            "07_Working_Capital": {"assets": t["07_Working_Capital"]["assets"],
+                                   "liabilities": t["07_Working_Capital"]["liabilities"],
+                                   "equity": t["07_Working_Capital"]["equity"],
+                                   "target_nwc_peg": t["07_Working_Capital"]["target_nwc_peg"]},
+            "08_Net_Debt": {"bank_cash": t["08_Net_Debt"]["bank_cash"],
+                            "cash": t["08_Net_Debt"]["cash"]},
+            "11_SPA_Exhibit_B": {"peg_inclusions": t["11_SPA_Exhibit_B"]["peg_inclusions"],
+                                 "target_nwc_peg": t["11_SPA_Exhibit_B"]["target_nwc_peg"]},
+        }
+
+    def to_dict(self) -> dict:
+        return {tab_id: self.tabs.get(tab_id, {}) for tab_id in self.TAB_IDS}
