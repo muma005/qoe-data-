@@ -441,6 +441,8 @@ class BaseSectorSimulator:
         self._sku_units: Dict[str, int] = {sku_id: 0 for sku_id, _, _ in self.skus}
         self._sku_weights = {sku_id: self.core.rng.uniform(0.5, 1.5)
                              for sku_id, _, _ in self.skus}
+        self.sales_lines: List[dict] = []
+        self._contract_months: List[Tuple[int, int]] = []
         self.avg_unit_cost = (sum((cost for _, _, cost in self.skus), Decimal("0"))
                               / Decimal(len(self.skus))) if self.skus else Decimal("1")
 
@@ -518,7 +520,8 @@ class BaseSectorSimulator:
             idx += 1
         return {sku_id: shares[i] for i, (sku_id, _, _) in enumerate(self.skus)}
 
-    def _roll_inventory(self, purchases: Decimal, cogs: Decimal, scrap_cost: Decimal) -> None:
+    def _roll_inventory(self, purchases: Decimal, cogs: Decimal, scrap_cost: Decimal,
+                        year: int = None, month: int = None) -> None:
         """Per-SKU unit roll-forward: Beg + Received - Shipped - Scrap = End (INV4)."""
         if not self.skus:
             return
@@ -527,6 +530,8 @@ class BaseSectorSimulator:
         scrap_total = self._inv4_units(scrap_cost, self.avg_unit_cost)
         recv = self._distribute_units(recv_total)
         ship = self._distribute_units(ship_total)
+        if year is not None and month is not None:
+            self._record_invoice_lines(year, month, ship)
         scrap = self._distribute_units(scrap_total)
         for sku_id in self._sku_units:
             beg = self._sku_units[sku_id]
@@ -536,6 +541,37 @@ class BaseSectorSimulator:
             end = beg + r - s - sc
             self._assert_inv4(beg, end, r, s, sc)
             self._sku_units[sku_id] = end
+
+    def _record_invoice_lines(self, year: int, month: int, shipped: Dict[str, int]) -> None:
+        """Allocate actual invoice controls to shipped SKU units; preserve both controls."""
+        invoices=[entry for entry in self.core.entries if entry.entry_type=="INVOICE"
+                  and entry.sim_year==year and entry.sim_month==month]
+        if not invoices or not sum(shipped.values()):
+            raise ValueError("Invoice/SKU shipment source absent")
+        amounts=[next(line.debit for line in entry.lines if line.account_number==CoA.TRADE_AR)
+                 for entry in invoices]
+        revenue=sum(amounts,Decimal(0))
+        prices={sku:price for sku,_,price in self.skus}
+        allocations=[{} for _ in invoices]
+        for sku,units in shipped.items():
+            raw=[Decimal(units)*amount/revenue for amount in amounts]
+            counts=[int(value) for value in raw]
+            for index in sorted(range(len(invoices)),key=lambda i:(raw[i]-counts[i],-i),reverse=True)[:units-sum(counts)]:
+                counts[index]+=1
+            for index,count in enumerate(counts):
+                if count: allocations[index][sku]=count
+        for entry,amount,quantities in zip(invoices,amounts,allocations):
+            weights={sku:Decimal(quantity)*prices[sku] for sku,quantity in quantities.items()}
+            if not weights: raise ValueError("Positive invoice has no SKU units")
+            total=sum(weights.values(),Decimal(0)); remaining=amount
+            items=list(weights.items())
+            for index,(sku,weight) in enumerate(items):
+                allocated=(amount*weight/total).quantize(_QUANT,rounding=ROUND_HALF_EVEN) if index<len(items)-1 else remaining
+                remaining-=allocated
+                self.sales_lines.append({"sim_year":year,"sim_month":month,"document_ref":entry.document_ref,
+                                         "journal_entry_id":entry.entry_id,"product_id":sku,
+                                         "quantity":quantities[sku],"sales_amount":str(allocated),
+                                         "source_kind":"invoice_line_allocation"})
 
     def _assert_inv4(self, beg: int, end: int, recv: int, ship: int, scrap: int) -> None:
         FinancialPhysicsEngine.assert_inv4_sku_mass_balance(beg, end, recv, ship, scrap)
@@ -582,7 +618,7 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
                       document_ref=f"PO-{y}{m:02d}-{idx + 1:03d}")
 
         # 4. Per-SKU inventory unit mass-balance (INV4)
-        self._roll_inventory(purchases, cogs, _money(0))
+        self._roll_inventory(purchases, cogs, _money(0), y, m)
 
         # 5. Cash collections
         collected = (self.core.ar * self._collection_ratio()).quantize(_QUANT, rounding=ROUND_HALF_EVEN) if self.core.ar > 0 else _money(0)
@@ -614,6 +650,9 @@ class WholesaleDistributionSimulator(BaseSectorSimulator):
             rebate_inventory = _money(0)
             self.core.anomalies.append({
                 "anomaly_id": "SR-B01",
+                "source_evidence": {"kind":"supplier_rebate_terms","rebate_total":str(total_rebate),"unsold_inventory_fraction":"0.25"},
+                "sim_year": y, "sim_month": m,
+                "document_ref": f"RB-{y}{m:02d}",
                 "accounting_standard": "ASC_705_20",
                 "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
                 "amount": str((total_rebate * Decimal("0.25")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)),
@@ -686,7 +725,7 @@ class PrecisionManufacturingSimulator(BaseSectorSimulator):
         self._idle_overhead(y, m, traj, opex)
 
         # 7. Per-SKU inventory unit mass-balance (INV4)
-        self._roll_inventory(purchases, cogs, scrap_cost)
+        self._roll_inventory(purchases, cogs, scrap_cost, y, m)
 
         # 8. Collections / AP payment
         collected = (self.core.ar * self._collection_ratio()).quantize(_QUANT, rounding=ROUND_HALF_EVEN) if self.core.ar > 0 else _money(0)
@@ -714,6 +753,9 @@ class PrecisionManufacturingSimulator(BaseSectorSimulator):
                            entity="Plant", memo="Idle plant overhead capitalized (ASC 330)", document_ref=f"IDLE-{y}{m:02d}")
             self.core.anomalies.append({
                 "anomaly_id": "SR-B06",
+                "source_evidence": {"kind":"plant_utilization_record","unabsorbed_overhead":str(unabsorbed),"demand_factor":str(traj.macro_demand_factor)},
+                "sim_year": y, "sim_month": m,
+                "document_ref": f"IDLE-{y}{m:02d}",
                 "accounting_standard": "ASC_330_10_30",
                 "description": "Unabsorbed fixed plant overhead capitalized into WIP instead of expensed",
                 "amount": str(unabsorbed),
@@ -756,6 +798,13 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
         core.post("REVENUE_RECOGNITION", y, m, 28, [dr(CoA.DEFERRED_REVENUE_CURRENT, recognized), cr(CoA.SUBSCRIPTION_REVENUE, recognized)],
                   entity="Enterprise Customers", memo="Ratable subscription revenue recognition", document_ref=f"RR-{y}{m:02d}")
         core.cumulative_recognized += recognized
+        self._contract_months.append((month_index,n_contracts))
+        active_units=sum(count for period,count in self._contract_months if month_index-period<12)
+        if active_units<=0: raise ValueError("Recognized subscription revenue has no active units")
+        self.sales_lines.append({"sim_year":y,"sim_month":m,"document_ref":f"RR-{y}{m:02d}",
+                                 "journal_entry_id":core.entries[-1].entry_id,
+                                 "product_id":"SUBSCRIPTION_SERVICE","quantity":active_units,
+                                 "sales_amount":str(recognized),"source_kind":"recognized_contract_months"})
 
         # 3. ASC 606 revenue waterfall invariant (INV5)
         self._assert_inv5()
@@ -804,6 +853,9 @@ class SaaSSubscriptionSimulator(BaseSectorSimulator):
             over_capitalized = (capitalized * Decimal("0.65")).quantize(_QUANT, rounding=ROUND_HALF_EVEN)
             self.core.anomalies.append({
                 "anomaly_id": "SR-B14",
+                "source_evidence": {"kind":"engineering_time_allocation","capitalized_labor":str(capitalized),"maintenance_fraction":"0.65"},
+                "sim_year": y, "sim_month": m,
+                "document_ref": f"CAP-{y}{m:02d}",
                 "accounting_standard": "ASC_350_40",
                 "description": "Routine maintenance & bug-fix labor capitalized as internal-use software",
                 "amount": str(over_capitalized),

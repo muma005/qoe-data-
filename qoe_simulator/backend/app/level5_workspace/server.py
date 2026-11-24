@@ -83,10 +83,25 @@ def state_sync(req: dict):
 # -- Deliverables ----------------------------------------------------------
 @app.post("/api/v1/workspace/deliverables/compile")
 def deliverables_compile(req: dict):
-    return svc.compile_deliverables(
+    result = svc.compile_deliverables(
         req.get("engagement_id", "sim1"), req.get("user_id", "USR_1"),
         req.get("fdb_workbook_bytes_base64", ""), req.get("qoe_report_memo_json", "{}"),
         req.get("spa_exhibit_b_schedule_json", "{}"), req.get("client_checksum_sha256", ""))
+    if result["compilation_success"]:
+        import base64, hashlib, json
+        try:
+            workbook = base64.b64decode(req["fdb_workbook_bytes_base64"], validate=True)
+            report = json.loads(req.get("qoe_report_memo_json", "{}"))
+            spa = json.loads(req.get("spa_exhibit_b_schedule_json", "{}"))
+            payload = json.dumps({"report": report, "spa": spa}, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+            queued = audit_jobs.submit(req.get("engagement_id", "sim1"), req["scenario_id"],
+                req["seed_hex_64"], workbook, report, spa, hashlib.sha256(workbook + payload).hexdigest())
+            result["audit_eval_queue_job_id"] = queued["job_id"]
+        except (ValueError, KeyError, OSError) as error:
+            result["audit_eval_queue_job_id"] = ""
+            result["audit_submission_error"] = str(error)
+    return result
+
 
 
 # -- Report / SPA ----------------------------------------------------------
@@ -121,3 +136,11 @@ def databook_tab(req: dict):
 @app.post("/api/v1/workspace/databook/trace")
 def databook_trace(req: dict):
     return svc.trace_metric(req.get("tab_id", ""), req.get("metric", ""))
+
+
+# The audit subsystem reads only server-owned policies from scenario packages.
+from pathlib import Path as _Path
+from app.level6_audit.rubric_scorer import create_router as _create_audit_router
+_audit_router, audit_jobs = _create_audit_router(
+    _Path(__file__).resolve().parents[3] / "scenarios" / "packages")
+app.include_router(_audit_router)

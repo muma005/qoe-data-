@@ -1,0 +1,196 @@
+{
+  "anomalies": [
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "96285.6876",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202112",
+      "ebitda_impact": "96285.6876",
+      "sim_month": 12,
+      "sim_year": 2021,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "385142.7504",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "105076.3728",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202212",
+      "ebitda_impact": "105076.3728",
+      "sim_month": 12,
+      "sim_year": 2022,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "420305.4912",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "99655.5213",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202312",
+      "ebitda_impact": "99655.5213",
+      "sim_month": 12,
+      "sim_year": 2023,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "398622.0852",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "103834.4118",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202412",
+      "ebitda_impact": "103834.4118",
+      "sim_month": 12,
+      "sim_year": 2024,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "415337.6472",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "110753.0517",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202512",
+      "ebitda_impact": "110753.0517",
+      "sim_month": 12,
+      "sim_year": 2025,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "443012.2068",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "112777.4922",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202612",
+      "ebitda_impact": "112777.4922",
+      "sim_month": 12,
+      "sim_year": 2026,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "451109.9688",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "123663.1152",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202712",
+      "ebitda_impact": "123663.1152",
+      "sim_month": 12,
+      "sim_year": 2027,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "494652.4608",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "113702.4156",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202812",
+      "ebitda_impact": "113702.4156",
+      "sim_month": 12,
+      "sim_year": 2028,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "454809.6624",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "109663.8252",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202912",
+      "ebitda_impact": "109663.8252",
+      "sim_month": 12,
+      "sim_year": 2029,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "438655.3008",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "120911.6814",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-203012",
+      "ebitda_impact": "120911.6814",
+      "sim_month": 12,
+      "sim_year": 2030,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "483646.7256",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    }
+  ],
+  "evaluation_notes": "Ground truth ledger reflects the target's as-booked records; anomalies document mis-classifications requiring EBITDA adjustment.",
+  "scenario_id": "target_apex_supply"
+}

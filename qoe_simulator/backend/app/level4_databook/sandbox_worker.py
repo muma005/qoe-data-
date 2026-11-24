@@ -19,6 +19,7 @@ from typing import Callable, Dict, List, Optional, Sequence
 
 from .formula_graph import (
     CHECK_BAR_FORMULAS,
+    _databook_to_sheets,
     CheckBarStatus,
     DoubleDipChecker,
     FormulaGraph,
@@ -116,9 +117,10 @@ class XLSXSerializer:
 
         wb = Workbook()
         wb.remove(wb.active)
-        for tab_id in databook.TAB_IDS:
+        rendered = _databook_to_sheets(databook)
+        for tab_id, rows in rendered.items():
             ws = wb.create_sheet(tab_id)
-            self._write_sheet(ws, tab_id, databook.tabs.get(tab_id, {}))
+            self._write_sheet(ws, tab_id, rows)
         wb.save(path)
         return path
 
@@ -136,7 +138,7 @@ class XLSXSerializer:
         """Convert 6-digit #RRGGBB to openpyxl's required 8-digit aRGB."""
         return "FF" + hex_color.lstrip("#")
 
-    def _write_sheet(self, ws, tab_id: str, tab: dict) -> None:
+    def _write_sheet(self, ws, tab_id: str, rows: list) -> None:
         from openpyxl.styles import Font, PatternFill
         from openpyxl.formatting.rule import CellIsRule
 
@@ -158,12 +160,16 @@ class XLSXSerializer:
                 ws.conditional_formatting.add(
                     "B1", CellIsRule(operator="containsText", formula=[f'"{token}"'],
                                      fill=red_fill, font=white))
+        ws["D1"] = rows[0][3]
+        ws["E1"] = rows[0][4]
+        ws["E1"].font = blue
 
         # Data rows: A = metric name, B = value (blue = hardcoded input)
-        for row, (key, value) in enumerate(tab.items(), start=2):
-            ws.cell(row=row, column=1, value=key).font = black
-            cell = ws.cell(row=row, column=2, value=self._cell_value(value))
-            cell.font = blue
+        for row_number, row_values in enumerate(rows[1:], start=2):
+            for column, value in enumerate(row_values, start=1):
+                exported = Decimal(str(value)) if type(value) is float else value
+                cell = ws.cell(row=row_number, column=column, value=exported)
+                cell.font = black if column == 1 or isinstance(value, str) and value.startswith("=") else blue
 
 
 # ---------------------------------------------------------------------------

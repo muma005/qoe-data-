@@ -222,6 +222,21 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
     # Per-SKU physical inventory snapshot (spec Section 3.1 SKU catalog)
     write_json(os.path.join(pkg_dir, "sku_inventory.json"),
                {"sku_units": simulator._sku_units})
+    # Product/service activity is tied to the posted revenue journal controls.
+    from decimal import Decimal
+    sales_by_entry = {}
+    for row in simulator.sales_lines:
+        if row["quantity"] <= 0 or Decimal(row["sales_amount"]) < 0:
+            raise ValueError("Invalid product sales line")
+        sales_by_entry[row["journal_entry_id"]] = sales_by_entry.get(row["journal_entry_id"], Decimal(0)) + Decimal(row["sales_amount"])
+    revenue_entries = [entry for entry in core.entries if entry.entry_type in ("INVOICE", "REVENUE_RECOGNITION")]
+    if set(sales_by_entry) != {entry.entry_id for entry in revenue_entries}:
+        raise ValueError("Product sales lines do not cover revenue postings")
+    for entry in revenue_entries:
+        expected = sum((line.credit for line in entry.lines if line.category.value == "REVENUE"), Decimal(0))
+        if sales_by_entry[entry.entry_id] != expected:
+            raise ValueError("Product sales lines disagree with revenue journal: " + entry.entry_id)
+    write_json(os.path.join(pkg_dir, "sales_lines.json"), simulator.sales_lines)
 
     # --- Stage 4: Level 0.5 Invariant Gate ------------------------------------
     # INV1 is gated per-entry inside core.post(); INV4/INV5 gated in the simulators.
@@ -335,15 +350,26 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
         "evaluation_notes": "Ground truth ledger reflects the target's as-booked records; anomalies document mis-classifications requiring EBITDA adjustment.",
     }
 
+    # Export explicit anomaly occurrence -> ledger lineage for Level 6.
+    # Workbook and independent source-document bindings remain separate requirements.
+    from app.level6_audit.ast_audit import build_scenario_evidence
+    audit_evidence = build_scenario_evidence(core.entries, core.anomalies)
+    write_json(os.path.join(pkg_dir, "audit_evidence.json"), audit_evidence)
+    write_json(os.path.join(vdr_dir, "operational_source_documents.json"), audit_evidence["documents"])
+    write_json(os.path.join(vdr_dir, "product_sales_lines.json"), simulator.sales_lines)
+
     # --- Write deterministic artifacts ---------------------------------------
     write_json(os.path.join(pkg_dir, "manifest.json"), manifest)
     write_json(os.path.join(pkg_dir, "operational_trajectory.json"), trajectory_to_dict(trajectory))
     write_json(os.path.join(pkg_dir, "injected_anomalies.json"), injected_anomalies)
     write_json(os.path.join(vdr_dir, "canonical_documents.json"), canonical_documents)
+    from app.level6_audit.rubric_scorer import build_compiled_scenario_policy
+    policy = build_compiled_scenario_policy(pkg_dir, f"0x{seed:016x}")
+    write_json(os.path.join(pkg_dir, "audit_policy.json"), policy)
 
     # --- SHA-256 checksum over deterministic data artifacts ------------------
     checksum_lines = []
-    for rel in ("ground_truth.duckdb", "manifest.json", "operational_trajectory.json", "injected_anomalies.json"):
+    for rel in ("ground_truth.duckdb", "manifest.json", "operational_trajectory.json", "injected_anomalies.json", "sales_lines.json", "audit_evidence.json", "audit_policy.json", "vdr_artifacts/operational_source_documents.json", "vdr_artifacts/product_sales_lines.json"):
         p = os.path.join(pkg_dir, rel)
         checksum_lines.append(f"{sha256_file(p)}  {rel}")
     checksum_path = os.path.join(pkg_dir, "checksum.sha256")

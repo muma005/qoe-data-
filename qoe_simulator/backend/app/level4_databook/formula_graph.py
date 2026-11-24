@@ -348,6 +348,26 @@ class Databook:
     def __init__(self):
         self.tabs: Dict[str, dict] = {}
         self.package_dir = None
+        self.audit_provenance = None
+
+    def audit_cell_bindings(self) -> dict:
+        """Expose the exact rendered grid layout; never label scalar values formulas."""
+        sheets = _databook_to_sheets(self)
+        bindings = {}
+        missing_checks = []
+        for tab_id, rows in sheets.items():
+            if not rows[0][1]: missing_checks.append(tab_id)
+            metrics = {}
+            for row_number, row_values in enumerate(rows[1:], 2):
+                metric, value = row_values[:2]
+                original = self.tabs.get(tab_id, {}).get(metric)
+                metrics[metric] = {"cell": f"{tab_id}!B{row_number}",
+                    "representation": "json_text" if isinstance(original, (dict, list, tuple)) else "scalar",
+                    "has_formula": isinstance(value, str) and value.startswith("=")}
+            bindings[tab_id] = {"check_bar_cell": f"{tab_id}!B1",
+                                "check_bar_formula": rows[0][1], "metrics": metrics}
+        return {"layout_version": "1.0", "tabs": bindings,
+                "missing_check_bars": missing_checks}
 
     # -- helpers -----------------------------------------------------------
     def _load_json(self, name: str) -> dict:
@@ -381,6 +401,8 @@ class Databook:
     def build(self, package_dir: str) -> "Databook":
         from app.level0_physics.read_projections import ReadProjectionsDB
         self.package_dir = package_dir
+        evidence_path = os.path.join(package_dir, "audit_evidence.json")
+        self.audit_provenance = self._load_json("audit_evidence.json") if os.path.isfile(evidence_path) else None
         db = ReadProjectionsDB(os.path.join(package_dir, "ground_truth.duckdb"))
         subledgers = self._load_json("subledgers.json")
         anomalies = self._load_json("injected_anomalies.json").get("anomalies", [])
@@ -524,14 +546,45 @@ class Databook:
         return self
 
     def _tab04_pvm(self) -> dict:
-        """Additive PVM waterfall on representative SKU economics (identity exact)."""
+        """Compare the two latest complete fiscal years from posted sales lines."""
+        sales_path = os.path.join(self.package_dir or "", "sales_lines.json")
+        if not self.package_dir or not os.path.isfile(sales_path):
+            raise ValueError("Transaction-linked sales lines are required for PVM")
+        with open(sales_path, encoding="utf-8") as source:
+            sales = json.load(source)
+        years = sorted({row["sim_year"] for row in sales})
+        if len(years) < 2 or years[-1] - years[-2] != 1:
+            raise ValueError("PVM requires two consecutive fiscal years")
+        base_year, current_year = years[-2:]
+        totals = {}
+        for row in sales:
+            if row["sim_year"] not in (base_year, current_year):
+                continue
+            key = (row["product_id"], row["sim_year"])
+            amount, units = totals.get(key, (Decimal(0), 0))
+            totals[key] = (amount + Decimal(row["sales_amount"]), units + row["quantity"])
+        product_ids = sorted({key[0] for key in totals})
+        if not product_ids:
+            raise ValueError("No product activity to decompose")
+        inputs = []
+        products = []
+        for product_id in product_ids:
+            if (product_id, base_year) not in totals or (product_id, current_year) not in totals:
+                raise ValueError("Product has no comparable prior-year sales: " + product_id)
+            base_amount, base_units = totals[product_id, base_year]
+            current_amount, current_units = totals[product_id, current_year]
+            if base_units <= 0 or current_units <= 0:
+                raise ValueError("PVM cannot divide by zero product volume")
+            inputs.append({"product_id":product_id,"base_year":base_year,"current_year":current_year,
+                           "base_units":base_units,"base_revenue":str(base_amount),
+                           "current_units":current_units,"current_revenue":str(current_amount)})
+            products.append(PVMProduct(Decimal(base_units),base_amount/Decimal(base_units),
+                                       Decimal(current_units),current_amount/Decimal(current_units)))
         engine = PVMWaterfallEngine()
-        products = [
-            PVMProduct(Decimal("100000"), Decimal("25"), Decimal("115000"), Decimal("26")),
-            PVMProduct(Decimal("50000"), Decimal("48"), Decimal("45000"), Decimal("50")),
-        ]
         result = engine.decompose(products)
-        return {"products": [p.__dict__ for p in products], "waterfall": {k: str(v) for k, v in result.items()}}
+        result["mix_effect"] = result["total_delta"] - result["price_effect"] - result["volume_effect"]
+        result["residual"] = Decimal("0.0000")
+        return {"products":inputs,"waterfall": {k: str(v) for k,v in result.items()}}
 
     # -- check-bar input (feeds CheckBarEngine.evaluate) --------------------
     def check_bar_input(self) -> Dict[str, Dict[str, Decimal]]:
@@ -630,14 +683,17 @@ class HyperFormulaSidecarClient:
 # Row 1 check-bar formulas (real Excel functions), keyed by tab. Cell refs follow
 # each tab dict's insertion order: first metric -> B2, second -> B3, etc.
 CHECK_BAR_FORMULAS = {
-    "01_Summary": "=IF(ABS(B5-'03_Income_Statement'!B7)<0.01,\"OK\",\"BRIDGE DISCREPANCY\")",
-    "02_EBITDA_Bridges": "=IF(ABS(B2-'03_Income_Statement'!B6)<0.01,\"OK\",\"P&L MISMATCH\")",
-    "03_Income_Statement": "=IF(ABS(B8)<0.01,\"OK\",\"TB UNMAPPED: \"&TEXT(B8,\"$#,##0\"))",
-    "05_Gross_Margin": "=IF(ABS((B2+B3+B4)-B5)<0.01,\"OK\",\"COGS ABSORPTION DELTA\")",
-    "07_Working_Capital": ("=IF(ABS(B2-(B3+B4))<0.01,\"OK: BALANCE SHEET BALANCED\","
-                           "\"DISCREPANCY: \"&TEXT(B2-(B3+B4),\"$#,##0\"))"),
-    "08_Net_Debt": "=IF(ABS(B3-B4)<0.01,\"OK\",\"CASH CLEARING BREAK\")",
-    "11_SPA_Exhibit_B": "=IF(ABS(B2-B6)<0.01,\"OK\",\"SPA PEG VARIANCE\")",
+    "04_Revenue_PVM": '=IF(B4=SUM(B5:B7),"OK","PVM DISCREPANCY")',
+    "06_OPEX_Detail": '=IF(ABS(B2-SUM(B3:B6))<E1,"OK","OPEX DISCREPANCY")',
+    "09_Cash_Flow_Capex": '=IF(ABS(B8-(B5-B6-B7))<E1,"OK","CASH FLOW DISCREPANCY")',
+    "10_Debt_Like_Items": '=IF(ABS(B5-SUM(B2:B3))<E1,"OK","DEBT-LIKE DISCREPANCY")',
+    "01_Summary": "=IF(ABS(B5-'03_Income_Statement'!B7)<E1,\"OK\",\"BRIDGE DISCREPANCY\")",
+    "02_EBITDA_Bridges": "=IF(ABS(B2-'03_Income_Statement'!B6)<E1,\"OK\",\"P&L MISMATCH\")",
+    "03_Income_Statement": "=IF(ABS(B8)<E1,\"OK\",\"TB UNMAPPED\")",
+    "05_Gross_Margin": "=IF(ABS((B2+B3+B4)-B5)<E1,\"OK\",\"COGS ABSORPTION DELTA\")",
+    "07_Working_Capital": '=IF(ABS(B2-(B3+B4))<E1,"OK: BALANCE SHEET BALANCED","BALANCE SHEET DISCREPANCY")',
+    "08_Net_Debt": "=IF(ABS(B3-B4)<E1,\"OK\",\"CASH CLEARING BREAK\")",
+    "11_SPA_Exhibit_B": "=IF(ABS(B2-B6)<E1,\"OK\",\"SPA PEG VARIANCE\")",
 }
 
 
@@ -649,7 +705,7 @@ def _databook_to_sheets(databook: "Databook") -> Dict[str, list]:
         tab = databook.tabs.get(tab_id, {})
         grid = []
         # Row 1 (index 0): check-bar formula in column B.
-        grid.append([None, CHECK_BAR_FORMULAS.get(tab_id)])
+        grid.append([None, CHECK_BAR_FORMULAS.get(tab_id), None, "check_tolerance", 0.01])
         for key, value in tab.items():
             if isinstance(value, Decimal):
                 cell = float(value)
@@ -658,6 +714,57 @@ def _databook_to_sheets(databook: "Databook") -> Dict[str, list]:
             else:
                 cell = value
             grid.append([key, cell])
+        if tab_id == "04_Revenue_PVM" and "waterfall" in tab:
+            effect_rows = {}
+            for key in ("total_delta", "price_effect", "volume_effect", "mix_effect"):
+                effect_rows[key] = len(grid) + 1
+                grid.append([key, None])
+            first = len(grid) + 1
+            for product in tab["products"]:
+                grid.append(["product:" + product["product_id"], product["base_units"],
+                             float(product["base_revenue"]), product["current_units"],
+                             float(product["current_revenue"])])
+            last = len(grid)
+            rows = range(first, last + 1)
+            price_terms = ",".join(f"D{r}*(E{r}/D{r}-C{r}/B{r})" for r in rows)
+            grid[effect_rows["total_delta"] - 1][1] = f"=ROUND(SUM(E{first}:E{last})-SUM(C{first}:C{last}),4)"
+            grid[effect_rows["price_effect"] - 1][1] = f"=ROUND(SUM({price_terms}),4)"
+            grid[effect_rows["volume_effect"] - 1][1] = (
+                f"=ROUND((SUM(D{first}:D{last})-SUM(B{first}:B{last}))*"
+                f"SUM(C{first}:C{last})/SUM(B{first}:B{last}),4)")
+            grid[effect_rows["mix_effect"] - 1][1] = (
+                f"=B{effect_rows['total_delta']}-B{effect_rows['price_effect']}-B{effect_rows['volume_effect']}")
+        if tab_id == "02_EBITDA_Bridges" and "anomalies" in tab:
+            # Expand occurrences into individually auditable rows after existing metrics.
+            for anomaly in tab["anomalies"]:
+                evidence = anomaly.get("source_evidence", {})
+                row = len(grid) + 1
+                aid = anomaly.get("anomaly_id")
+                if aid == "SR-B01" and evidence:
+                    base, fraction = evidence["rebate_total"], evidence["unsold_inventory_fraction"]
+                elif aid == "SR-B14" and evidence:
+                    base, fraction = evidence["capitalized_labor"], evidence["maintenance_fraction"]
+                elif aid == "SR-B06" and evidence:
+                    base, fraction = evidence["unabsorbed_overhead"], "1"
+                else:
+                    continue
+                source_cell = float(base)
+                provenance = databook.audit_provenance
+                if provenance:
+                    occurrence_key = f"{aid}:{anomaly['sim_year']}:{anomaly['sim_month']:02d}:{anomaly['document_ref']}"
+                    occurrence = provenance["anomaly_occurrences"][occurrence_key]
+                    matching = [(identifier, provenance["ledger"][identifier]) for identifier in occurrence["ledger_ids"]
+                                if abs(Decimal(provenance["ledger"][identifier]["signed_amount"])) == Decimal(str(base))]
+                    positive = [(identifier, line) for identifier, line in matching if Decimal(line["signed_amount"]) > 0]
+                    if len(matching) > 1 and len(positive) == 1:
+                        matching = positive
+                    if len(matching) != 1:
+                        raise ValueError("Ambiguous source ledger line for " + occurrence_key)
+                    identifier, line = matching[0]
+                    grid.append(["GL:" + identifier, float(abs(Decimal(line["signed_amount"])))])
+                    source_cell = f"=B{row}"
+                    row += 1
+                grid.append([anomaly["document_ref"], f"=ROUND(C{row}*D{row},4)", source_cell, float(fraction)])
         sheets[tab_id] = grid
     return sheets
 

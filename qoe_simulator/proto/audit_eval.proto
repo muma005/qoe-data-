@@ -119,3 +119,8 @@ service AuditEvaluationService {
   rpc ScanBenfordDistribution (ScanBenfordDistributionRequest) returns (BenfordDistributionResult);
   rpc GenerateEQCRMemo (GenerateEQCRMemoRequest) returns (EQCRMemoResponse);
 }
+
+message RunASTFormulaAuditRequest {
+  string engagement_id = 1;
+  string fdb_xlsx_blob_uri = 2;
+}
