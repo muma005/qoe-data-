@@ -1,0 +1,15 @@
+{
+  "data": {
+    "customer_states": [
+      "NY"
+    ],
+    "filed_apportionment": false,
+    "revenue_by_state": "not_modeled"
+  },
+  "record_type": "state_apportionment_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "entity_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

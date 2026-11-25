@@ -1,0 +1,17 @@
+{
+  "data": {
+    "absence_of_correspondence_verified": false,
+    "correspondence_records": [],
+    "reviewed_years": [
+      2021,
+      2022,
+      2023
+    ]
+  },
+  "record_type": "sales_tax_correspondence",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "manifest.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

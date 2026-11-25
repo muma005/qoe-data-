@@ -1,0 +1,155 @@
+{
+  "documents": [
+    {
+      "path": "vdr_artifacts/json/entity_master.json",
+      "section": "01_Corporate_Governance_and_Legal",
+      "title": "Entity_Master.json",
+      "unlock_day": 1
+    },
+    {
+      "path": "vdr_artifacts/json/operational_trajectory.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Operational_Trajectory.json",
+      "unlock_day": 1
+    },
+    {
+      "path": "vdr_artifacts/json/erp_general_ledger.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "ERP_General_Ledger.json",
+      "unlock_day": 7
+    },
+    {
+      "path": "vdr_artifacts/json/aged_ar_schedule.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Aged_AR_Schedule.json",
+      "unlock_day": 7
+    },
+    {
+      "path": "vdr_artifacts/json/subledgers.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Subledgers.json",
+      "unlock_day": 7
+    },
+    {
+      "path": "vdr_artifacts/json/sku_inventory.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "SKU_Inventory.json",
+      "unlock_day": 7
+    },
+    {
+      "path": "vdr_artifacts/json/working_capital_schedule.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Working_Capital_Schedule.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/cutoff_break_schedule.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Cutoff_Break_Schedule.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/product_sales_lines.json",
+      "section": "04_Commercial_and_Customers",
+      "title": "Product_Sales_Lines.json",
+      "unlock_day": 7
+    },
+    {
+      "path": "vdr_artifacts/json/operational_source_documents.json",
+      "section": "05_Operations_and_Procurement",
+      "title": "Operational_Source_Documents.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/corporate_identity.json",
+      "section": "01_Corporate_Governance_and_Legal",
+      "title": "Corporate_Identity_and_Bylaws_Register.json",
+      "unlock_day": 1
+    },
+    {
+      "path": "vdr_artifacts/json/board_minutes_register.json",
+      "section": "01_Corporate_Governance_and_Legal",
+      "title": "Board_Minutes_Register.json",
+      "unlock_day": 1
+    },
+    {
+      "path": "vdr_artifacts/json/litigation_register.json",
+      "section": "01_Corporate_Governance_and_Legal",
+      "title": "Litigation_and_Claims_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/annual_financial_statements.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Annual_Financial_Statements.json",
+      "unlock_day": 1
+    },
+    {
+      "path": "vdr_artifacts/json/cash_reconciliation_register.json",
+      "section": "02_Financial_and_Accounting",
+      "title": "Cash_Ledger_and_Bank_Reconciliation_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/federal_tax_register.json",
+      "section": "03_Tax_and_Regulatory",
+      "title": "Federal_Tax_Return_Source_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/state_apportionment_register.json",
+      "section": "03_Tax_and_Regulatory",
+      "title": "State_Apportionment_Source_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/sales_tax_correspondence.json",
+      "section": "03_Tax_and_Regulatory",
+      "title": "Sales_Tax_Correspondence_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/customer_agreement_register.json",
+      "section": "04_Commercial_and_Customers",
+      "title": "Customer_Agreement_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/customer_churn_credit_activity.json",
+      "section": "04_Commercial_and_Customers",
+      "title": "Customer_Churn_and_Credit_Activity.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/facility_lease_register.json",
+      "section": "05_Operations_and_Procurement",
+      "title": "Facility_Rent_and_Lease_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/product_bom_register.json",
+      "section": "05_Operations_and_Procurement",
+      "title": "Product_Units_and_BOM_Register.json",
+      "unlock_day": 7
+    },
+    {
+      "path": "vdr_artifacts/json/employee_census_register.json",
+      "section": "06_Human_Resources_and_Compensation",
+      "title": "Payroll_and_Employee_Census_Register.json",
+      "unlock_day": 14
+    },
+    {
+      "path": "vdr_artifacts/json/executive_employment_register.json",
+      "section": "06_Human_Resources_and_Compensation",
+      "title": "Executive_Employment_Register.json",
+      "unlock_day": 20
+    },
+    {
+      "path": "vdr_artifacts/json/owner_expense_register.json",
+      "section": "06_Human_Resources_and_Compensation",
+      "title": "Owner_Expense_Attribution_Register.json",
+      "unlock_day": 20
+    }
+  ],
+  "schema_version": 1
+}

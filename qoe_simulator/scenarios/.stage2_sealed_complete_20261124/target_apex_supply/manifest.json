@@ -1,0 +1,13 @@
+{
+  "active_anomaly_ids": [
+    "SR-B01"
+  ],
+  "company_name": "Target Apex Supply Co.",
+  "historical_months": 36,
+  "random_seed": 5377160249419742549,
+  "scenario_id": "target_apex_supply",
+  "sector_naics": "4238",
+  "target_erp": "NETSUITE",
+  "total_gl_lines": 13145,
+  "total_journal_entries": 6570
+}

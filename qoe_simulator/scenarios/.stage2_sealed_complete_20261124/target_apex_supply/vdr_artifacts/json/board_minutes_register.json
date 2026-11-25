@@ -1,0 +1,37 @@
+{
+  "data": {
+    "annual_activity": [
+      {
+        "cogs": "39581771.1696",
+        "opex": "10051763.4200",
+        "revenue": "53479385.7900",
+        "year": 2021
+      },
+      {
+        "cogs": "37158670.6888",
+        "opex": "10442806.2900",
+        "revenue": "51351618.9900",
+        "year": 2022
+      },
+      {
+        "cogs": "40884458.2748",
+        "opex": "12363628.8800",
+        "revenue": "55781110.7800",
+        "year": 2023
+      }
+    ],
+    "minutes_verification": "no_board_minutes_source_modeled",
+    "years_with_financial_activity": [
+      2021,
+      2022,
+      2023
+    ]
+  },
+  "record_type": "board_minutes_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "manifest.json",
+    "vdr_artifacts/json/erp_general_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

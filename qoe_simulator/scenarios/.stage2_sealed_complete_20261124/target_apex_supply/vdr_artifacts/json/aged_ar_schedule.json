@@ -1,0 +1,22 @@
+[
+  {
+    "Aging Bucket": "Current",
+    "Balance (USD)": "779872.65"
+  },
+  {
+    "Aging Bucket": "1-30 Days",
+    "Balance (USD)": "167972.57"
+  },
+  {
+    "Aging Bucket": "31-60 Days",
+    "Balance (USD)": "104982.86"
+  },
+  {
+    "Aging Bucket": "61-90 Days",
+    "Balance (USD)": "62989.71"
+  },
+  {
+    "Aging Bucket": "90+ Days",
+    "Balance (USD)": "83986.29"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "bylaws_verification": "external_record_pending",
+    "customer_count": 20,
+    "legal_name": "Target Apex Supply Co.",
+    "sector_naics": "4238",
+    "vendor_count": 59
+  },
+  "record_type": "corporate_identity",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "manifest.json",
+    "entity_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

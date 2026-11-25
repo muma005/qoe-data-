@@ -1,0 +1,23 @@
+{
+  "SR-B01:2021:12:RB-202112": {
+    "document_ref": "RB-202112",
+    "kind": "supplier_rebate_terms",
+    "origin": "simulated_operational_source",
+    "rebate_total": "385142.7504",
+    "unsold_inventory_fraction": "0.25"
+  },
+  "SR-B01:2022:12:RB-202212": {
+    "document_ref": "RB-202212",
+    "kind": "supplier_rebate_terms",
+    "origin": "simulated_operational_source",
+    "rebate_total": "420305.4912",
+    "unsold_inventory_fraction": "0.25"
+  },
+  "SR-B01:2023:12:RB-202312": {
+    "document_ref": "RB-202312",
+    "kind": "supplier_rebate_terms",
+    "origin": "simulated_operational_source",
+    "rebate_total": "398622.0852",
+    "unsold_inventory_fraction": "0.25"
+  }
+}

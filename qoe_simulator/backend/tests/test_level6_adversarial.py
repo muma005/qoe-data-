@@ -134,6 +134,11 @@ class AdversarialGradingTests(unittest.TestCase):
             scenario = evidence_scenario()
             scenario["seed_hex_64"] = "0x01"
             (target / "audit_policy.json").write_text(json.dumps(scenario), encoding="utf-8")
+            (target / "manifest.json").write_text(
+                json.dumps({"scenario_id": "s", "random_seed": 1}), encoding="utf-8")
+            (target / "checksum.sha256").write_text("".join(
+                f"{hashlib.sha256((target / name).read_bytes()).hexdigest()}  {name}\n"
+                for name in ("audit_policy.json", "manifest.json")), encoding="utf-8")
             router, jobs = create_router(root)
             app = FastAPI()
             app.include_router(router)

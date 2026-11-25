@@ -8,10 +8,14 @@ and the proto contract for workspace_gateway.proto.
 """
 
 import inspect
+import hashlib
+import json
 import os
 import re
+import tempfile
 import unittest
 from decimal import Decimal
+from pathlib import Path
 
 from app.level5_workspace.vdr import (
     ReleaseWave,
@@ -27,17 +31,25 @@ from app.level5_workspace.gateway import (
     DdeSanitizer,
     WorkspaceGatewayService,
 )
+from vdr_fixture import create_vdr_fixture
+
+_vdr_temp = tempfile.TemporaryDirectory()
+_vdr_package = create_vdr_fixture(_vdr_temp.name)
+
+
+def tearDownModule():
+    _vdr_temp.cleanup()
 
 
 class TestVDRTree(unittest.TestCase):
     def test_six_root_folders(self):
-        tree = VDRTreeBuilder(".").build()
+        tree = VDRTreeBuilder(_vdr_package).build()
         self.assertEqual(len(tree), 6)
         self.assertEqual(tree[0]["title"], "01_Corporate_Governance_and_Legal")
         self.assertEqual(tree[5]["title"], "06_Human_Resources_and_Compensation")
 
     def test_release_wave_gating(self):
-        builder = VDRTreeBuilder(".")
+        builder = VDRTreeBuilder(_vdr_package)
         t1 = builder.get_tree(current_sim_day=1)
         t14 = builder.get_tree(current_sim_day=14)
         t20 = builder.get_tree(current_sim_day=20)
@@ -50,7 +62,7 @@ class TestVDRTree(unittest.TestCase):
                          t1["total_unlocked_documents"] + t1["total_locked_documents"])
 
     def test_is_locked_computation(self):
-        builder = VDRTreeBuilder(".")
+        builder = VDRTreeBuilder(_vdr_package)
         builder.build()
         node = builder.find("VDR_NODE_003")  # some node; existence not asserted
         # verify a Wave 3 doc is locked on day 1 and unlocked on day 14
@@ -70,6 +82,59 @@ class TestVDRTree(unittest.TestCase):
         wave3_doc = find_wave3(day1["root_nodes"])
         self.assertIsNotNone(wave3_doc)
         self.assertTrue(wave3_doc["is_locked"])
+
+    def test_every_listed_document_opens_as_sealed_json(self):
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
+        svc.current_sim_day = 20
+        builder = VDRTreeBuilder(_vdr_package)
+        builder.build()
+        self.assertEqual(len(builder._paths), 4)
+        for document_id, relative in builder._paths.items():
+            node = builder.find(document_id)
+            response = svc.get_vdr_document("sim1", document_id, "USR_1")
+            payload = response["canonical_json_payload"].encode("utf-8")
+            self.assertEqual(response["mime_type"], "application/json")
+            self.assertEqual(response["download_signed_url"], "")
+            self.assertTrue(node["title"].endswith(".json"))
+            self.assertIsInstance(json.loads(payload), (dict, list))
+            self.assertEqual(len(payload), node["file_size_bytes"])
+            self.assertEqual(hashlib.sha256(payload).hexdigest(), node["sha256_checksum"])
+            self.assertEqual(node["canonical_json_ref"], relative)
+        with self.assertRaises(KeyError):
+            svc.get_vdr_document("sim1", "VDR_NODE_999", "USR_1")
+
+    def test_client_cannot_unlock_tree_by_claiming_future_day(self):
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
+        tree = svc.get_vdr_tree("sim1", "USR_1", 20)
+        self.assertEqual(tree["current_sim_day"], 1)
+        self.assertGreater(tree["total_locked_documents"], 0)
+        with self.assertRaises(PermissionError):
+            svc.get_vdr_document("sim1", "VDR_NODE_009", "USR_1")
+
+    def test_missing_or_modified_document_rejects_entire_tree(self):
+        for mutate in (lambda p: p.unlink(), lambda p: p.write_text('{"changed":true}')):
+            with tempfile.TemporaryDirectory() as directory:
+                package = create_vdr_fixture(directory)
+                target = Path(package, "vdr_artifacts", "json", "entity_master.json")
+                mutate(target)
+                with self.assertRaises((FileNotFoundError, ValueError)):
+                    VDRTreeBuilder(package).build()
+
+    def test_hidden_truth_cannot_be_added_by_catalog(self):
+        with tempfile.TemporaryDirectory() as directory:
+            package = create_vdr_fixture(directory)
+            catalog_path = Path(package, "vdr_artifacts", "json", "catalog.json")
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            catalog["documents"][0]["path"] = "injected_anomalies.json"
+            raw = json.dumps(catalog).encode()
+            catalog_path.write_bytes(raw)
+            checks = Path(package, "checksum.sha256").read_text().splitlines()
+            Path(package, "checksum.sha256").write_text("\n".join(
+                (hashlib.sha256(raw).hexdigest() + "  vdr_artifacts/json/catalog.json")
+                if line.endswith("  vdr_artifacts/json/catalog.json") else line
+                for line in checks) + "\n")
+            with self.assertRaises(ValueError):
+                VDRTreeBuilder(package).build()
 
 
 class TestCapabilityTokens(unittest.TestCase):
@@ -171,8 +236,8 @@ class TestGateway(unittest.TestCase):
         self.assertIn("CLIENT_CHECKSUM_MISMATCH", bad["compilation_errors"])
 
     def test_cloudevents_emitted(self):
-        svc = WorkspaceGatewayService()
-        svc.get_vdr_document("sim1", "VDR_NODE_003", "USR_1")
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
+        svc.get_vdr_document("sim1", "VDR_NODE_007", "USR_1")
         svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P07", "s", "body", [])
         self.assertGreater(len(svc.events.filter("qoe.workspace.vdr.opened.v1")), 0)
         self.assertGreater(len(svc.events.filter("qoe.workspace.irl.submitted.v1")), 0)
@@ -233,14 +298,14 @@ class TestWorkspaceProtoContract(unittest.TestCase):
                              f"{rpc_name} params {params} != request fields {req_fields}")
 
     def test_response_fields_align(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         for rpc_name, _req, resp_msg in self.rpcs:
             result = self._call(svc, rpc_name)
             for field in self.messages[resp_msg]:
                 self.assertIn(field, result, f"{rpc_name} response missing '{field}'")
 
     def test_nested_vdr_node_fields(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         svc.current_sim_day = 20
         tree = svc.get_vdr_tree("sim1", "U", 20)
         node = tree["root_nodes"][0]
@@ -255,9 +320,9 @@ class TestWorkspaceProtoContract(unittest.TestCase):
             self.assertIn(field, turn, f"IRLThreadTurn missing '{field}'")
 
     def test_nested_watermark_config_fields(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         svc.current_sim_day = 20
-        doc = svc.get_vdr_document("sim1", "VDR_NODE_002", "U")
+        doc = svc.get_vdr_document("sim1", "VDR_NODE_007", "U")
         for field in self.messages["DocumentWatermarkConfig"]:
             self.assertIn(field, doc["watermark"], f"DocumentWatermarkConfig missing '{field}'")
 
@@ -267,7 +332,7 @@ class TestWorkspaceProtoContract(unittest.TestCase):
             return svc.get_vdr_tree("sim1", "U", 20)
         if rpc_name == "GetVDRDocument":
             svc.current_sim_day = 20
-            return svc.get_vdr_document("sim1", "VDR_NODE_002", "U")
+            return svc.get_vdr_document("sim1", "VDR_NODE_007", "U")
         if rpc_name == "SubmitIRLInquiry":
             return svc.submit_irl_inquiry("sim1", "W", IRLPriority.P2_HIGH, "P07", "s", "body", [])
         if rpc_name == "SyncWorkspaceState":
@@ -284,18 +349,18 @@ class TestGapClosure(unittest.TestCase):
     report + SPA assembly, and the FastAPI server."""
 
     def test_vdr_search(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         results = svc.search_vdr("Rebate")
         self.assertTrue(any("Rebate" in r["title"] for r in results))
 
     def test_403_gating_on_locked_document(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         svc.current_sim_day = 1
         # Find a Wave 3 document (unlock day 14) and try to open it on day 1.
         builder = svc.search_vdr("")  # no-op; find a wave-3 doc
         # Build tree to locate a wave-3 doc id.
         from app.level5_workspace.vdr import VDRTreeBuilder, ReleaseWave, VDRNodeType
-        b = VDRTreeBuilder(".")
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         wave3_doc = next(n for n in b.nodes.values()
                          if n["release_wave"] == ReleaseWave.WAVE_3_FRIDAY_DUMP.value
@@ -304,11 +369,11 @@ class TestGapClosure(unittest.TestCase):
             svc.get_vdr_document("sim1", wave3_doc["node_id"], "USR_1")
 
     def test_sim_clock_ticked_unlocks_document(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         svc.handle_sim_clock_ticked("sim1", 14, 5.5, "MS04")
         self.assertEqual(svc.current_sim_day, 14)
         from app.level5_workspace.vdr import VDRTreeBuilder, ReleaseWave, VDRNodeType
-        b = VDRTreeBuilder(".")
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         wave3_doc = next(n for n in b.nodes.values()
                          if n["release_wave"] == ReleaseWave.WAVE_3_FRIDAY_DUMP.value
@@ -421,13 +486,13 @@ class TestBackendGaps(unittest.TestCase):
 
     def test_vdr_nodes_have_access_phase(self):
         from app.level5_workspace.vdr import VDRTreeBuilder
-        b = VDRTreeBuilder(".")
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         phases = {n["access_phase"] for n in b.nodes.values()}
         self.assertEqual(phases, {"PHASE_I", "PHASE_II"})
 
     def test_trace_metric(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         trace = svc.trace_metric("07_Working_Capital", "nwc")
         self.assertTrue(trace["source_je_id"].startswith("JE-"))
         self.assertIn("111000", trace["source_accounts"])

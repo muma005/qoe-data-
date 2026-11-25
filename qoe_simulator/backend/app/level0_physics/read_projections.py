@@ -19,16 +19,23 @@ except ImportError:
 class ReadProjectionsDB:
     """Manages analytical query projections with DuckDB and SQLite3 fallback."""
 
-    def __init__(self, database_path: str = ":memory:"):
+    def __init__(self, database_path: str = ":memory:", read_only: bool = False):
         self.db_path = database_path
         self.has_duckdb = HAS_DUCKDB
-        
+        if read_only:
+            from pathlib import Path
+            if database_path == ":memory:" or not Path(database_path).is_file():
+                raise FileNotFoundError(f"Required ledger database missing: {database_path}")
         if self.has_duckdb:
-            self._conn = duckdb.connect(database_path)
+            self._conn = duckdb.connect(database_path, read_only=read_only)
         else:
-            self._conn = sqlite3.connect(database_path)
-            
-        self._initialize_schema()
+            if read_only:
+                self._conn = sqlite3.connect(Path(database_path).resolve().as_uri() + "?mode=ro", uri=True)
+            else:
+                self._conn = sqlite3.connect(database_path)
+
+        if not read_only:
+            self._initialize_schema()
 
     def _initialize_schema(self):
         """Initializes tables with proper schema."""

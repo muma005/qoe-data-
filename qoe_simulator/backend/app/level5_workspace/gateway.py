@@ -131,13 +131,21 @@ class CircuitBreaker:
 class WorkspaceGatewayService:
     """Proto-shaped facade mirroring proto/workspace_gateway.proto."""
 
-    def __init__(self, package_dir: str = None, secret: str = "qoe-vdr-secret"):
+    def __init__(self, package_dir: str = None, secret: str = "qoe-vdr-secret",
+                 state_store_path: str = None):
         self.package_dir = package_dir
+        from .state_store import WorkspaceStateStore
+        self.state_store = WorkspaceStateStore(state_store_path) if state_store_path else None
+        self._workspace_states = {}
         self.tokens = CapabilityTokenManager(secret)
         self.watermark = WatermarkEngine()
         self.zero_knowledge = ZeroKnowledgeFilter()
         self.rate_limiter = RateLimiter(max_per_sec=5)
         self.irl = IRLConsole()
+        if self.state_store:
+            for ticket in self.state_store.all_inquiries():
+                self.irl.requests[ticket["request_id"]] = ticket
+            self.irl._seq = len(self.irl.requests)
         self.sanitizer = DdeSanitizer()
         self.events = CloudEventEmitter()
         self._submissions: Dict[str, dict] = {}
@@ -157,12 +165,12 @@ class WorkspaceGatewayService:
     def get_vdr_tree(self, engagement_id: str, user_id: str,
                      current_sim_day: int) -> dict:
         builder = VDRTreeBuilder(self.package_dir) if self.package_dir else VDRTreeBuilder(".")
-        tree = builder.get_tree(current_sim_day)
+        tree = builder.get_tree(self.current_sim_day)
         # Zero-knowledge: strip any ground-truth keys before returning.
         tree = self.zero_knowledge.strip(tree)
         return {
             "engagement_id": engagement_id,
-            "current_sim_day": current_sim_day,
+            "current_sim_day": self.current_sim_day,
             "root_nodes": tree["root_nodes"],
             "total_unlocked_documents": tree["total_unlocked_documents"],
             "total_locked_documents": tree["total_locked_documents"],
@@ -174,7 +182,7 @@ class WorkspaceGatewayService:
         builder = VDRTreeBuilder(self.package_dir) if self.package_dir else VDRTreeBuilder(".")
         builder.build()
         node = builder.find(document_id)
-        if node is None:
+        if node is None or document_id not in builder._paths:
             raise KeyError(f"Unknown document {document_id}")
 
         # LP-11: enforce sim-day gating -> 403 FORBIDDEN if not yet unlocked.
@@ -183,7 +191,7 @@ class WorkspaceGatewayService:
                 f"403 FORBIDDEN: {document_id} unlocks on sim day {node['unlock_sim_day']} "
                 f"(current day {self.current_sim_day})")
 
-        signed = self.tokens.generate(user_id, document_id, self.current_sim_day, ttl_seconds=60)
+        content = builder.document_bytes(document_id)
         session_id = f"VDR_{engagement_id}_{int(time.time())}"
         watermark = self.watermark.config("APOLLO PRIVATE EQUITY DEAL TEAM", user_id,
                                           session_id, "2024-10-18T11:32:05Z")
@@ -196,18 +204,19 @@ class WorkspaceGatewayService:
         return {
             "document_id": document_id,
             "file_name": node["title"],
-            "mime_type": "application/pdf" if node["node_type"] == 2 else "text/csv",
-            "download_signed_url": f"/api/v1/vdr/docs/{document_id}?token={signed['token']}",
-            "expires_at": signed["expires_at"],
+            "mime_type": "application/json",
+            "download_signed_url": "",
+            "expires_at": 0,
             "watermark": watermark,
-            "canonical_json_payload": json.dumps({"node_id": document_id, "title": node["title"]}),
+            "canonical_json_payload": content.decode("utf-8"),
         }
 
     # VDR search (spec Section 3)
     def search_vdr(self, query: str) -> List[dict]:
         builder = VDRTreeBuilder(self.package_dir) if self.package_dir else VDRTreeBuilder(".")
         builder.build()
-        return builder.search(query)
+        return [dict(node, is_locked=self.current_sim_day < node["unlock_sim_day"])
+                for node in builder.search(query)]
 
     def _compute_latency(self, pushback_tier_str: str) -> float:
         """Route latency through the Level 3 LatencyScheduler + PushbackTier."""
@@ -233,12 +242,26 @@ class WorkspaceGatewayService:
                            cited_vdr_doc_ids: Sequence[str]) -> dict:
         if not self.rate_limiter.allow():
             raise PermissionError("Rate limit exceeded (max 5 req/sec)")
+        if cited_vdr_doc_ids:
+            builder = VDRTreeBuilder(self.package_dir) if self.package_dir else VDRTreeBuilder(".")
+            builder.build()
+            for document_id in cited_vdr_doc_ids:
+                node = builder.find(document_id)
+                if node is None or document_id not in builder._paths:
+                    raise KeyError("Unknown cited VDR document: " + document_id)
+                if self.current_sim_day < node["unlock_sim_day"]:
+                    raise PermissionError("Cited VDR document is locked: " + document_id)
         ticket = self.irl.submit(engagement_id, workstream_code, priority,
                                  target_persona_id, subject, inquiry_body,
                                  list(cited_vdr_doc_ids), sim_day=self.current_sim_day,
                                  latency_hours=0.0)
         ticket["estimated_latency_hours"] = self._compute_latency(
             ticket["pushback_tier_triggered"])
+        if self.state_store and ticket["request_id"]:
+            old_id = ticket["request_id"]
+            ticket = self.state_store.add_inquiry(ticket)
+            self.irl.requests.pop(old_id, None)
+            self.irl.requests[ticket["request_id"]] = ticket
         # LP-15: unfocused/vague inquiries deduct from Investigative Rigor.
         if ticket["pushback_tier_triggered"].startswith("TIER_4"):
             self.vague_inquiry_count += 1
@@ -246,6 +269,13 @@ class WorkspaceGatewayService:
                          engagement_id=engagement_id, request_id=ticket["request_id"],
                          persona_id=target_persona_id, priority=priority.value,
                          length=len(inquiry_body))
+        return ticket
+
+    def get_irl_inquiry(self, engagement_id: str, request_id: str) -> dict:
+        ticket = (self.state_store.get_inquiry(engagement_id, request_id) if self.state_store
+                  else self.irl.get(request_id))
+        if ticket is None or ticket["engagement_id"] != engagement_id:
+            raise KeyError("Unknown inquiry: " + request_id)
         return ticket
 
     # Evidentiary formula tracer (spec Section 5.2): metric -> source GL + VDR hash.
@@ -269,12 +299,33 @@ class WorkspaceGatewayService:
                              hmac_signature: str) -> dict:
         # NFR-04: verify the HMAC signature of the local state before accepting.
         self._verify_hmac(engagement_id, user_id, hmac_signature)
+        state = {
+            "engagement_id": engagement_id, "user_id": user_id,
+            "active_tab_index": active_tab_index, "tab_states": list(tab_states),
+            "active_vdr_doc_id": active_vdr_doc_id,
+            "server_sim_day": self.current_sim_day,
+            "check_bar_aggregate_status": self.check_bar_status,
+            "server_timestamp": int(time.time()),
+        }
+        if self.state_store:
+            self.state_store.save_state(engagement_id, user_id, state)
+        else:
+            self._workspace_states[(engagement_id, user_id)] = state
         return {
             "sync_acknowledged": True,
-            "server_timestamp": int(time.time()),
-            "server_sim_day": 14,
-            "check_bar_aggregate_status": "OK (0 Breaks across 11 Tabs)",
+            "server_timestamp": state["server_timestamp"],
+            "server_sim_day": self.current_sim_day,
+            "check_bar_aggregate_status": self.check_bar_status,
         }
+
+    def get_workspace_state(self, engagement_id: str, user_id: str,
+                            hmac_signature: str) -> dict:
+        self._verify_hmac(engagement_id, user_id, hmac_signature)
+        state = (self.state_store.get_state(engagement_id, user_id) if self.state_store
+                 else self._workspace_states.get((engagement_id, user_id)))
+        if state is None:
+            raise KeyError("Workspace state not found for engagement and user")
+        return state
 
     # rpc CompileDeliverables (SubmitDeliverablePackageRequest) returns (DeliverableCompilationResponse)
     def compile_deliverables(self, engagement_id: str, user_id: str,
@@ -303,6 +354,7 @@ class WorkspaceGatewayService:
         }
         self.events.emit("qoe.workspace.deliverable.compiled.v1",
                          engagement_id=engagement_id, submission_id=submission_id,
+                         compilation_success=success,
                          fdb_hash=checksum, report_hash=hashlib.sha256(
                              json.dumps(memo).encode()).hexdigest())
         return {
@@ -336,6 +388,9 @@ class WorkspaceGatewayService:
         """qoe.friction.inquiry.answered.v1: inject a persona answer into the IRL thread."""
         self.irl.append_turn(request_id, "TARGET_CFO", "Target CFO", answer_text,
                              list(documents_attached))
+        ticket = self.irl.get(request_id)
+        if self.state_store and ticket and ticket["engagement_id"] == engagement_id:
+            self.state_store.update_inquiry(ticket)
 
     def handle_fdb_recalculated(self, engagement_id: str, check_bars_status: str,
                                 break_count: int, break_amount: float) -> None:

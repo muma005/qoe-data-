@@ -398,17 +398,22 @@ class Databook:
                    Decimal("0")).quantize(Decimal("0.0001"))
 
     # -- build -------------------------------------------------------------
-    def build(self, package_dir: str) -> "Databook":
+    def build(self, package_dir: str, verify_integrity: bool = True) -> "Databook":
         from app.level0_physics.read_projections import ReadProjectionsDB
+        if verify_integrity:
+            from app.level0_physics.package_integrity import verify_package_integrity
+            verify_package_integrity(package_dir)
         self.package_dir = package_dir
         evidence_path = os.path.join(package_dir, "audit_evidence.json")
         self.audit_provenance = self._load_json("audit_evidence.json") if os.path.isfile(evidence_path) else None
-        db = ReadProjectionsDB(os.path.join(package_dir, "ground_truth.duckdb"))
-        subledgers = self._load_json("subledgers.json")
-        anomalies = self._load_json("injected_anomalies.json").get("anomalies", [])
-        monthly = db.get_monthly_revenue_and_cogs(2020, 2030)
-        totals = self._account_totals(db, monthly)
-        db.close()
+        db = ReadProjectionsDB(os.path.join(package_dir, "ground_truth.duckdb"), read_only=True)
+        try:
+            subledgers = self._load_json("subledgers.json")
+            anomalies = self._load_json("injected_anomalies.json").get("anomalies", [])
+            monthly = db.get_monthly_revenue_and_cogs(2020, 2030)
+            totals = self._account_totals(db, monthly)
+        finally:
+            db.close()
         # P&L months exclude the zero-activity opening-balance month
         pnl_months = [r for r in monthly if r["revenue"] or r["cogs"] or r["opex"]]
 

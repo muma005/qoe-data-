@@ -19,7 +19,10 @@ All output is deterministic for a given (scenario, years, seed).
 from __future__ import annotations
 
 import argparse
+import csv
+import gzip
 import hashlib
+import io
 import json
 import os
 import sys
@@ -367,9 +370,62 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
     policy = build_compiled_scenario_policy(pkg_dir, f"0x{seed:016x}")
     write_json(os.path.join(pkg_dir, "audit_policy.json"), policy)
 
+    # Only actual, learner-safe records appear in the JSON-first VDR catalog.
+    # The raw ERP and client schedules stay in the package for existing readers.
+    erp_reader = csv.reader(io.StringIO(primary_erp_text),
+                            delimiter="\t" if profile.target_erp in
+                            (ERPExporter.ERP_SAP_S4HANA, ERPExporter.ERP_QUICKBOOKS) else ",")
+    erp_columns = next(erp_reader)
+    vdr_json = [
+        ("01_Corporate_Governance_and_Legal", "Entity_Master.json", "entity_master.json", 1,
+         entity_ledger.to_dict()),
+        ("02_Financial_and_Accounting", "Operational_Trajectory.json", "operational_trajectory.json", 1,
+         trajectory_to_dict(trajectory)),
+        ("02_Financial_and_Accounting", "ERP_General_Ledger.json", "erp_general_ledger.json", 7,
+         {"erp": profile.target_erp, "columns": erp_columns, "rows": list(erp_reader)}),
+        ("02_Financial_and_Accounting", "Aged_AR_Schedule.json", "aged_ar_schedule.json", 7,
+         list(csv.DictReader(io.StringIO(ar_schedule)))),
+        ("02_Financial_and_Accounting", "Subledgers.json", "subledgers.json", 7,
+         subledgers.to_dict()),
+        ("02_Financial_and_Accounting", "SKU_Inventory.json", "sku_inventory.json", 7,
+         {"sku_units": simulator._sku_units}),
+        ("02_Financial_and_Accounting", "Working_Capital_Schedule.json", "working_capital_schedule.json", 14,
+         list(csv.DictReader(io.StringIO(wc_schedule)))),
+        ("02_Financial_and_Accounting", "Cutoff_Break_Schedule.json", "cutoff_break_schedule.json", 14,
+         list(csv.DictReader(io.StringIO(cutoff_schedule)))),
+        ("04_Commercial_and_Customers", "Product_Sales_Lines.json", "product_sales_lines.json", 7,
+         simulator.sales_lines),
+        ("05_Operations_and_Procurement", "Operational_Source_Documents.json",
+         "operational_source_documents.json", 14, list(audit_evidence["documents"].values())),
+    ]
+    from supplemental_vdr import build_supplemental_vdr
+    vdr_json.extend(build_supplemental_vdr(profile, core, trajectory, entity_ledger, simulator))
+    json_dir = os.path.join(vdr_dir, "json")
+    os.makedirs(json_dir, exist_ok=True)
+    vdr_json_paths = []
+    catalog = {"schema_version": 1, "documents": []}
+    for section, title, filename, unlock_day, content in vdr_json:
+        rel = f"vdr_artifacts/json/{filename}"
+        write_json(os.path.join(pkg_dir, rel), content)
+        vdr_json_paths.append(rel)
+        catalog["documents"].append({"section": section, "title": title,
+                                      "path": rel, "unlock_day": unlock_day})
+    catalog_rel = "vdr_artifacts/json/catalog.json"
+    write_json(os.path.join(pkg_dir, catalog_rel), catalog)
+    vdr_json_paths.append(catalog_rel)
+
     # --- SHA-256 checksum over deterministic data artifacts ------------------
     checksum_lines = []
-    for rel in ("ground_truth.duckdb", "manifest.json", "operational_trajectory.json", "injected_anomalies.json", "sales_lines.json", "audit_evidence.json", "audit_policy.json", "vdr_artifacts/operational_source_documents.json", "vdr_artifacts/product_sales_lines.json"):
+    for rel in ("ground_truth.duckdb", "manifest.json", "operational_trajectory.json",
+                "injected_anomalies.json", "sales_lines.json", "audit_evidence.json",
+                "audit_policy.json", "vdr_artifacts/operational_source_documents.json",
+                "vdr_artifacts/product_sales_lines.json", "entity_ledger.json",
+                "sku_inventory.json", "subledgers.json",
+                "vdr_artifacts/canonical_documents.json",
+                "vdr_artifacts/aged_ar_schedule.csv",
+                "vdr_artifacts/cutoff_break_schedule.csv",
+                f"vdr_artifacts/erp_exports/{erp_exporter_map[profile.target_erp]}",
+                "vdr_artifacts/working_capital_schedule.csv", *vdr_json_paths):
         p = os.path.join(pkg_dir, rel)
         checksum_lines.append(f"{sha256_file(p)}  {rel}")
     checksum_path = os.path.join(pkg_dir, "checksum.sha256")
@@ -378,8 +434,16 @@ def compile_scenario(profile: ScenarioProfile, years: int, seed: int, output_dir
 
     # --- Seal .csp as a tarball ----------------------------------------------
     tar_path = os.path.join(output_dir, f"{profile.scenario_id}_package.tar.gz")
-    with tarfile.open(tar_path, "w:gz") as tar:
-        tar.add(pkg_dir, arcname=profile.scenario_id)
+    def stable_tar_metadata(info: tarfile.TarInfo) -> tarfile.TarInfo:
+        info.mtime = 0
+        info.uid = info.gid = 0
+        info.uname = info.gname = ""
+        return info
+
+    with open(tar_path, "wb") as archive:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=archive, mtime=0) as compressed:
+            with tarfile.open(fileobj=compressed, mode="w|") as tar:
+                tar.add(pkg_dir, arcname=profile.scenario_id, filter=stable_tar_metadata)
 
     vdr_file_count = sum(len(files) for _, _, files in os.walk(vdr_dir))
 

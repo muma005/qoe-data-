@@ -15,6 +15,14 @@ import tempfile
 import time
 import unittest
 from decimal import Decimal
+from vdr_fixture import create_vdr_fixture
+
+_vdr_temp = tempfile.TemporaryDirectory()
+_vdr_package = create_vdr_fixture(_vdr_temp.name)
+
+
+def tearDownModule():
+    _vdr_temp.cleanup()
 
 from app.level5_workspace.vdr import (
     ReleaseWave,
@@ -158,16 +166,17 @@ class TestBrutalDde(unittest.TestCase):
 # VDR tree — unlock boundaries + search fuzzing
 # ---------------------------------------------------------------------------
 class TestBrutalVDR(unittest.TestCase):
-    def test_24_leaf_documents_and_6_folders(self):
-        b = VDRTreeBuilder(".")
+    def test_only_real_json_documents_and_6_folders(self):
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         docs = [n for n in b.nodes.values() if n["node_type"] != VDRNodeType.FOLDER.value]
         folders = [n for n in b.nodes.values() if n["node_type"] == VDRNodeType.FOLDER.value]
         self.assertEqual(len(folders), 6)
-        self.assertEqual(len(docs), 24)
+        self.assertEqual(len(docs), 4)
+        self.assertTrue(all(n["title"].endswith(".json") for n in docs))
 
     def test_unlock_boundary_exact(self):
-        b = VDRTreeBuilder(".")
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         wave2 = next(n for n in b.nodes.values()
                      if n["release_wave"] == ReleaseWave.WAVE_2_SUBLEDGERS.value
@@ -178,7 +187,7 @@ class TestBrutalVDR(unittest.TestCase):
         self.assertGreater(t6["total_locked_documents"], t7["total_locked_documents"])
 
     def test_search_case_insensitive_and_fuzz(self):
-        b = VDRTreeBuilder(".")
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         self.assertTrue(any("rebate" in n["title"].lower() for n in b.search("REBATE")))
         self.assertEqual(b.search(""), [])
@@ -189,7 +198,7 @@ class TestBrutalVDR(unittest.TestCase):
                 self.assertIn(n, b.search(n["title"][:6]))
 
     def test_access_phase_assignment(self):
-        b = VDRTreeBuilder(".")
+        b = VDRTreeBuilder(_vdr_package)
         b.build()
         for n in b.nodes.values():
             self.assertEqual(n["access_phase"],
@@ -214,9 +223,9 @@ class TestBrutalWatermark(unittest.TestCase):
 # ---------------------------------------------------------------------------
 class TestBrutalGateway(unittest.TestCase):
     def test_403_at_exact_boundary(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         from app.level5_workspace.vdr import VDRTreeBuilder, ReleaseWave, VDRNodeType
-        b = VDRTreeBuilder("."); b.build()
+        b = VDRTreeBuilder(_vdr_package); b.build()
         wave3 = next(n for n in b.nodes.values()
                      if n["release_wave"] == ReleaseWave.WAVE_3_FRIDAY_DUMP.value
                      and n["node_type"] != VDRNodeType.FOLDER.value)
@@ -240,10 +249,11 @@ class TestBrutalGateway(unittest.TestCase):
         self.assertFalse(r["compilation_success"])
 
     def test_cloudevent_counts(self):
-        svc = WorkspaceGatewayService()
+        svc = WorkspaceGatewayService(package_dir=_vdr_package)
         svc.current_sim_day = 20
-        for i in range(10):
-            svc.get_vdr_document("s", f"VDR_NODE_{i+2:03d}", "U") if i < 24 else None
+        b = VDRTreeBuilder(_vdr_package); b.build()
+        for node_id in b._paths:
+            svc.get_vdr_document("s", node_id, "U")
         svc.submit_irl_inquiry("s", "W", IRLPriority.P2_HIGH, "P07", "s", "body", [])
         self.assertGreater(len(svc.events.filter("qoe.workspace.vdr.opened.v1")), 0)
         self.assertGreater(len(svc.events.filter("qoe.workspace.irl.submitted.v1")), 0)

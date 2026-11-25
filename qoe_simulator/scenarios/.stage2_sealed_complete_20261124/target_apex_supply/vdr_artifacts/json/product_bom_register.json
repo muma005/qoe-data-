@@ -1,0 +1,39 @@
+{
+  "data": {
+    "component_bills_of_material": "not_modeled",
+    "products": [
+      {
+        "ending_units": 26789,
+        "product_id": "SKU-ADH",
+        "recorded_sales": "7177550.8094"
+      },
+      {
+        "ending_units": 22521,
+        "product_id": "SKU-FAST",
+        "recorded_sales": "10058511.3751"
+      },
+      {
+        "ending_units": 22735,
+        "product_id": "SKU-GLOV",
+        "recorded_sales": "4874837.9394"
+      },
+      {
+        "ending_units": 30476,
+        "product_id": "SKU-PWR",
+        "recorded_sales": "97989370.3314"
+      },
+      {
+        "ending_units": 47248,
+        "product_id": "SKU-TOOL",
+        "recorded_sales": "40511845.1047"
+      }
+    ]
+  },
+  "record_type": "product_bom_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "sku_inventory.json",
+    "sales_lines.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "absence_of_claims_verified": false,
+    "claim_records": [],
+    "reviewed_years": [
+      2021,
+      2022,
+      2023
+    ]
+  },
+  "record_type": "litigation_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "manifest.json",
+    "vdr_artifacts/json/erp_general_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "Amount (USD)": "1199804.07",
+    "Working Capital Component": "Trade Accounts Receivable"
+  },
+  {
+    "Amount (USD)": "0.00",
+    "Working Capital Component": "Unapplied Cash Clearing"
+  },
+  {
+    "Amount (USD)": "14627257.55",
+    "Working Capital Component": "Inventory (Net)"
+  },
+  {
+    "Amount (USD)": "-936913.61",
+    "Working Capital Component": "Less: Trade Accounts Payable"
+  },
+  {
+    "Amount (USD)": "14925148.01",
+    "Working Capital Component": "Net Working Capital (with plug)"
+  }
+]

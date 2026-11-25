@@ -1,0 +1,25 @@
+{
+  "data": {
+    "annual_opex": [
+      {
+        "amount": "10051763.4200",
+        "year": 2021
+      },
+      {
+        "amount": "10442806.2900",
+        "year": 2022
+      },
+      {
+        "amount": "12363628.8800",
+        "year": 2023
+      }
+    ],
+    "owner_attribution": "not_modeled"
+  },
+  "record_type": "owner_expense_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "vdr_artifacts/json/erp_general_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

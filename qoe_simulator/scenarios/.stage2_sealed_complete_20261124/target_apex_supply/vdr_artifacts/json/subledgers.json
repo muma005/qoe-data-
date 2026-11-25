@@ -1,0 +1,44 @@
+{
+  "accounts_payable": {
+    "bill_count": 4119,
+    "open_ap": "2140983.9377",
+    "payment_count": 36,
+    "stretched_payables_gt_90d": "0.0000"
+  },
+  "accounts_receivable": {
+    "aging_buckets": {
+      "1_30": "1043807.3500",
+      "31_60": "0.0000",
+      "61_90": "0.0000",
+      "current": "155996.7240",
+      "over_90": "0.0000"
+    },
+    "invoice_count": 764,
+    "open_ar": "1199804.0740",
+    "payment_count": 36,
+    "unapplied_cash": "0.0000"
+  },
+  "deferred_revenue": {
+    "contract_count": 0,
+    "ending_deferred": "0.0000",
+    "total_invoiced": "0.0000",
+    "total_recognized": "0.0000",
+    "unbilled_contract_assets": "0.0000"
+  },
+  "fixed_assets": {
+    "asset_count": 1,
+    "cip_count": 0,
+    "depreciation_entries": 36,
+    "journal_depreciation": "3376684.6156",
+    "macrs_accumulated": "7504640.0000",
+    "straight_line_accumulated": "3206666.6667",
+    "total_cost": "10400000.0000"
+  },
+  "inventory": {
+    "beginning": "0.0000",
+    "ending": "14627257.5508",
+    "issues": "118828970.4600",
+    "lc_nrv_reserve": "0.0000",
+    "receipts": "133456228.0108"
+  }
+}

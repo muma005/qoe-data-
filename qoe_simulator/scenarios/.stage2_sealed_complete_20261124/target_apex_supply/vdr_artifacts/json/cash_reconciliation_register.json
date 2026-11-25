@@ -1,0 +1,338 @@
+{
+  "data": {
+    "bank_reconciliation_verified": false,
+    "external_bank_statements": "not_modeled",
+    "monthly_cash_ledger_movements": [
+      {
+        "journal_entry_ids": [
+          "JE-00000033",
+          "JE-00000034",
+          "JE-00000178"
+        ],
+        "net_cash_journal_movement": "561882.6434",
+        "period": "2021-01"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00000210",
+          "JE-00000211",
+          "JE-00000367"
+        ],
+        "net_cash_journal_movement": "387277.8552",
+        "period": "2021-02"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00000403",
+          "JE-00000404",
+          "JE-00000541"
+        ],
+        "net_cash_journal_movement": "-42614.8981",
+        "period": "2021-03"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00000576",
+          "JE-00000577",
+          "JE-00000731"
+        ],
+        "net_cash_journal_movement": "181028.7774",
+        "period": "2021-04"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00000763",
+          "JE-00000764",
+          "JE-00000930"
+        ],
+        "net_cash_journal_movement": "-5851.7906",
+        "period": "2021-05"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00000965",
+          "JE-00000966",
+          "JE-00001112"
+        ],
+        "net_cash_journal_movement": "437489.2268",
+        "period": "2021-06"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00001147",
+          "JE-00001148",
+          "JE-00001303"
+        ],
+        "net_cash_journal_movement": "117176.7164",
+        "period": "2021-07"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00001338",
+          "JE-00001339",
+          "JE-00001493"
+        ],
+        "net_cash_journal_movement": "278492.9233",
+        "period": "2021-08"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00001526",
+          "JE-00001527",
+          "JE-00001680"
+        ],
+        "net_cash_journal_movement": "190473.7383",
+        "period": "2021-09"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00001713",
+          "JE-00001714",
+          "JE-00001867"
+        ],
+        "net_cash_journal_movement": "-256801.3877",
+        "period": "2021-10"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00001899",
+          "JE-00001900",
+          "JE-00002047"
+        ],
+        "net_cash_journal_movement": "-255928.1696",
+        "period": "2021-11"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00002082",
+          "JE-00002083",
+          "JE-00002239"
+        ],
+        "net_cash_journal_movement": "450277.4831",
+        "period": "2021-12"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00002273",
+          "JE-00002274",
+          "JE-00002415"
+        ],
+        "net_cash_journal_movement": "486997.5357",
+        "period": "2022-01"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00002447",
+          "JE-00002448",
+          "JE-00002603"
+        ],
+        "net_cash_journal_movement": "261558.4845",
+        "period": "2022-02"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00002639",
+          "JE-00002640",
+          "JE-00002779"
+        ],
+        "net_cash_journal_movement": "268708.7793",
+        "period": "2022-03"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00002812",
+          "JE-00002813",
+          "JE-00002947"
+        ],
+        "net_cash_journal_movement": "-319543.4204",
+        "period": "2022-04"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00002980",
+          "JE-00002981",
+          "JE-00003117"
+        ],
+        "net_cash_journal_movement": "411222.8900",
+        "period": "2022-05"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00003152",
+          "JE-00003153",
+          "JE-00003279"
+        ],
+        "net_cash_journal_movement": "378209.1162",
+        "period": "2022-06"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00003311",
+          "JE-00003312",
+          "JE-00003463"
+        ],
+        "net_cash_journal_movement": "155090.5977",
+        "period": "2022-07"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00003499",
+          "JE-00003500",
+          "JE-00003668"
+        ],
+        "net_cash_journal_movement": "344115.9416",
+        "period": "2022-08"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00003701",
+          "JE-00003702",
+          "JE-00003829"
+        ],
+        "net_cash_journal_movement": "-160969.4404",
+        "period": "2022-09"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00003862",
+          "JE-00003863",
+          "JE-00004016"
+        ],
+        "net_cash_journal_movement": "129290.7865",
+        "period": "2022-10"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00004048",
+          "JE-00004049",
+          "JE-00004208"
+        ],
+        "net_cash_journal_movement": "327389.4050",
+        "period": "2022-11"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00004243",
+          "JE-00004244",
+          "JE-00004390"
+        ],
+        "net_cash_journal_movement": "-122074.7540",
+        "period": "2022-12"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00004426",
+          "JE-00004427",
+          "JE-00004587"
+        ],
+        "net_cash_journal_movement": "639002.8364",
+        "period": "2023-01"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00004619",
+          "JE-00004620",
+          "JE-00004772"
+        ],
+        "net_cash_journal_movement": "-100745.4910",
+        "period": "2023-02"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00004808",
+          "JE-00004809",
+          "JE-00004933"
+        ],
+        "net_cash_journal_movement": "86129.0167",
+        "period": "2023-03"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00004965",
+          "JE-00004966",
+          "JE-00005088"
+        ],
+        "net_cash_journal_movement": "-191929.0793",
+        "period": "2023-04"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00005123",
+          "JE-00005124",
+          "JE-00005283"
+        ],
+        "net_cash_journal_movement": "819993.2324",
+        "period": "2023-05"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00005318",
+          "JE-00005319",
+          "JE-00005480"
+        ],
+        "net_cash_journal_movement": "-193618.6388",
+        "period": "2023-06"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00005512",
+          "JE-00005513",
+          "JE-00005660"
+        ],
+        "net_cash_journal_movement": "6416.6716",
+        "period": "2023-07"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00005696",
+          "JE-00005697",
+          "JE-00005839"
+        ],
+        "net_cash_journal_movement": "-244289.2983",
+        "period": "2023-08"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00005871",
+          "JE-00005872",
+          "JE-00006009"
+        ],
+        "net_cash_journal_movement": "550843.9065",
+        "period": "2023-09"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00006044",
+          "JE-00006045",
+          "JE-00006191"
+        ],
+        "net_cash_journal_movement": "-280039.4919",
+        "period": "2023-10"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00006223",
+          "JE-00006224",
+          "JE-00006380"
+        ],
+        "net_cash_journal_movement": "-335609.3126",
+        "period": "2023-11"
+      },
+      {
+        "journal_entry_ids": [
+          "JE-00006412",
+          "JE-00006413",
+          "JE-00006569"
+        ],
+        "net_cash_journal_movement": "-103499.9528",
+        "period": "2023-12"
+      }
+    ]
+  },
+  "record_type": "cash_reconciliation_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "vdr_artifacts/json/erp_general_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

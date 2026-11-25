@@ -1,5 +1,5 @@
-// Level 5 source artifact viewer (spec Section 5.1/9.3): JSON-first, watermark
-// overlay, worker-pooled rendering with graceful JSON fallback.
+// Level 5 source artifact viewer: render JSON as text so document data cannot
+// be interpreted as HTML.
 
 import { useState } from 'react'
 import { workspaceClient } from '../../api/client'
@@ -15,26 +15,11 @@ interface DocResponse {
 export function ArtifactViewer() {
   const { engagementId, userId, activeVdrDocId } = useWorkspaceStore()
   const [doc, setDoc] = useState<DocResponse | null>(null)
-  const [html, setHtml] = useState<string | null>(null)
+  const [content, setContent] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function render(canonicalJson: string) {
-    // Worker pool with 1000ms cap; fallback to the raw JSON view on timeout.
-    let rendered = false
-    const worker = new Worker(new URL('../../workers/docRenderer.worker.ts', import.meta.url), { type: 'module' })
-    worker.postMessage({ canonicalJson })
-    const timer = setTimeout(() => {
-      if (!rendered) {
-        worker.terminate()
-        setHtml(`<pre>${canonicalJson}</pre>`) // graceful JSON fallback
-      }
-    }, 1000)
-    worker.onmessage = (e) => {
-      rendered = true
-      clearTimeout(timer)
-      setHtml(e.data.html)
-      worker.terminate()
-    }
+    setContent(JSON.stringify(JSON.parse(canonicalJson), null, 2))
   }
 
   async function load(docId: string) {
@@ -46,7 +31,7 @@ export function ArtifactViewer() {
     } catch (e) {
       setError((e as Error).message)
       setDoc(null)
-      setHtml(null)
+      setContent(null)
     }
   }
 
@@ -67,7 +52,7 @@ export function ArtifactViewer() {
               {doc.watermark.watermark_text}
             </div>
           )}
-          {html && <div dangerouslySetInnerHTML={{ __html: html }} />}
+          {content && <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{content}</pre>}
           {error && <div style={{ color: 'red' }}>{error}</div>}
         </div>
       ) : (

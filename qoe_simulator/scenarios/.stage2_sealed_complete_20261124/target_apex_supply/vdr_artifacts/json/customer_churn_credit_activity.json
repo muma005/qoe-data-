@@ -1,0 +1,14 @@
+{
+  "data": {
+    "credit_memo_journals": [],
+    "customer_level_churn": "not_modeled",
+    "modeled_churn_shocks": []
+  },
+  "record_type": "customer_churn_credit_activity",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "operational_trajectory.json",
+    "vdr_artifacts/json/erp_general_ledger.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

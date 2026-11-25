@@ -1,0 +1,94 @@
+{
+  "data": {
+    "customers": [
+      {
+        "customer_id": "C-0001",
+        "name": "Grainger Industrial Supply"
+      },
+      {
+        "customer_id": "C-0002",
+        "name": "Fastenal Company"
+      },
+      {
+        "customer_id": "C-0003",
+        "name": "MSC Industrial Direct"
+      },
+      {
+        "customer_id": "C-0004",
+        "name": "W.W. Grainger Inc."
+      },
+      {
+        "customer_id": "C-0005",
+        "name": "HD Supply Holdings"
+      },
+      {
+        "customer_id": "C-0006",
+        "name": "Wesco International"
+      },
+      {
+        "customer_id": "C-0007",
+        "name": "Applied Industrial Tech"
+      },
+      {
+        "customer_id": "C-0008",
+        "name": "Motion Industries"
+      },
+      {
+        "customer_id": "C-0009",
+        "name": "Kimball Electronics"
+      },
+      {
+        "customer_id": "C-0010",
+        "name": "Rockwell Automation"
+      },
+      {
+        "customer_id": "C-0011",
+        "name": "Barnes Group"
+      },
+      {
+        "customer_id": "C-0012",
+        "name": "Boeing Global Services"
+      },
+      {
+        "customer_id": "C-0013",
+        "name": "Lockheed Martin Supply"
+      },
+      {
+        "customer_id": "C-0014",
+        "name": "General Dynamics"
+      },
+      {
+        "customer_id": "C-0015",
+        "name": "Northrop Grumman"
+      },
+      {
+        "customer_id": "C-0016",
+        "name": "Honeywell Aerospace"
+      },
+      {
+        "customer_id": "C-0017",
+        "name": "Textron Systems"
+      },
+      {
+        "customer_id": "C-0018",
+        "name": "Parker Hannifin"
+      },
+      {
+        "customer_id": "C-0019",
+        "name": "Emerson Electric"
+      },
+      {
+        "customer_id": "C-0020",
+        "name": "Eaton Corporation"
+      }
+    ],
+    "executed_msa_terms": "not_modeled"
+  },
+  "record_type": "customer_agreement_register",
+  "scenario_id": "target_apex_supply",
+  "source_refs": [
+    "entity_ledger.json",
+    "sales_lines.json"
+  ],
+  "verification_status": "source_derived_external_verification_pending"
+}

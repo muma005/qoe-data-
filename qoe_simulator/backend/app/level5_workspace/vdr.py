@@ -17,7 +17,6 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
-import os
 import time
 from enum import Enum
 from typing import Dict, List, Optional
@@ -113,12 +112,32 @@ class WatermarkEngine:
 # VDR node + tree builder
 # ---------------------------------------------------------------------------
 class VDRTreeBuilder:
-    """Builds the institutional 6-folder VDR tree from a Level 2 .csp package."""
+    """Builds a JSON-only VDR from sealed, learner-safe package documents."""
+
+    SECTIONS = (
+        "01_Corporate_Governance_and_Legal", "02_Financial_and_Accounting",
+        "03_Tax_and_Regulatory", "04_Commercial_and_Customers",
+        "05_Operations_and_Procurement", "06_Human_Resources_and_Compensation",
+    )
+    SAFE_FILENAMES = frozenset((
+        "entity_master.json", "operational_trajectory.json", "erp_general_ledger.json",
+        "aged_ar_schedule.json", "subledgers.json", "sku_inventory.json",
+        "working_capital_schedule.json", "cutoff_break_schedule.json",
+        "product_sales_lines.json", "operational_source_documents.json",
+        "corporate_identity.json", "board_minutes_register.json", "litigation_register.json",
+        "annual_financial_statements.json", "cash_reconciliation_register.json",
+        "federal_tax_register.json", "state_apportionment_register.json",
+        "sales_tax_correspondence.json", "customer_agreement_register.json",
+        "customer_churn_credit_activity.json", "facility_lease_register.json",
+        "product_bom_register.json", "employee_census_register.json",
+        "executive_employment_register.json", "owner_expense_register.json",
+    ))
 
     def __init__(self, package_dir: str):
         self.package_dir = package_dir
         self.nodes: Dict[str, dict] = {}
         self._seq = 0
+        self._paths: Dict[str, str] = {}
 
     def _node(self, parent: Optional[str], title: str, node_type: VDRNodeType,
               wave: ReleaseWave, unlock_day: Optional[int] = None,
@@ -148,97 +167,60 @@ class VDRTreeBuilder:
     def _folder(self, parent, title, wave) -> str:
         return self._node(parent, title, VDRNodeType.FOLDER, wave)["node_id"]
 
-    def _doc(self, parent, title, node_type, wave, path="", json_ref="", unlock_day=None) -> None:
-        size = 0
-        checksum = ""
-        if path and os.path.exists(os.path.join(self.package_dir, path)):
-            full = os.path.join(self.package_dir, path)
-            size = os.path.getsize(full)
-            checksum = hashlib.sha256(open(full, "rb").read()).hexdigest()
-        self._node(parent, title, node_type, wave, unlock_day=unlock_day,
-                   file_size=size, checksum=checksum, json_ref=json_ref)
+    def _sealed_json(self, relative_path: str, hashes: dict) -> bytes:
+        from pathlib import Path
+        root = Path(self.package_dir).resolve()
+        path = (root / relative_path).resolve()
+        if (not path.is_relative_to(root / "vdr_artifacts" / "json") or
+                path.name not in self.SAFE_FILENAMES | {"catalog.json"} or
+                relative_path not in hashes):
+            raise ValueError("Unapproved VDR JSON path: " + relative_path)
+        content = path.read_bytes()
+        if hashlib.sha256(content).hexdigest() != hashes[relative_path]:
+            raise ValueError("VDR document checksum mismatch: " + relative_path)
+        json.loads(content)
+        return content
+
+    def document_bytes(self, document_id: str) -> bytes:
+        relative = self._paths.get(document_id)
+        if relative is None:
+            raise KeyError("Unknown VDR document: " + document_id)
+        hashes = self._checksums()
+        return self._sealed_json(relative, hashes)
+
+    def _checksums(self) -> dict:
+        from pathlib import Path
+        checksum = Path(self.package_dir) / "checksum.sha256"
+        return dict((name, digest) for digest, name in
+                    (line.split("  ", 1) for line in checksum.read_text(encoding="utf-8").splitlines()))
 
     def build(self) -> List[dict]:
-        # Idempotent: rebuild from scratch each call.
+        # The catalog and every exposed file must be present and sealed.
         self.nodes = {}
         self._seq = 0
-        root_parent = None
-
-        # 01 Corporate Governance & Legal (Wave 1)
-        g1 = self._folder(root_parent, "01_Corporate_Governance_and_Legal", ReleaseWave.WAVE_1_INITIAL)
-        self._doc(g1, "01.01_Certificate_of_Incorporation_and_Bylaws.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_1_INITIAL)
-        self._doc(g1, "01.02_Capitalization_Table.xlsx",
-                  VDRNodeType.DOCUMENT_XLSX, ReleaseWave.WAVE_1_INITIAL,
-                  path="entity_ledger.json", json_ref="entity_ledger.json")
-        self._doc(g1, "01.03_Board_Minutes_FY21_FY24.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_1_INITIAL)
-        self._doc(g1, "01.04_Material_Litigation.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-
-        # 02 Financial & Accounting
-        g2 = self._folder(root_parent, "02_Financial_and_Accounting", ReleaseWave.WAVE_1_INITIAL)
-        self._doc(g2, "02.01_Audited_Financial_Statements_FY21_FY23.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_1_INITIAL)
-        self._doc(g2, "02.02_Trial_Balances_Monthly_36M.csv",
-                  VDRNodeType.DOCUMENT_CSV, ReleaseWave.WAVE_1_INITIAL,
-                  path="operational_trajectory.json", json_ref="operational_trajectory.json")
-        self._doc(g2, "02.03_General_Ledger_Detail_NetSuite.csv",
-                  VDRNodeType.DOCUMENT_CSV, ReleaseWave.WAVE_2_SUBLEDGERS,
-                  path="vdr_artifacts/erp_exports/netsuite_gl.csv", json_ref="ground_truth.duckdb", unlock_day=7)
-        self._doc(g2, "02.04_Aged_Accounts_Receivable_Subledger.csv",
-                  VDRNodeType.DOCUMENT_CSV, ReleaseWave.WAVE_2_SUBLEDGERS,
-                  path="vdr_artifacts/aged_ar_schedule.csv", unlock_day=7)
-        self._doc(g2, "02.05_Aged_Accounts_Payable_and_Vendor_Spend.csv",
-                  VDRNodeType.DOCUMENT_CSV, ReleaseWave.WAVE_2_SUBLEDGERS,
-                  path="subledgers.json", json_ref="subledgers.json", unlock_day=7)
-        self._doc(g2, "02.06_Inventory_Valuation_and_Obsolescence_Rolls.xlsx",
-                  VDRNodeType.DOCUMENT_XLSX, ReleaseWave.WAVE_2_SUBLEDGERS,
-                  path="sku_inventory.json", json_ref="sku_inventory.json", unlock_day=7)
-        self._doc(g2, "02.07_Bank_Statements_and_Clearing_Reconciliations.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-
-        # 03 Tax & Regulatory (Phase II)
-        g3 = self._folder(root_parent, "03_Tax_and_Regulatory", ReleaseWave.WAVE_3_FRIDAY_DUMP)
-        self._doc(g3, "03.01_Federal_Form_1120_Tax_Returns_FY21_FY23.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-        self._doc(g3, "03.02_State_Apportionment_and_Nexus_Studies.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-        self._doc(g3, "03.03_Sales_and_Use_Tax_Audit_Correspondence.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-
-        # 04 Commercial & Customers
-        g4 = self._folder(root_parent, "04_Commercial_and_Customers", ReleaseWave.WAVE_2_SUBLEDGERS)
-        self._doc(g4, "04.01_Top_20_Customer_Master_Services_Agreements.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-        self._doc(g4, "04.02_Historical_Sales_by_SKU_and_Customer_Monthly.csv",
-                  VDRNodeType.DOCUMENT_CSV, ReleaseWave.WAVE_2_SUBLEDGERS,
-                  path="sku_inventory.json", json_ref="sku_inventory.json", unlock_day=7)
-        self._doc(g4, "04.03_Customer_Churn_and_Credit_Memo_Logs.csv",
-                  VDRNodeType.DOCUMENT_CSV, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-
-        # 05 Operations & Procurement
-        g5 = self._folder(root_parent, "05_Operations_and_Procurement", ReleaseWave.WAVE_2_SUBLEDGERS)
-        self._doc(g5, "05.01_Supplier_Rebate_Agreements_ASC_705.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP,
-                  path="injected_anomalies.json", json_ref="injected_anomalies.json", unlock_day=14)
-        self._doc(g5, "05.02_Warehouse_Facility_Leases_ASC_842.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-        self._doc(g5, "05.03_Machine_Shop_Run_Hours_and_OEE_Telemetry.xlsx",
-                  VDRNodeType.DOCUMENT_XLSX, ReleaseWave.WAVE_2_SUBLEDGERS,
-                  path="operational_trajectory.json", json_ref="operational_trajectory.json", unlock_day=7)
-        self._doc(g5, "05.04_Raw_Material_Bills_of_Material_BOM.xlsx",
-                  VDRNodeType.DOCUMENT_XLSX, ReleaseWave.WAVE_2_SUBLEDGERS, unlock_day=7)
-
-        # 06 HR & Compensation
-        g6 = self._folder(root_parent, "06_Human_Resources_and_Compensation", ReleaseWave.WAVE_4_DRIP_FEED)
-        self._doc(g6, "06.01_Employee_Census_and_Payroll_Run_Rate.xlsx",
-                  VDRNodeType.DOCUMENT_XLSX, ReleaseWave.WAVE_3_FRIDAY_DUMP, unlock_day=14)
-        self._doc(g6, "06.02_Executive_Employment_Agreements_and_Severance.pdf",
-                  VDRNodeType.DOCUMENT_PDF, ReleaseWave.WAVE_4_DRIP_FEED, unlock_day=20)
-        self._doc(g6, "06.03_Owner_Personal_Expenses_and_Perks_Schedule.xlsx",
-                  VDRNodeType.DOCUMENT_XLSX, ReleaseWave.WAVE_4_DRIP_FEED, unlock_day=20)
-
+        self._paths = {}
+        hashes = self._checksums()
+        catalog = json.loads(self._sealed_json("vdr_artifacts/json/catalog.json", hashes))
+        if catalog.get("schema_version") != 1:
+            raise ValueError("Unsupported VDR catalog version")
+        folders = {section: self._folder(None, section, ReleaseWave.WAVE_1_INITIAL)
+                   for section in self.SECTIONS}
+        seen = set()
+        for record in catalog["documents"]:
+            section, title, relative = record["section"], record["title"], record["path"]
+            day = record["unlock_day"]
+            if (section not in folders or not title.endswith(".json") or
+                    not isinstance(day, int) or day not in (1, 7, 14, 20) or
+                    relative in seen):
+                raise ValueError("Invalid VDR catalog document")
+            seen.add(relative)
+            content = self._sealed_json(relative, hashes)
+            wave = {1: ReleaseWave.WAVE_1_INITIAL, 7: ReleaseWave.WAVE_2_SUBLEDGERS,
+                    14: ReleaseWave.WAVE_3_FRIDAY_DUMP, 20: ReleaseWave.WAVE_4_DRIP_FEED}[day]
+            node = self._node(folders[section], title, VDRNodeType.VDR_NODE_TYPE_UNSPECIFIED,
+                              wave, unlock_day=day, file_size=len(content),
+                              checksum=hashlib.sha256(content).hexdigest(), json_ref=relative)
+            self._paths[node["node_id"]] = relative
         root_nodes = [self.nodes[n] for n in self.nodes if not self.nodes[n]["parent_node_id"]]
         return root_nodes
 

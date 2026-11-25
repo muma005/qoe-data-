@@ -1,0 +1,63 @@
+{
+  "anomalies": [
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "96285.6876",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202112",
+      "ebitda_impact": "96285.6876",
+      "sim_month": 12,
+      "sim_year": 2021,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "385142.7504",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "105076.3728",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202212",
+      "ebitda_impact": "105076.3728",
+      "sim_month": 12,
+      "sim_year": 2022,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "420305.4912",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    },
+    {
+      "accounting_standard": "ASC_705_20",
+      "amount": "99655.5213",
+      "anomaly_id": "SR-B01",
+      "description": "Vendor volume rebate credited 100% to COGS; portion attributable to unsold inventory must be capitalized",
+      "document_ref": "RB-202312",
+      "ebitda_impact": "99655.5213",
+      "sim_month": 12,
+      "sim_year": 2023,
+      "source_evidence": {
+        "kind": "supplier_rebate_terms",
+        "rebate_total": "398622.0852",
+        "unsold_inventory_fraction": "0.25"
+      },
+      "target_gl_accounts": [
+        "143000",
+        "501000"
+      ]
+    }
+  ],
+  "evaluation_notes": "Ground truth ledger reflects the target's as-booked records; anomalies document mis-classifications requiring EBITDA adjustment.",
+  "scenario_id": "target_apex_supply"
+}

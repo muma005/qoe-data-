@@ -13,6 +13,8 @@ Run directly from the repo root:
     python scenarios/compiler/test_level2_compiler.py
 """
 
+import hashlib
+import json
 import os
 import re
 import sys
@@ -63,6 +65,86 @@ class TestLevel2Compiler(unittest.TestCase):
                 self.assertTrue(os.path.exists(os.path.join(pkg, "ground_truth.duckdb")))
                 self.assertTrue(os.path.exists(os.path.join(pkg, "checksum.sha256")))
                 self.assertTrue(os.path.exists(result["tar_path"]))
+                with open(os.path.join(pkg, "vdr_artifacts", "json", "catalog.json"), encoding="utf-8") as f:
+                    catalog = json.load(f)
+                self.assertEqual(len(catalog["documents"]), 25)
+                self.assertEqual({d["section"] for d in catalog["documents"]}, {
+                    "01_Corporate_Governance_and_Legal", "02_Financial_and_Accounting",
+                    "03_Tax_and_Regulatory", "04_Commercial_and_Customers",
+                    "05_Operations_and_Procurement", "06_Human_Resources_and_Compensation",
+                })
+                with open(os.path.join(pkg, "checksum.sha256"), encoding="utf-8") as f:
+                    hashes = dict((name, digest) for digest, name in
+                                  (line.strip().split("  ", 1) for line in f))
+                for doc in catalog["documents"]:
+                    self.assertTrue(doc["title"].endswith(".json"))
+                    path = doc["path"]
+                    with open(os.path.join(pkg, path), "rb") as f:
+                        payload = f.read()
+                    document = json.loads(payload)
+                    self.assertEqual(hashlib.sha256(payload).hexdigest(), hashes[path])
+                    self.assertNotIn(b'"ebitda_impact"', payload)
+                    self.assertNotIn(b'ground_truth.duckdb', payload)
+                    self.assertNotIn(b'injected_anomalies.json', payload)
+                    if isinstance(document, dict) and "source_refs" in document:
+                        self.assertTrue(document["source_refs"])
+                        self.assertTrue(document["data"])
+                        for source in document["source_refs"]:
+                            self.assertTrue(os.path.isfile(os.path.join(pkg, source)), source)
+
+    def test_all_supplemental_vdr_records_are_source_linked_and_reconcile(self):
+        """Exercise all 15 source-derived records across every scenario sector."""
+        expected = {
+            "corporate_identity.json", "board_minutes_register.json", "litigation_register.json",
+            "annual_financial_statements.json", "cash_reconciliation_register.json",
+            "federal_tax_register.json", "state_apportionment_register.json",
+            "sales_tax_correspondence.json", "customer_agreement_register.json",
+            "customer_churn_credit_activity.json", "facility_lease_register.json",
+            "product_bom_register.json", "employee_census_register.json",
+            "executive_employment_register.json", "owner_expense_register.json",
+        }
+        for scenario_id in SCENARIO_PROFILES:
+            with self.subTest(scenario=scenario_id), tempfile.TemporaryDirectory() as tmp:
+                result, _ = self._compile(scenario_id, tmp=tmp)
+                pkg = result["package_dir"]
+                folder = os.path.join(pkg, "vdr_artifacts", "json")
+                with open(os.path.join(pkg, "entity_ledger.json"), encoding="utf-8") as f:
+                    entities = json.load(f)
+                with open(os.path.join(pkg, "sku_inventory.json"), encoding="utf-8") as f:
+                    inventory = json.load(f)
+                with open(os.path.join(pkg, "sales_lines.json"), encoding="utf-8") as f:
+                    sales = json.load(f)
+                records = {}
+                for filename in expected:
+                    with open(os.path.join(folder, filename), encoding="utf-8") as f:
+                        record = json.load(f)
+                    self.assertEqual(record["scenario_id"], scenario_id)
+                    self.assertEqual(record["record_type"], filename[:-5])
+                    self.assertTrue(record["source_refs"])
+                    self.assertIsInstance(record["data"], dict)
+                    self.assertTrue(record["data"])
+                    for ref in record["source_refs"]:
+                        self.assertTrue(os.path.isfile(os.path.join(pkg, ref)), ref)
+                        self.assertNotIn(ref, ("ground_truth.duckdb", "injected_anomalies.json", "audit_policy.json"))
+                    records[filename] = record["data"]
+                self.assertEqual(set(records), expected)
+                self.assertEqual(records["corporate_identity.json"]["customer_count"], len(entities["customers"]))
+                self.assertEqual(records["corporate_identity.json"]["vendor_count"], len(entities["vendors"]))
+                self.assertEqual(records["state_apportionment_register.json"]["customer_states"],
+                                 sorted({row["state"] for row in entities["customers"]}))
+                self.assertEqual(records["product_bom_register.json"]["products"], [
+                    {"product_id": sku, "ending_units": units,
+                     "recorded_sales": str(sum((Decimal(row["sales_amount"]) for row in sales
+                                               if row["product_id"] == sku), Decimal(0)).quantize(Decimal("0.0001")))}
+                    for sku, units in sorted(inventory["sku_units"].items())
+                ])
+                annual = records["annual_financial_statements.json"]["annual_income_statement_activity"]
+                self.assertEqual(annual, records["board_minutes_register.json"]["annual_activity"])
+                self.assertEqual(annual, records["federal_tax_register.json"]["annual_book_activity"])
+                self.assertEqual({r["year"] for r in annual},
+                                 set(records["litigation_register.json"]["reviewed_years"]))
+                self.assertEqual(records["executive_employment_register.json"]["payroll_periods"],
+                                 [r["period"] for r in records["employee_census_register.json"]["monthly_payroll_postings"]])
 
     def test_anomaly_injection_per_sector(self):
         expected = {
@@ -89,6 +171,11 @@ class TestLevel2Compiler(unittest.TestCase):
             with open(os.path.join(r2["package_dir"], "checksum.sha256"), encoding="utf-8") as f:
                 c2 = f.read()
             self.assertEqual(c1, c2)
+            with open(r1["tar_path"], "rb") as f:
+                archive1 = hashlib.sha256(f.read()).hexdigest()
+            with open(r2["tar_path"], "rb") as f:
+                archive2 = hashlib.sha256(f.read()).hexdigest()
+            self.assertEqual(archive1, archive2)
 
     def test_inv1_double_entry_global_equilibrium(self):
         core = AccountingCore("test", 42, 52_000_000, start_year=2021, start_month=1)

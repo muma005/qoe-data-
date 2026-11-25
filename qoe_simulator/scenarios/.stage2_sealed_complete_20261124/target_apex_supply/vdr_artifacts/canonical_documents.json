@@ -1,0 +1,86 @@
+{
+  "artifacts": [
+    {
+      "path": "erp_exports/netsuite_gl.csv",
+      "tier": "T3",
+      "type": "ERP_GL_EXPORT"
+    },
+    {
+      "path": "working_capital_schedule.csv",
+      "tier": "T5",
+      "type": "MANAGEMENT_EXCEL"
+    },
+    {
+      "path": "aged_ar_schedule.csv",
+      "tier": "T5",
+      "type": "MANAGEMENT_EXCEL"
+    },
+    {
+      "path": "cutoff_break_schedule.csv",
+      "tier": "T5",
+      "type": "MANAGEMENT_EXCEL"
+    }
+  ],
+  "defects": [
+    {
+      "amount": "35000.0000",
+      "defect_type": "PANko_CELL_ERROR",
+      "description": "Working capital schedule omits accrued warranty reserve; hardcoded plug forces subledger balance"
+    },
+    {
+      "amount": "0.0000",
+      "defect_type": "UNAPPLIED_CASH",
+      "description": "Aged AR shows 90+ day balances while $0.00 sits in unapplied cash clearing"
+    },
+    {
+      "amount": "216666.6667",
+      "defect_type": "STUB_PERIOD_CUTOFF",
+      "description": "$216666.67 shipment left warehouse Dec 31 (BOL signed Dec 31) but was invoiced Jan 3; revenue in FY+1 while COGS relieved in FY",
+      "recommended_action": "Normalize revenue and COGS to the same period"
+    }
+  ],
+  "missing_records": [
+    {
+      "document_type": "WARRANTY_CLAIMS_FY21",
+      "recommended_action": "Scope limitation + $500,000 specific indemnity escrow",
+      "status": "MISSING_LEGACY_SERVER_MIGRATION"
+    }
+  ],
+  "provenance_hierarchy": [
+    {
+      "evidentiary_weight": 1.0,
+      "name": "External Statutory / Tax Authority Records",
+      "tier": "T1"
+    },
+    {
+      "evidentiary_weight": 0.95,
+      "name": "Third-Party Direct Evidence",
+      "tier": "T2"
+    },
+    {
+      "evidentiary_weight": 0.9,
+      "name": "Immutable ERP System Dumps",
+      "tier": "T3"
+    },
+    {
+      "evidentiary_weight": 0.85,
+      "name": "Operational Telemetry Logs (NFM)",
+      "tier": "T4"
+    },
+    {
+      "evidentiary_weight": 0.5,
+      "name": "Management Manual Schedules",
+      "tier": "T5"
+    },
+    {
+      "evidentiary_weight": 0.3,
+      "name": "Unreconciled Internal Records",
+      "tier": "T6"
+    },
+    {
+      "evidentiary_weight": 0.0,
+      "name": "Verbal Management Assertion",
+      "tier": "T7"
+    }
+  ]
+}

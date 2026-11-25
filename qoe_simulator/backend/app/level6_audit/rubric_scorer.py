@@ -458,6 +458,9 @@ class EvaluationJobs:
             thread.join(max(0,deadline-time.monotonic()))
         return all(not thread.is_alive() for thread in self.threads)
     def _run(self,job,workbook,report,spa,scenario):
+        # The scenario policy is sealed independently of the engagement. Bind the
+        # engagement only in the worker copy so the generated memo is attributable.
+        scenario=dict(scenario,engagement_id=self.jobs[job]["engagement_id"])
         self.capacity.acquire()
         if self.store and not self.store.claim(job,self.owner,duration=max(60,self.timeout+30)):
             self.capacity.release()
@@ -705,12 +708,21 @@ def load_scenario_policy(scenario_root, scenario_id, seed):
     if not path.is_relative_to(root): raise ValueError("Invalid scenario path")
     raw=path.read_bytes()
     checksum_file=path.parent/"checksum.sha256"
-    if checksum_file.exists():
-        import hashlib
-        hashes=dict((name,digest) for digest,name in
-                    (line.split("  ",1) for line in checksum_file.read_text(encoding="utf-8").splitlines()))
-        if hashes.get("audit_policy.json")!=hashlib.sha256(raw).hexdigest():
-            raise ValueError("Scenario audit policy checksum mismatch")
+    if not checksum_file.is_file(): raise FileNotFoundError("Scenario checksum manifest missing: "+str(checksum_file))
+    import hashlib
+    hashes=dict((name,digest) for digest,name in
+                (line.split("  ",1) for line in checksum_file.read_text(encoding="utf-8").splitlines()))
+    if hashes.get("audit_policy.json")!=hashlib.sha256(raw).hexdigest():
+        raise ValueError("Scenario audit policy checksum mismatch")
+    manifest_path=path.parent/"manifest.json"
+    manifest_raw=manifest_path.read_bytes()
+    if hashes.get("manifest.json")!=hashlib.sha256(manifest_raw).hexdigest():
+        raise ValueError("Scenario manifest checksum mismatch")
+    manifest=json.loads(manifest_raw)
+    if manifest.get("scenario_id")!=scenario_id: raise ValueError("Scenario identifier mismatch")
+    if manifest.get("random_seed")!=int(seed,16): raise ValueError("Scenario manifest seed mismatch")
+    from app.level0_physics.package_integrity import verify_package_integrity
+    verify_package_integrity(path.parent)
     policy=json.loads(raw)
     if policy.get("seed_hex_64")!=seed: raise ValueError("Scenario seed mismatch")
     if "professional_calibration" not in policy: raise ValueError("Scenario calibration state absent")
@@ -755,14 +767,14 @@ def load_postgres_scenario_policy(dsn, scenario_id, seed, connect=None):
                 cursor.execute("ROLLBACK")
 
 
-def create_router(scenario_root):
+def create_router(scenario_root, store_path=None):
     from fastapi import APIRouter, HTTPException
     root=Path(scenario_root).resolve()
     def provider(scenario_id,seed):
         dsn=os.environ.get("QOE_EVAL_READONLY_DSN")
         if dsn: return load_postgres_scenario_policy(dsn,scenario_id,seed)
         return load_scenario_policy(root,scenario_id,seed)
-    jobs=EvaluationJobs(provider, store_path=root.parent / "audit_results" / "jobs.sqlite3")
+    jobs=EvaluationJobs(provider, store_path=store_path or root.parent / "audit_results" / "jobs.sqlite3")
     from contextlib import asynccontextmanager
     @asynccontextmanager
     async def lifespan(app):
@@ -1051,7 +1063,7 @@ def build_compiled_scenario_policy(package_dir, seed_hex_64):
     root=Path(package_dir)
     provenance=json.loads((root/"audit_evidence.json").read_text(encoding="utf-8"))
     canonical=json.loads((root/"vdr_artifacts"/"canonical_documents.json").read_text(encoding="utf-8"))
-    book=Databook().build(str(root))
+    book=Databook().build(str(root),verify_integrity=False)
     rendered=_databook_to_sheets(book)
     bindings=book.audit_cell_bindings()["tabs"]
     bridge=bindings["02_EBITDA_Bridges"]["metrics"]

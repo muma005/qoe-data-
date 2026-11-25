@@ -1,0 +1,619 @@
+{
+  "customers": [
+    {
+      "customer_id": "C-0001",
+      "fein": "24-3458438",
+      "name": "Grainger Industrial Supply",
+      "state": "NY",
+      "zip_code": "10000"
+    },
+    {
+      "customer_id": "C-0002",
+      "fein": "20-0054360",
+      "name": "Fastenal Company",
+      "state": "NY",
+      "zip_code": "10001"
+    },
+    {
+      "customer_id": "C-0003",
+      "fein": "24-8580221",
+      "name": "MSC Industrial Direct",
+      "state": "NY",
+      "zip_code": "10002"
+    },
+    {
+      "customer_id": "C-0004",
+      "fein": "04-2001244",
+      "name": "W.W. Grainger Inc.",
+      "state": "NY",
+      "zip_code": "10003"
+    },
+    {
+      "customer_id": "C-0005",
+      "fein": "63-2401010",
+      "name": "HD Supply Holdings",
+      "state": "NY",
+      "zip_code": "10004"
+    },
+    {
+      "customer_id": "C-0006",
+      "fein": "44-6101415",
+      "name": "Wesco International",
+      "state": "NY",
+      "zip_code": "10005"
+    },
+    {
+      "customer_id": "C-0007",
+      "fein": "20-1425042",
+      "name": "Applied Industrial Tech",
+      "state": "NY",
+      "zip_code": "10006"
+    },
+    {
+      "customer_id": "C-0008",
+      "fein": "53-3121582",
+      "name": "Motion Industries",
+      "state": "NY",
+      "zip_code": "10007"
+    },
+    {
+      "customer_id": "C-0009",
+      "fein": "01-5348886",
+      "name": "Kimball Electronics",
+      "state": "NY",
+      "zip_code": "10008"
+    },
+    {
+      "customer_id": "C-0010",
+      "fein": "21-1593539",
+      "name": "Rockwell Automation",
+      "state": "NY",
+      "zip_code": "10009"
+    },
+    {
+      "customer_id": "C-0011",
+      "fein": "94-2834851",
+      "name": "Barnes Group",
+      "state": "NY",
+      "zip_code": "10010"
+    },
+    {
+      "customer_id": "C-0012",
+      "fein": "65-6430463",
+      "name": "Boeing Global Services",
+      "state": "NY",
+      "zip_code": "10011"
+    },
+    {
+      "customer_id": "C-0013",
+      "fein": "01-6698495",
+      "name": "Lockheed Martin Supply",
+      "state": "NY",
+      "zip_code": "10012"
+    },
+    {
+      "customer_id": "C-0014",
+      "fein": "25-5544562",
+      "name": "General Dynamics",
+      "state": "NY",
+      "zip_code": "10013"
+    },
+    {
+      "customer_id": "C-0015",
+      "fein": "74-2340106",
+      "name": "Northrop Grumman",
+      "state": "NY",
+      "zip_code": "10014"
+    },
+    {
+      "customer_id": "C-0016",
+      "fein": "92-3935122",
+      "name": "Honeywell Aerospace",
+      "state": "NY",
+      "zip_code": "10015"
+    },
+    {
+      "customer_id": "C-0017",
+      "fein": "34-3831100",
+      "name": "Textron Systems",
+      "state": "NY",
+      "zip_code": "10016"
+    },
+    {
+      "customer_id": "C-0018",
+      "fein": "36-4703050",
+      "name": "Parker Hannifin",
+      "state": "NY",
+      "zip_code": "10017"
+    },
+    {
+      "customer_id": "C-0019",
+      "fein": "27-8173295",
+      "name": "Emerson Electric",
+      "state": "NY",
+      "zip_code": "10018"
+    },
+    {
+      "customer_id": "C-0020",
+      "fein": "24-1560030",
+      "name": "Eaton Corporation",
+      "state": "NY",
+      "zip_code": "10019"
+    }
+  ],
+  "lp15_compliant": true,
+  "vendors": [
+    {
+      "fein": "78-4268486",
+      "name": "Ryerson Metals",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0001",
+      "zip_code": "60600"
+    },
+    {
+      "fein": "62-1059451",
+      "name": "Reliance Steel",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0002",
+      "zip_code": "60601"
+    },
+    {
+      "fein": "15-1070052",
+      "name": "Thyssenkrupp Materials",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0003",
+      "zip_code": "60602"
+    },
+    {
+      "fein": "18-2417523",
+      "name": "WestRock Company",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0004",
+      "zip_code": "60603"
+    },
+    {
+      "fein": "38-5292516",
+      "name": "International Paper",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0005",
+      "zip_code": "60604"
+    },
+    {
+      "fein": "93-1342222",
+      "name": "Packaging Corp of America",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0006",
+      "zip_code": "60605"
+    },
+    {
+      "fein": "96-5500021",
+      "name": "FedEx Freight",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0007",
+      "zip_code": "60606"
+    },
+    {
+      "fein": "24-4453131",
+      "name": "UPS Freight",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0008",
+      "zip_code": "60607"
+    },
+    {
+      "fein": "46-1092547",
+      "name": "XPO Logistics",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0009",
+      "zip_code": "60608"
+    },
+    {
+      "fein": "71-4780454",
+      "name": "Old Dominion Freight",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0010",
+      "zip_code": "60609"
+    },
+    {
+      "fein": "10-0205354",
+      "name": "Baker McKenzie LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0011",
+      "zip_code": "60610"
+    },
+    {
+      "fein": "45-1247920",
+      "name": "Latham & Watkins LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0012",
+      "zip_code": "60611"
+    },
+    {
+      "fein": "03-3220956",
+      "name": "Ernst & Young LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0013",
+      "zip_code": "60612"
+    },
+    {
+      "fein": "93-3456062",
+      "name": "PricewaterhouseCoopers LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0014",
+      "zip_code": "60613"
+    },
+    {
+      "fein": "35-3424702",
+      "name": "KPMG LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0015",
+      "zip_code": "60614"
+    },
+    {
+      "fein": "46-5634127",
+      "name": "Bain & Company",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0016",
+      "zip_code": "60615"
+    },
+    {
+      "fein": "26-2400133",
+      "name": "Boston Consulting Group",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0017",
+      "zip_code": "60616"
+    },
+    {
+      "fein": "49-3459765",
+      "name": "The Hartford",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0018",
+      "zip_code": "60617"
+    },
+    {
+      "fein": "12-1481503",
+      "name": "Boston Properties",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0019",
+      "zip_code": "60618"
+    },
+    {
+      "fein": "38-4151201",
+      "name": "Duke Realty",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0020",
+      "zip_code": "60619"
+    },
+    {
+      "fein": "41-3497563",
+      "name": "National Grid",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0021",
+      "zip_code": "60620"
+    },
+    {
+      "fein": "50-0025052",
+      "name": "Pacific Gas & Electric",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0022",
+      "zip_code": "60621"
+    },
+    {
+      "fein": "22-4944635",
+      "name": "Office Depot",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0023",
+      "zip_code": "60622"
+    },
+    {
+      "fein": "02-1710255",
+      "name": "Staples Business Advantage",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0024",
+      "zip_code": "60623"
+    },
+    {
+      "fein": "23-0428451",
+      "name": "Amazon Business",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0025",
+      "zip_code": "60624"
+    },
+    {
+      "fein": "40-7563335",
+      "name": "Salesforce.com Inc.",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0026",
+      "zip_code": "60625"
+    },
+    {
+      "fein": "03-2481700",
+      "name": "CrowdStrike Holdings",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0027",
+      "zip_code": "60626"
+    },
+    {
+      "fein": "30-5049210",
+      "name": "Comcast Business",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0028",
+      "zip_code": "60627"
+    },
+    {
+      "fein": "43-4383943",
+      "name": "AT&T Business",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0029",
+      "zip_code": "60628"
+    },
+    {
+      "fein": "82-2313313",
+      "name": "Microsoft Corporation",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0030",
+      "zip_code": "60629"
+    },
+    {
+      "fein": "20-4664732",
+      "name": "Adobe Inc.",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0031",
+      "zip_code": "60630"
+    },
+    {
+      "fein": "30-0005250",
+      "name": "General Vendor",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0032",
+      "zip_code": "60631"
+    },
+    {
+      "fein": "58-5246637",
+      "name": "LinkedIn Corporation",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0033",
+      "zip_code": "60632"
+    },
+    {
+      "fein": "94-0370357",
+      "name": "Google Ads",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0034",
+      "zip_code": "60633"
+    },
+    {
+      "fein": "30-7875101",
+      "name": "The Trade Desk",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0035",
+      "zip_code": "60634"
+    },
+    {
+      "fein": "64-1220553",
+      "name": "Meta Platforms Inc.",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0036",
+      "zip_code": "60635"
+    },
+    {
+      "fein": "35-9020930",
+      "name": "Gartner Inc.",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0037",
+      "zip_code": "60636"
+    },
+    {
+      "fein": "25-2519859",
+      "name": "Eventbrite",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0038",
+      "zip_code": "60637"
+    },
+    {
+      "fein": "52-4113045",
+      "name": "United Airlines",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0039",
+      "zip_code": "60638"
+    },
+    {
+      "fein": "02-8512842",
+      "name": "Uber for Business",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0040",
+      "zip_code": "60639"
+    },
+    {
+      "fein": "93-0542810",
+      "name": "Delta Air Lines",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0041",
+      "zip_code": "60640"
+    },
+    {
+      "fein": "71-7406280",
+      "name": "W.W. Grainger Inc.",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0042",
+      "zip_code": "60641"
+    },
+    {
+      "fein": "15-5153504",
+      "name": "Fastenal Company",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0043",
+      "zip_code": "60642"
+    },
+    {
+      "fein": "76-1128434",
+      "name": "Old Dominion Freight Line",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0044",
+      "zip_code": "60643"
+    },
+    {
+      "fein": "71-1531250",
+      "name": "Ansell Limited",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0045",
+      "zip_code": "60644"
+    },
+    {
+      "fein": "05-2101823",
+      "name": "Honeywell Safety Products",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0046",
+      "zip_code": "60645"
+    },
+    {
+      "fein": "31-6452723",
+      "name": "3M Company",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0047",
+      "zip_code": "60646"
+    },
+    {
+      "fein": "66-5806274",
+      "name": "Jones Day LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0048",
+      "zip_code": "60647"
+    },
+    {
+      "fein": "91-5422999",
+      "name": "Deloitte & Touche LLP",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0049",
+      "zip_code": "60648"
+    },
+    {
+      "fein": "34-5025622",
+      "name": "McKinsey & Company",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0050",
+      "zip_code": "60649"
+    },
+    {
+      "fein": "41-1314536",
+      "name": "Chubb Insurance",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0051",
+      "zip_code": "60650"
+    },
+    {
+      "fein": "94-5644680",
+      "name": "Travelers Companies",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0052",
+      "zip_code": "60651"
+    },
+    {
+      "fein": "29-5798066",
+      "name": "ProLogis Leasing",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0053",
+      "zip_code": "60652"
+    },
+    {
+      "fein": "71-5512399",
+      "name": "Informa Markets",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0054",
+      "zip_code": "60653"
+    },
+    {
+      "fein": "70-4847465",
+      "name": "MSC Industrial Supply",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0055",
+      "zip_code": "60654"
+    },
+    {
+      "fein": "28-4531350",
+      "name": "Duke Energy",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0056",
+      "zip_code": "60655"
+    },
+    {
+      "fein": "06-1225408",
+      "name": "Verizon Business",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0057",
+      "zip_code": "60656"
+    },
+    {
+      "fein": "42-6321704",
+      "name": "Marriott International",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0058",
+      "zip_code": "60657"
+    },
+    {
+      "fein": "81-8416532",
+      "name": "Fastenal Inc",
+      "state": "IL",
+      "terms": "NET_30",
+      "vendor_id": "V-0059",
+      "zip_code": "60658"
+    }
+  ]
+}
